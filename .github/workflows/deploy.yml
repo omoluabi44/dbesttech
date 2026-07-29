@@ -52,6 +52,9 @@ jobs:
     needs: build-and-push
     runs-on: ubuntu-latest
     steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
@@ -61,15 +64,18 @@ jobs:
 
       - name: Deploy to EC2 Instances via AWS Systems Manager (SSM)
         run: |
-          # Finds instances by tag and uses SSM to run docker-compose pull && docker-compose up -d
-          # Assumes docker-compose.yml is available on the instance at /app/docker-compose.yml
+          # Encode files to base64 to safely pass them through the SSM command JSON payload
+          DOCKER_COMPOSE_B64=$(base64 -w 0 docker-compose.yml)
+          NGINX_CONF_B64=$(base64 -w 0 nginx/default.conf)
+          ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
           
-          # In a full setup, you might push the docker-compose.yml to S3 and have the instance download it first.
-          # Here we run a command to stop containers, prune, and restart.
+          # Replace the local image names in docker-compose.yml with ECR URIs
+          # We'll use sed on the EC2 instance to do this securely
+          
           aws ssm send-command \
             --document-name "AWS-RunShellScript" \
             --targets "Key=tag:Name,Values=django-nextjs-app-asg-instance" \
-            --parameters 'commands=["cd /app || exit", "aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin $(aws sts get-caller-identity --query Account --output text).dkr.ecr.us-east-1.amazonaws.com", "docker-compose pull", "docker-compose up -d --remove-orphans"]' \
+            --parameters '{"commands":["mkdir -p /app/nginx","echo \"'$DOCKER_COMPOSE_B64'\" | base64 -d > /app/docker-compose.yml","echo \"'$NGINX_CONF_B64'\" | base64 -d > /app/nginx/default.conf","cd /app","sed -i \"s|image: django-backend:latest|image: '$ACCOUNT_ID'.dkr.ecr.us-east-1.amazonaws.com/django-nextjs-app-backend:latest|g\" docker-compose.yml","sed -i \"s|image: nextjs-frontend:latest|image: '$ACCOUNT_ID'.dkr.ecr.us-east-1.amazonaws.com/django-nextjs-app-frontend:latest|g\" docker-compose.yml","aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin '$ACCOUNT_ID'.dkr.ecr.us-east-1.amazonaws.com","docker-compose pull","docker-compose up -d --remove-orphans"]}' \
             --timeout-seconds 600 \
             --max-concurrency "50" \
             --max-errors "0" \
