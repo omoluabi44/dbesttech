@@ -4,10 +4,13 @@ const getBaseUrl = () => {
   if (process.env.NEXT_PUBLIC_API_URL) {
     return process.env.NEXT_PUBLIC_API_URL;
   }
-  if (process.env.NODE_ENV === 'production') {
-    return typeof window !== 'undefined' ? `${window.location.origin}/api` : '/api';
+  if (typeof window === 'undefined') {
+    // Server-side rendering (Node.js) requires absolute URLs. 
+    // It can talk directly to the backend container over the internal Docker network.
+    return 'http://backend:8000/api';
   }
-  return 'http://localhost:8000/api';
+  // Client-side rendering (Browser) can use relative URLs since Nginx proxies /api to the backend.
+  return '/api';
 };
 
 const client = axios.create({
