@@ -46,11 +46,24 @@ export default function RegisterPage() {
       console.error('Registration error:', error);
       
       // Try to extract useful error messages from DRF response
-      if (error.response?.data) {
+      if (error.response?.data && typeof error.response.data === 'object') {
         const data = error.response.data;
-        if (data.email) toast.error(`Email: ${data.email[0]}`);
-        else if (data.username) toast.error(`Username: ${data.username[0]}`);
-        else toast.error('Registration failed. Please check your details.');
+        let hasSpecificError = false;
+        
+        // Loop through all error keys (e.g. email, username, password, non_field_errors)
+        Object.keys(data).forEach(key => {
+          const messages = data[key];
+          if (Array.isArray(messages) && messages.length > 0) {
+            // Capitalize the field name for display
+            const fieldName = key.charAt(0).toUpperCase() + key.slice(1).replace('_', ' ');
+            toast.error(`${fieldName}: ${messages[0]}`);
+            hasSpecificError = true;
+          }
+        });
+        
+        if (!hasSpecificError) {
+          toast.error('Registration failed. Please check your details.');
+        }
       } else {
         toast.error('Network error. Please try again.');
       }
