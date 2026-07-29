@@ -1,0 +1,92 @@
+from django.contrib.auth.models import AbstractUser
+from django.db import models
+from utils.constants import ROLE_CHOICES, SCHOOL_CATEGORIES, SCHOOL_LEVELS, GRADUATING_LEVELS, LEVEL_TO_CATEGORY
+
+class School(models.Model):
+    """Model representing a school."""
+    name = models.CharField(max_length=255)
+    address = models.TextField(blank=True, default='')
+    contact_email = models.EmailField(blank=True, default='')
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    class Meta:
+        verbose_name = 'School'
+        verbose_name_plural = 'Schools'
+    
+    def __str__(self):
+        return self.name
+from utils.constants import ROLE_CHOICES, SCHOOL_CATEGORIES, SCHOOL_LEVELS, GRADUATING_LEVELS, LEVEL_TO_CATEGORY
+
+
+class User(AbstractUser):
+    """Extended user model with role field."""
+    email = models.EmailField(unique=True)
+    role = models.CharField(max_length=20, choices=ROLE_CHOICES, default='student')
+
+    USERNAME_FIELD = 'email'
+    REQUIRED_FIELDS = ['username']
+
+    class Meta:
+        verbose_name = 'User'
+        verbose_name_plural = 'Users'
+
+    def __str__(self):
+        return self.email
+
+    @property
+    def is_student(self):
+        return self.role == 'student'
+
+    @property
+    def is_teacher(self):
+        return self.role == 'teacher'
+
+    @property
+    def is_root_admin(self):
+        return self.role == 'root_admin'
+
+    @property
+    def is_school_admin(self):
+        return self.role == 'school_admin'
+
+
+class SchoolAdminProfile(models.Model):
+    """Admin profile for school administrators."""
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='school_admin_profile')
+    school = models.ForeignKey(School, on_delete=models.CASCADE, related_name='admins')
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    class Meta:
+        verbose_name = 'School Admin Profile'
+        verbose_name_plural = 'School Admin Profiles'
+    
+    def __str__(self):
+        return f"{self.user.email} - {self.school.name}"
+
+
+class StudentProfile(models.Model):
+    """Student-specific profile linked to User."""
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='student_profile')
+    school_category = models.CharField(max_length=20, choices=SCHOOL_CATEGORIES, default='primary')
+    level = models.CharField(max_length=20, choices=SCHOOL_LEVELS, default='primary_1')
+    is_graduating = models.BooleanField(default=False)
+    date_of_birth = models.DateField(null=True, blank=True)
+    avatar = models.ImageField(upload_to='avatars/', null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = 'Student Profile'
+        verbose_name_plural = 'Student Profiles'
+
+    def __str__(self):
+        return f"{self.user.email} - {self.get_level_display()}"
+
+    def save(self, *args, **kwargs):
+        # Auto-set school_category from level
+        self.school_category = LEVEL_TO_CATEGORY.get(self.level, 'primary')
+        # Auto-set is_graduating from level
+        self.is_graduating = self.level in GRADUATING_LEVELS
+        super().save(*args, **kwargs)

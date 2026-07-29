@@ -1,0 +1,318 @@
+from rest_framework import generics, status, views
+from rest_framework.response import Response
+from rest_framework.permissions import IsAuthenticated
+from django.shortcuts import get_object_or_404
+from django.utils import timezone
+import random
+
+from .models import (
+    Subject, Topic, Quiz, PracticeSession, PracticeAnswer,
+    PastQuestion, PastQuestionSession, PastQuestionAnswer, PastQuestionUpload
+)
+from .serializers import (
+    SubjectSerializer, TopicSerializer, PracticeSessionSerializer, QuizSerializer,
+    PracticeStageSubmitSerializer, PastQuestionSessionSerializer,
+    PastAnswerSubmissionSerializer, PastQuestionSerializer
+)
+
+class SubjectListView(generics.ListAPIView):
+    queryset = Subject.objects.filter(is_active=True)
+    serializer_class = SubjectSerializer
+
+class TopicListView(generics.ListAPIView):
+    serializer_class = TopicSerializer
+    
+    def get_queryset(self):
+        subject_id = self.kwargs.get('subject_id')
+        return Topic.objects.filter(subject_id=subject_id, is_active=True)
+
+# ---------------------------------------------------------
+# PRACTICE QUIZ API
+# ---------------------------------------------------------
+
+class PracticeStartView(views.APIView):
+    permission_classes = [IsAuthenticated]
+    
+    def post(self, request):
+        subject_id = request.data.get('subject_id')
+        level = request.data.get('level')
+        difficulty = request.data.get('difficulty', 'medium')
+        
+        subject = get_object_or_404(Subject, id=subject_id)
+        
+        # Get 50 random questions
+        questions = list(Quiz.objects.filter(subject=subject, level=level, difficulty=difficulty, is_practice=True, is_active=True))
+        if len(questions) > 50:
+            questions = random.sample(questions, 50)
+        
+        if not questions:
+            return Response({'error': f'No {difficulty} questions available for this subject.'}, status=status.HTTP_400_BAD_REQUEST)
+        
+        session = PracticeSession.objects.create(
+            student=request.user,
+            subject=subject,
+            level=level,
+            difficulty=difficulty,
+            total_questions=len(questions),
+            current_stage=1
+        )
+        
+        for q in questions:
+            PracticeAnswer.objects.create(session=session, question=q, stage_submitted=0)
+            
+        stage_1_answers = session.answers.order_by('id')[:10]
+        stage_1_questions = [a.question for a in stage_1_answers]
+        
+        return Response({
+            'session': PracticeSessionSerializer(session).data,
+            'questions': QuizSerializer(stage_1_questions, many=True).data
+        }, status=status.HTTP_201_CREATED)
+
+class PracticeSubmitStageView(views.APIView):
+    permission_classes = [IsAuthenticated]
+    
+    def post(self, request, pk):
+        session = get_object_or_404(PracticeSession, pk=pk, student=request.user)
+        
+        if session.status != 'in_progress':
+            return Response({'error': 'Session is already completed.'}, status=status.HTTP_400_BAD_REQUEST)
+            
+        serializer = PracticeStageSubmitSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        
+        stage = serializer.validated_data['stage']
+        if stage != session.current_stage:
+            return Response({'error': f'Expected answers for stage {session.current_stage}'}, status=status.HTTP_400_BAD_REQUEST)
+            
+        answers_data = serializer.validated_data['answers']
+        
+        all_session_answers = list(session.answers.order_by('id'))
+        start_idx = (stage - 1) * 10
+        end_idx = stage * 10
+        stage_answers = all_session_answers[start_idx:end_idx]
+        
+        stage_correct = 0
+        
+        for ans_data in answers_data:
+            q_id = ans_data['question_id']
+            sel_ans = ans_data.get('selected_answer', '')
+            
+            p_ans = next((a for a in stage_answers if str(a.question_id) == str(q_id)), None)
+            if p_ans:
+                p_ans.selected_answer = sel_ans
+                
+                is_correct = False
+                if sel_ans and p_ans.question.correct_answer and sel_ans.strip().lower() == p_ans.question.correct_answer.strip().lower():
+                    is_correct = True
+                    
+                p_ans.is_correct = is_correct
+                p_ans.stage_submitted = stage
+                p_ans.save()
+                
+                if is_correct:
+                    stage_correct += 1
+                        
+        setattr(session, f'stage_{stage}_score', stage_correct)
+        session.correct_answers += stage_correct
+        
+        if stage == 5 or end_idx >= len(all_session_answers):
+            session.status = 'completed'
+            session.completed_at = timezone.now()
+            session.score_percentage = (session.correct_answers / max(1, session.total_questions)) * 100
+        else:
+            session.current_stage += 1
+            
+        session.save()
+        
+        response_data = {
+            'session': PracticeSessionSerializer(session).data,
+            'stage_score': stage_correct
+        }
+        
+        if session.status != 'completed':
+            next_start = (session.current_stage - 1) * 10
+            next_end = session.current_stage * 10
+            next_answers = all_session_answers[next_start:next_end]
+            next_questions = [a.question for a in next_answers]
+            response_data['next_questions'] = QuizSerializer(next_questions, many=True).data
+            
+        return Response(response_data)
+
+
+class PracticeResultsView(views.APIView):
+    permission_classes = [IsAuthenticated]
+    
+    def get(self, request, pk):
+        session = get_object_or_404(PracticeSession, pk=pk, student=request.user)
+        if session.status == 'in_progress':
+            session.status = 'abandoned'
+            session.completed_at = timezone.now()
+            session.score_percentage = (session.correct_answers / max(1, session.total_questions)) * 100
+            session.save()
+            
+        # Get user's answers and correct answers for review
+        answers = session.answers.select_related('question').order_by('id')
+        review_data = []
+        for ans in answers:
+            if ans.stage_submitted > 0:
+                review_data.append({
+                    'question': QuizSerializer(ans.question).data,
+                    'selected_answer': ans.selected_answer,
+                    'is_correct': ans.is_correct,
+                })
+            
+        return Response({
+            'session': PracticeSessionSerializer(session).data,
+            'review': review_data
+        })
+
+class PracticeRetryView(views.APIView):
+    permission_classes = [IsAuthenticated]
+    
+    def post(self, request, pk):
+        session = get_object_or_404(PracticeSession, pk=pk, student=request.user)
+        
+        session.current_stage = 1
+        session.status = 'in_progress'
+        session.correct_answers = 0
+        session.score_percentage = 0.0
+        session.stage_1_score = 0
+        session.stage_2_score = 0
+        session.stage_3_score = 0
+        session.stage_4_score = 0
+        session.stage_5_score = 0
+        session.completed_at = None
+        session.save()
+        
+        session.answers.update(selected_answer=None, is_correct=False, stage_submitted=0)
+        
+        stage_1_answers = session.answers.order_by('id')[:10]
+        stage_1_questions = [a.question for a in stage_1_answers]
+        
+        return Response({
+            'session': PracticeSessionSerializer(session).data,
+            'questions': QuizSerializer(stage_1_questions, many=True).data
+        })
+
+# ---------------------------------------------------------
+# PAST QUESTION API
+# ---------------------------------------------------------
+
+class PastQuestionFiltersView(views.APIView):
+    def get(self, request):
+        subject_id = request.query_params.get('subject_id')
+        level = request.query_params.get('level')
+        
+        queryset = PastQuestion.objects.filter(is_active=True)
+        if subject_id:
+            queryset = queryset.filter(subject_id=subject_id)
+        if level:
+            queryset = queryset.filter(level=level)
+            
+        exam_bodies = queryset.values_list('exam_body', flat=True).distinct()
+        years = queryset.values_list('year', flat=True).distinct().order_by('-year')
+        
+        return Response({
+            'exam_bodies': [e for e in exam_bodies if e],
+            'years': [y for y in years if y]
+        })
+
+
+class PastQuestionStartView(views.APIView):
+    permission_classes = [IsAuthenticated]
+    
+    def post(self, request):
+        subject_id = request.data.get('subject_id')
+        level = request.data.get('level')
+        exam_body = request.data.get('exam_body')
+        year = request.data.get('year')
+        
+        subject = get_object_or_404(Subject, id=subject_id)
+        
+        questions = PastQuestion.objects.filter(
+            subject=subject, level=level, exam_body=exam_body, year=year, is_active=True
+        )
+        
+        if not questions.exists():
+            return Response({'error': 'No past questions found for these filters.'}, status=status.HTTP_400_BAD_REQUEST)
+            
+        session = PastQuestionSession.objects.create(
+            student=request.user,
+            subject=subject,
+            level=level,
+            exam_body=exam_body,
+            year=year,
+            total_questions=questions.count()
+        )
+        
+        return Response({
+            'session': PastQuestionSessionSerializer(session).data,
+            'questions': PastQuestionSerializer(questions, many=True).data
+        }, status=status.HTTP_201_CREATED)
+
+class PastQuestionSubmitView(views.APIView):
+    permission_classes = [IsAuthenticated]
+    
+    def post(self, request, pk):
+        session = get_object_or_404(PastQuestionSession, pk=pk, student=request.user)
+        if session.status != 'in_progress':
+            return Response({'error': 'Session is already completed.'}, status=status.HTTP_400_BAD_REQUEST)
+            
+        serializer = PastAnswerSubmissionSerializer(data=request.data, many=True)
+        serializer.is_valid(raise_exception=True)
+        
+        for ans_data in serializer.validated_data:
+            q_id = ans_data['question_id']
+            sel_ans = ans_data.get('selected_answer', '')
+            time_spent = ans_data.get('time_spent_seconds', 0)
+            
+            question = PastQuestion.objects.filter(id=q_id).first()
+            if question:
+                is_correct = False
+                if sel_ans and question.correct_answer and sel_ans.strip().lower() == question.correct_answer.strip().lower():
+                    is_correct = True
+                    
+                PastQuestionAnswer.objects.update_or_create(
+                    session=session,
+                    question=question,
+                    defaults={
+                        'selected_answer': sel_ans,
+                        'is_correct': is_correct,
+                        'time_spent_seconds': time_spent
+                    }
+                )
+        
+        return Response({'status': 'success'})
+
+class PastQuestionCompleteView(views.APIView):
+    permission_classes = [IsAuthenticated]
+    
+    def post(self, request, pk):
+        session = get_object_or_404(PastQuestionSession, pk=pk, student=request.user)
+        if session.status != 'in_progress':
+            return Response({'error': 'Session is already completed.'}, status=status.HTTP_400_BAD_REQUEST)
+            
+        correct = session.answers.filter(is_correct=True).count()
+        session.correct_answers = correct
+        if session.total_questions > 0:
+            session.score_percentage = (correct / session.total_questions) * 100
+        
+        session.status = 'completed'
+        session.completed_at = timezone.now()
+        session.save()
+        
+        return Response(PastQuestionSessionSerializer(session).data)
+
+class PastQuestionReviewView(views.APIView):
+    permission_classes = [IsAuthenticated]
+    
+    def get(self, request, pk):
+        session = get_object_or_404(PastQuestionSession, pk=pk, student=request.user)
+        # Ensure session is completed
+        # if session.status != 'completed':
+        #     return Response({'error': 'Session is not completed.'}, status=status.HTTP_400_BAD_REQUEST)
+        
+        answers = session.answers.select_related('question').order_by('id')
+        from .serializers import PastQuestionAnswerReviewSerializer
+        return Response(PastQuestionAnswerReviewSerializer(answers, many=True).data)
+

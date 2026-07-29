@@ -1,0 +1,106 @@
+from rest_framework import serializers
+from django.contrib.auth import authenticate
+from django.contrib.auth.password_validation import validate_password
+from .models import User, StudentProfile, School
+from utils.constants import SCHOOL_LEVELS, SCHOOL_CATEGORIES
+
+class SchoolSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = School
+        fields = ['id', 'name', 'address', 'contact_email']
+
+
+class StudentProfileSerializer(serializers.ModelSerializer):
+    """Serializer for student profile."""
+    level_display = serializers.CharField(source='get_level_display', read_only=True)
+    category_display = serializers.CharField(source='get_school_category_display', read_only=True)
+
+    class Meta:
+        model = StudentProfile
+        fields = [
+            'id', 'school_category', 'category_display',
+            'level', 'level_display', 'is_graduating', 'date_of_birth',
+            'avatar', 'created_at', 'updated_at'
+        ]
+        read_only_fields = ['id', 'is_graduating', 'school_category', 'created_at', 'updated_at']
+
+
+class UserSerializer(serializers.ModelSerializer):
+    """Read-only user serializer."""
+    student_profile = StudentProfileSerializer(read_only=True)
+
+    class Meta:
+        model = User
+        fields = ['id', 'email', 'username', 'first_name', 'last_name', 'role', 'student_profile']
+        read_only_fields = ['id', 'email', 'role']
+
+
+class UserRegistrationSerializer(serializers.ModelSerializer):
+    """Serializer for user registration."""
+    password = serializers.CharField(write_only=True, validators=[validate_password])
+    password_confirm = serializers.CharField(write_only=True)
+    level = serializers.ChoiceField(choices=SCHOOL_LEVELS, write_only=True)
+
+    class Meta:
+        model = User
+        fields = ['email', 'username', 'first_name', 'last_name', 'password', 'password_confirm', 'level']
+
+    def validate(self, attrs):
+        if attrs['password'] != attrs.pop('password_confirm'):
+            raise serializers.ValidationError({'password_confirm': 'Passwords do not match.'})
+        return attrs
+
+    def create(self, validated_data):
+        level = validated_data.pop('level')
+
+        user = User.objects.create_user(
+            email=validated_data['email'],
+            username=validated_data['username'],
+            first_name=validated_data.get('first_name', ''),
+            last_name=validated_data.get('last_name', ''),
+            password=validated_data['password'],
+            role='student',
+        )
+
+        profile = user.student_profile
+        profile.level = level
+        profile.save()
+
+        return user
+
+
+class LoginSerializer(serializers.Serializer):
+    """Serializer for user login."""
+    email = serializers.EmailField()
+    password = serializers.CharField(write_only=True)
+
+    def validate(self, attrs):
+        email = attrs.get('email')
+        password = attrs.get('password')
+
+        user = authenticate(username=email, password=password)
+        if not user:
+            raise serializers.ValidationError('Invalid email or password.')
+        if not user.is_active:
+            raise serializers.ValidationError('User account is disabled.')
+
+        attrs['user'] = user
+        return attrs
+
+
+class ChangePasswordSerializer(serializers.Serializer):
+    """Serializer for password change."""
+    old_password = serializers.CharField(required=True)
+    new_password = serializers.CharField(required=True, validators=[validate_password])
+    new_password_confirm = serializers.CharField(required=True)
+
+    def validate(self, attrs):
+        if attrs['new_password'] != attrs['new_password_confirm']:
+            raise serializers.ValidationError({'new_password_confirm': 'Passwords do not match.'})
+        return attrs
+
+    def validate_old_password(self, value):
+        user = self.context['request'].user
+        if not user.check_password(value):
+            raise serializers.ValidationError('Old password is incorrect.')
+        return value
