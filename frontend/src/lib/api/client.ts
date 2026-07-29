@@ -1,7 +1,17 @@
 import axios from 'axios';
 
+const getBaseUrl = () => {
+  if (process.env.NEXT_PUBLIC_API_URL) {
+    return process.env.NEXT_PUBLIC_API_URL;
+  }
+  if (process.env.NODE_ENV === 'production') {
+    return typeof window !== 'undefined' ? `${window.location.origin}/api` : '/api';
+  }
+  return 'http://localhost:8000/api';
+};
+
 const client = axios.create({
-  baseURL: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api',
+  baseURL: getBaseUrl(),
 });
 
 client.interceptors.request.use((config) => {

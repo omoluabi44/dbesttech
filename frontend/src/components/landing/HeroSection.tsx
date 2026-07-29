@@ -96,7 +96,7 @@ export const HeroSection: React.FC = () => {
             </div>
           </div>
           
-          {/* Floating badge */}
+          {/* Floating badge (Commented out per request) 
           <div className="absolute -right-6 -top-6 bg-white p-4 rounded-2xl shadow-xl border border-slate-100 animate-bounce-slight hidden md:flex items-center gap-3">
             <div className="bg-amber-100 p-2 rounded-full text-amber-500">
               <BrainCircuit size={24} />
@@ -106,6 +106,7 @@ export const HeroSection: React.FC = () => {
               <p className="text-sm font-bold text-slate-800">Unlimited Quizzes</p>
             </div>
           </div>
+          */}
         </motion.div>
       </div>
     </section>
