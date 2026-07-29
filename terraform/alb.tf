@@ -46,7 +46,7 @@ resource "aws_alb_target_group" "app" {
   target_type = "instance"
 
   health_check {
-    path                = "/api/health/" # Ensure this exists in Django or use /
+    path                = "/" # Next.js frontend homepage
     healthy_threshold   = 2
     unhealthy_threshold = 10
     timeout             = 60

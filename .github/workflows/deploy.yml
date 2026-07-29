@@ -75,7 +75,7 @@ jobs:
           aws ssm send-command \
             --document-name "AWS-RunShellScript" \
             --targets "Key=tag:Name,Values=django-nextjs-app-asg-instance" \
-            --parameters '{"commands":["mkdir -p /app/nginx","echo \"'$DOCKER_COMPOSE_B64'\" | base64 -d > /app/docker-compose.yml","echo \"'$NGINX_CONF_B64'\" | base64 -d > /app/nginx/default.conf","cd /app","sed -i \"s|image: django-backend:latest|image: '$ACCOUNT_ID'.dkr.ecr.us-east-1.amazonaws.com/django-nextjs-app-backend:latest|g\" docker-compose.yml","sed -i \"s|image: nextjs-frontend:latest|image: '$ACCOUNT_ID'.dkr.ecr.us-east-1.amazonaws.com/django-nextjs-app-frontend:latest|g\" docker-compose.yml","aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin '$ACCOUNT_ID'.dkr.ecr.us-east-1.amazonaws.com","docker-compose pull","docker-compose up -d --remove-orphans"]}' \
+            --parameters '{"commands":["mkdir -p /app/nginx","touch /app/.env","echo \"'$DOCKER_COMPOSE_B64'\" | base64 -d > /app/docker-compose.yml","echo \"'$NGINX_CONF_B64'\" | base64 -d > /app/nginx/default.conf","cd /app","sed -i \"s|image: django-backend:latest|image: '$ACCOUNT_ID'.dkr.ecr.us-east-1.amazonaws.com/django-nextjs-app-backend:latest|g\" docker-compose.yml","sed -i \"s|image: nextjs-frontend:latest|image: '$ACCOUNT_ID'.dkr.ecr.us-east-1.amazonaws.com/django-nextjs-app-frontend:latest|g\" docker-compose.yml","aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin '$ACCOUNT_ID'.dkr.ecr.us-east-1.amazonaws.com","docker-compose pull","docker-compose up -d --remove-orphans"]}' \
             --timeout-seconds 600 \
             --max-concurrency "50" \
             --max-errors "0" \
