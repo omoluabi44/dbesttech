@@ -13,11 +13,17 @@ const getBaseUrl = () => {
   return '/api';
 };
 
-const client = axios.create({
-  baseURL: getBaseUrl(),
-});
+const baseUrl = getBaseUrl();
+
+const client = axios.create({});
 
 client.interceptors.request.use((config) => {
+  if (config.url) {
+    const urlPath = config.url.startsWith('/') ? config.url.substring(1) : config.url;
+    const base = baseUrl.endsWith('/') ? baseUrl.substring(0, baseUrl.length - 1) : baseUrl;
+    config.url = `${base}/${urlPath}`;
+  }
+
   const token = typeof window !== 'undefined' ? localStorage.getItem('auth_token') : null;
   if (token && config.headers) {
     config.headers.Authorization = `Token ${token}`;
