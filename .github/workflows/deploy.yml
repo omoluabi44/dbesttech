@@ -35,7 +35,7 @@ jobs:
           push: true
           tags: omoluabi44/primary-secondary-frontend:latest
           build-args: |
-            NEXT_PUBLIC_API_URL=http://${{ secrets.BACKEND_EC2_IP }}
+            NEXT_PUBLIC_API_URL=http://${{ secrets.BACKEND_EC2_IP }}/api
 
   deploy-backend:
     name: Deploy Backend to EC2
