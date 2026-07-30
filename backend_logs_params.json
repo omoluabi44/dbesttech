@@ -1,0 +1,6 @@
+{
+    "commands": [
+        "docker ps",
+        "docker logs --tail 50 django_backend"
+    ]
+}

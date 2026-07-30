@@ -1,0 +1,8 @@
+{
+    "commands": [
+        "aws ssm put-parameter --name \"/django-nextjs/production/env\" --value \"$(aws ssm get-parameter --name \\\"/django-nextjs/production/env\\\" --with-decryption --region us-east-1 --query \\\"Parameter.Value\\\" --output text)`nSECURE_SSL_REDIRECT=False\" --type \"SecureString\" --overwrite --region us-east-1",
+        "aws ssm get-parameter --name \"/django-nextjs/production/env\" --with-decryption --region us-east-1 --query \"Parameter.Value\" --output text > /app/.env",
+        "cd /app",
+        "docker-compose restart backend"
+    ]
+}

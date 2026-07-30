@@ -1,0 +1,5 @@
+{
+    "commands": [
+        "docker exec django_backend cat /app/config/settings/production.py"
+    ]
+}

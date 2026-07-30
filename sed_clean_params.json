@@ -1,0 +1,10 @@
+{
+    "commands": [
+        "docker exec django_backend sed -i '/OPTIONS/d' /app/config/settings/production.py",
+        "docker exec django_backend sed -i '/charset/d' /app/config/settings/production.py",
+        "docker exec django_backend sed -i '/init_command/d' /app/config/settings/production.py",
+        "docker exec django_backend sed -i '/PORT/s/3306/5432/' /app/config/settings/production.py",
+        "docker restart django_backend",
+        "docker exec django_backend cat /app/config/settings/production.py"
+    ]
+}

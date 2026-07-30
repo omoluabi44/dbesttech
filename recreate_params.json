@@ -1,0 +1,7 @@
+{
+    "commands": [
+        "cd /app",
+        "docker-compose up -d --force-recreate backend",
+        "docker logs --tail 20 django_backend"
+    ]
+}

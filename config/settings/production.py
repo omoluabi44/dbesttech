@@ -1,7 +1,7 @@
 """
 Django production settings for the Quiz Platform project.
 
-Uses MySQL, enforces security headers, and reads all sensitive
+Uses PostgreSQL on AWS RDS, and reads all sensitive
 configuration from environment variables.
 """
 import os
@@ -12,7 +12,7 @@ DEBUG = False
 
 ALLOWED_HOSTS = os.getenv('DJANGO_ALLOWED_HOSTS', '').split(',')
 
-# Database — MySQL
+# Database — PostgreSQL on AWS RDS
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
@@ -31,17 +31,22 @@ CORS_ALLOWED_ORIGINS = [
     if origin.strip()
 ]
 
-# Security settings
+# Security settings — HTTP-only for now (no domain/SSL yet)
 SECURE_BROWSER_XSS_FILTER = True
 SECURE_CONTENT_TYPE_NOSNIFF = True
-SECURE_SSL_REDIRECT = os.getenv('SECURE_SSL_REDIRECT', 'True').lower() == 'true'
-SESSION_COOKIE_SECURE = True
-CSRF_COOKIE_SECURE = True
+SECURE_SSL_REDIRECT = os.getenv('SECURE_SSL_REDIRECT', 'False').lower() == 'true'
+SESSION_COOKIE_SECURE = os.getenv('SESSION_COOKIE_SECURE', 'False').lower() == 'true'
+CSRF_COOKIE_SECURE = os.getenv('CSRF_COOKIE_SECURE', 'False').lower() == 'true'
 X_FRAME_OPTIONS = 'DENY'
-SECURE_HSTS_SECONDS = 31536000  # 1 year
-SECURE_HSTS_INCLUDE_SUBDOMAINS = True
-SECURE_HSTS_PRELOAD = True
-SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+SECURE_HSTS_SECONDS = int(os.getenv('SECURE_HSTS_SECONDS', '0'))
+SECURE_HSTS_INCLUDE_SUBDOMAINS = False
+SECURE_HSTS_PRELOAD = False
+# Only enable HTTPS proxy header when behind SSL-terminating proxy
+if os.getenv('USE_HTTPS_PROXY', 'False').lower() == 'true':
+    SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+
+# Static files — whitenoise for serving without separate volume
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 # Email — configure a real email backend in production
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
