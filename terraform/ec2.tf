@@ -12,6 +12,14 @@ resource "aws_security_group" "ec2" {
     security_groups = [aws_security_group.alb.id]
   }
 
+  ingress {
+    description = "SSH from anywhere"
+    from_port   = 22
+    to_port     = 22
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
   egress {
     from_port   = 0
     to_port     = 0
@@ -22,6 +30,23 @@ resource "aws_security_group" "ec2" {
   tags = {
     Name = "${var.project_name}-ec2-sg"
   }
+}
+
+# --- SSH Key Pair ---
+resource "tls_private_key" "ssh" {
+  algorithm = "RSA"
+  rsa_bits  = 4096
+}
+
+resource "aws_key_pair" "ssh_key" {
+  key_name   = "${var.project_name}-ssh-key"
+  public_key = tls_private_key.ssh.public_key_openssh
+}
+
+resource "local_file" "private_key" {
+  content         = tls_private_key.ssh.private_key_pem
+  filename        = "${path.module}/${var.project_name}-ssh.pem"
+  file_permission = "0400"
 }
 
 # --- IAM Role for EC2 to access ECR & SSM ---
@@ -97,6 +122,7 @@ resource "aws_instance" "backend" {
   vpc_security_group_ids      = [aws_security_group.ec2.id]
   iam_instance_profile        = aws_iam_instance_profile.ec2_profile.name
   associate_public_ip_address = true
+  key_name                    = aws_key_pair.ssh_key.key_name
 
   user_data = base64encode(<<-EOF
     #!/bin/bash
@@ -132,6 +158,7 @@ resource "aws_instance" "frontend" {
   vpc_security_group_ids      = [aws_security_group.ec2.id]
   iam_instance_profile        = aws_iam_instance_profile.ec2_profile.name
   associate_public_ip_address = true
+  key_name                    = aws_key_pair.ssh_key.key_name
 
   user_data = base64encode(<<-EOF
     #!/bin/bash
