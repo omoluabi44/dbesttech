@@ -33,3 +33,9 @@ variable "db_password" {
   type        = string
   sensitive   = true
 }
+
+variable "backend_env_ssm_param" {
+  description = "SSM Parameter Store name for backend environment variables"
+  type        = string
+  default     = "/django-nextjs/production/env"
+}
