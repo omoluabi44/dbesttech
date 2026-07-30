@@ -52,7 +52,7 @@ jobs:
           username: ec2-user
           key: ${{ secrets.EC2_SSH_KEY }}
           source: "docker-compose.backend.yml"
-          target: "/app"
+          target: "/home/ec2-user"
 
       - name: SSH and Deploy Backend
         uses: appleboy/ssh-action@v1.0.0
@@ -61,6 +61,7 @@ jobs:
           username: ec2-user
           key: ${{ secrets.EC2_SSH_KEY }}
           script: |
+            sudo cp /home/ec2-user/docker-compose.backend.yml /app/
             cd /app
             sudo echo "${{ secrets.BACKEND_ENV_FILE }}" > .env
             sudo docker-compose -f docker-compose.backend.yml down
@@ -88,7 +89,7 @@ jobs:
           username: ec2-user
           key: ${{ secrets.EC2_SSH_KEY }}
           source: "docker-compose.frontend.yml"
-          target: "/app"
+          target: "/home/ec2-user"
 
       - name: SSH and Deploy Frontend
         uses: appleboy/ssh-action@v1.0.0
@@ -97,6 +98,7 @@ jobs:
           username: ec2-user
           key: ${{ secrets.EC2_SSH_KEY }}
           script: |
+            sudo cp /home/ec2-user/docker-compose.frontend.yml /app/
             cd /app
             sudo docker-compose -f docker-compose.frontend.yml down
             sudo docker system prune -af --volumes
