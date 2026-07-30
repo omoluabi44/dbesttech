@@ -1,156 +1,104 @@
-name: Deploy to AWS
+name: Deploy to AWS (EC2 & Docker Hub)
 
 on:
   push:
     branches:
       - main
 
-env:
-  AWS_REGION: us-east-1
-  PROJECT_NAME: django-nextjs-app
-  ECR_FRONTEND_REPOSITORY: django-nextjs-app-frontend
-  ECR_BACKEND_REPOSITORY: django-nextjs-app-backend
-
 jobs:
   build-and-push:
-    name: Build & Push Docker Images
+    name: Build & Push Images to Docker Hub
     runs-on: ubuntu-latest
-    outputs:
-      ecr_registry: ${{ steps.login-ecr.outputs.registry }}
-      image_tag: ${{ github.sha }}
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+      - name: Checkout Code
+        uses: actions/checkout@v3
 
-      - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v4
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v2
         with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: ${{ env.AWS_REGION }}
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
 
-      - name: Login to Amazon ECR
-        id: login-ecr
-        uses: aws-actions/amazon-ecr-login@v2
+      - name: Build & Push Backend
+        uses: docker/build-push-action@v4
+        with:
+          context: .
+          file: ./Dockerfile
+          push: true
+          tags: omoluabi44/primary-secondary-backend:latest
 
-      - name: Build, tag, and push backend image
-        env:
-          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-          IMAGE_TAG: ${{ github.sha }}
-        run: |
-          docker build \
-            -t $ECR_REGISTRY/$ECR_BACKEND_REPOSITORY:$IMAGE_TAG \
-            -t $ECR_REGISTRY/$ECR_BACKEND_REPOSITORY:latest \
-            -f Dockerfile .
-          docker push $ECR_REGISTRY/$ECR_BACKEND_REPOSITORY:$IMAGE_TAG
-          docker push $ECR_REGISTRY/$ECR_BACKEND_REPOSITORY:latest
-
-      - name: Build, tag, and push frontend image
-        env:
-          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-          IMAGE_TAG: ${{ github.sha }}
-        run: |
-          docker build \
-            --build-arg NEXT_PUBLIC_API_URL=/api \
-            -t $ECR_REGISTRY/$ECR_FRONTEND_REPOSITORY:$IMAGE_TAG \
-            -t $ECR_REGISTRY/$ECR_FRONTEND_REPOSITORY:latest \
-            -f frontend/Dockerfile ./frontend
-          docker push $ECR_REGISTRY/$ECR_FRONTEND_REPOSITORY:$IMAGE_TAG
-          docker push $ECR_REGISTRY/$ECR_FRONTEND_REPOSITORY:latest
+      - name: Build & Push Frontend
+        uses: docker/build-push-action@v4
+        with:
+          context: ./frontend
+          file: ./frontend/Dockerfile
+          push: true
+          tags: omoluabi44/primary-secondary-frontend:latest
+          build-args: |
+            NEXT_PUBLIC_API_URL=/api
 
   deploy-backend:
-    name: Deploy Backend
+    name: Deploy Backend to EC2
     needs: build-and-push
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+      - name: Checkout Code
+        uses: actions/checkout@v3
 
-      - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v4
+      - name: Copy docker-compose to Backend
+        uses: appleboy/scp-action@v0.1.7
         with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: ${{ env.AWS_REGION }}
+          host: ${{ secrets.BACKEND_EC2_IP }}
+          username: ec2-user
+          key: ${{ secrets.EC2_SSH_KEY }}
+          source: "docker-compose.backend.yml"
+          target: "/app"
 
-      - name: Deploy to Backend EC2 via SSM
-        run: |
-          ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
-          ECR_BACKEND_IMAGE="${ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/${ECR_BACKEND_REPOSITORY}:latest"
-
-          # Encode files to base64 for safe transport through SSM
-          DC_BACKEND_B64=$(base64 -w 0 docker-compose.backend.yml)
-          NGINX_BACKEND_B64=$(base64 -w 0 nginx/backend.conf)
-
-          aws ssm send-command \
-            --document-name "AWS-RunShellScript" \
-            --targets "Key=tag:Name,Values=${PROJECT_NAME}-backend" \
-            --parameters "{\"commands\":[
-              \"set -e\",
-              \"mkdir -p /app/nginx\",
-              \"aws ssm get-parameter --name \\\"/django-nextjs/production/env\\\" --with-decryption --region ${AWS_REGION} --query \\\"Parameter.Value\\\" --output text > /app/.env\",
-              \"echo '${DC_BACKEND_B64}' | base64 -d > /app/docker-compose.backend.yml\",
-              \"echo '${NGINX_BACKEND_B64}' | base64 -d > /app/nginx/backend.conf\",
-              \"cd /app\",
-              \"echo ECR_BACKEND_IMAGE=${ECR_BACKEND_IMAGE} > /app/.env.ecr\",
-              \"export ECR_BACKEND_IMAGE=${ECR_BACKEND_IMAGE}\",
-              \"aws ecr get-login-password --region ${AWS_REGION} | docker login --username AWS --password-stdin ${ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com\",
-              \"docker compose -f docker-compose.backend.yml --env-file .env.ecr pull\",
-              \"docker compose -f docker-compose.backend.yml --env-file .env.ecr up -d --remove-orphans\",
-              \"echo 'Waiting for backend to start...'\",
-              \"sleep 10\",
-              \"docker compose -f docker-compose.backend.yml exec -T backend python manage.py collectstatic --noinput || true\",
-              \"docker compose -f docker-compose.backend.yml exec -T backend python manage.py migrate --noinput || true\"
-            ]}" \
-            --timeout-seconds 600 \
-            --max-concurrency "1" \
-            --max-errors "0" \
-            --region "${AWS_REGION}"
-
-          echo "Backend deployment command sent successfully"
+      - name: SSH and Deploy Backend
+        uses: appleboy/ssh-action@v1.0.0
+        with:
+          host: ${{ secrets.BACKEND_EC2_IP }}
+          username: ec2-user
+          key: ${{ secrets.EC2_SSH_KEY }}
+          script: |
+            cd /app
+            sudo echo "${{ secrets.BACKEND_ENV_FILE }}" > .env
+            sudo docker-compose -f docker-compose.backend.yml down
+            sudo docker system prune -af --volumes
+            sudo docker-compose -f docker-compose.backend.yml pull
+            sudo docker-compose -f docker-compose.backend.yml up -d
+            
+            echo "Waiting for backend to start..."
+            sleep 10
+            sudo docker-compose -f docker-compose.backend.yml exec -T backend python manage.py collectstatic --noinput || true
+            sudo docker-compose -f docker-compose.backend.yml exec -T backend python manage.py migrate --noinput || true
 
   deploy-frontend:
-    name: Deploy Frontend
+    name: Deploy Frontend to EC2
     needs: build-and-push
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+      - name: Checkout Code
+        uses: actions/checkout@v3
 
-      - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v4
+      - name: Copy docker-compose to Frontend
+        uses: appleboy/scp-action@v0.1.7
         with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: ${{ env.AWS_REGION }}
+          host: ${{ secrets.FRONTEND_EC2_IP }}
+          username: ec2-user
+          key: ${{ secrets.EC2_SSH_KEY }}
+          source: "docker-compose.frontend.yml"
+          target: "/app"
 
-      - name: Deploy to Frontend EC2 via SSM
-        run: |
-          ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
-          ECR_FRONTEND_IMAGE="${ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/${ECR_FRONTEND_REPOSITORY}:latest"
-
-          # Encode files to base64 for safe transport through SSM
-          DC_FRONTEND_B64=$(base64 -w 0 docker-compose.frontend.yml)
-          NGINX_FRONTEND_B64=$(base64 -w 0 nginx/frontend.conf)
-
-          aws ssm send-command \
-            --document-name "AWS-RunShellScript" \
-            --targets "Key=tag:Name,Values=${PROJECT_NAME}-frontend" \
-            --parameters "{\"commands\":[
-              \"set -e\",
-              \"mkdir -p /app/nginx\",
-              \"echo '${DC_FRONTEND_B64}' | base64 -d > /app/docker-compose.frontend.yml\",
-              \"echo '${NGINX_FRONTEND_B64}' | base64 -d > /app/nginx/frontend.conf\",
-              \"cd /app\",
-              \"echo ECR_FRONTEND_IMAGE=${ECR_FRONTEND_IMAGE} > /app/.env.ecr\",
-              \"export ECR_FRONTEND_IMAGE=${ECR_FRONTEND_IMAGE}\",
-              \"aws ecr get-login-password --region ${AWS_REGION} | docker login --username AWS --password-stdin ${ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com\",
-              \"docker compose -f docker-compose.frontend.yml --env-file .env.ecr pull\",
-              \"docker compose -f docker-compose.frontend.yml --env-file .env.ecr up -d --remove-orphans\"
-            ]}" \
-            --timeout-seconds 600 \
-            --max-concurrency "1" \
-            --max-errors "0" \
-            --region "${AWS_REGION}"
-
-          echo "Frontend deployment command sent successfully"
+      - name: SSH and Deploy Frontend
+        uses: appleboy/ssh-action@v1.0.0
+        with:
+          host: ${{ secrets.FRONTEND_EC2_IP }}
+          username: ec2-user
+          key: ${{ secrets.EC2_SSH_KEY }}
+          script: |
+            cd /app
+            sudo docker-compose -f docker-compose.frontend.yml down
+            sudo docker system prune -af --volumes
+            sudo docker-compose -f docker-compose.frontend.yml pull
+            sudo docker-compose -f docker-compose.frontend.yml up -d

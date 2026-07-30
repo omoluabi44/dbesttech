@@ -1,5 +1,0 @@
-{
-    "commands": [
-        "docker exec django_backend python manage.py shell -c \"from django.conf import settings; print('SECURE_SSL_REDIRECT is:', settings.SECURE_SSL_REDIRECT)\""
-    ]
-}

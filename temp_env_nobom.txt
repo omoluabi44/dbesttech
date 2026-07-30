@@ -1,1 +1,0 @@
-DJANGO_SECRET_KEY=django-insecure-super-secret-key-12345 DJANGO_ALLOWED_HOSTS=* DB_NAME=primary_secondary DB_USER=postgres DB_PASSWORD=Mr_engineer44 DB_HOST=django-nextjs-app-db.cg786muioef0.us-east-1.rds.amazonaws.com DB_PORT=5432  SECURE_SSL_REDIRECT=False 

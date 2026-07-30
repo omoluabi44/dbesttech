@@ -1,5 +1,0 @@
-{
-    "commands": [
-        "cat /app/.env | grep ALLOWED_HOSTS"
-    ]
-}

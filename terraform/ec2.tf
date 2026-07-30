@@ -5,11 +5,11 @@ resource "aws_security_group" "ec2" {
   vpc_id      = aws_vpc.main.id
 
   ingress {
-    description     = "HTTP from ALB"
-    from_port       = 80
-    to_port         = 80
-    protocol        = "tcp"
-    security_groups = [aws_security_group.alb.id]
+    description = "HTTP from anywhere"
+    from_port   = 80
+    to_port     = 80
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
   }
 
   ingress {
@@ -128,11 +128,11 @@ resource "aws_instance" "backend" {
     #!/bin/bash
     set -e
 
-    # Install Docker
+    # Install Docker and Nginx
     dnf update -y
-    dnf install -y docker
-    systemctl start docker
-    systemctl enable docker
+    dnf install -y docker nginx
+    systemctl start docker nginx
+    systemctl enable docker nginx
     usermod -a -G docker ec2-user
 
     # Install Docker Compose
@@ -141,13 +141,56 @@ resource "aws_instance" "backend" {
     ln -sf /usr/local/bin/docker-compose /usr/bin/docker-compose
 
     # Create app directory
-    mkdir -p /app/nginx
+    mkdir -p /app
+
+    # Write Nginx config
+    cat <<'INNER_EOF' > /etc/nginx/nginx.conf
+user nginx;
+worker_processes auto;
+error_log /var/log/nginx/error.log notice;
+pid /run/nginx.pid;
+
+events {
+    worker_connections 1024;
+}
+
+http {
+    include /etc/nginx/mime.types;
+    default_type application/octet-stream;
+    
+    server {
+        listen 80;
+        server_name _;
+        client_max_body_size 10M;
+
+        location / {
+            proxy_pass http://localhost:8000;
+            proxy_set_header Host $host;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarded-Proto $scheme;
+        }
+
+        location /static/ {
+            proxy_pass http://localhost:8000;
+            proxy_set_header Host $host;
+        }
+    }
+}
+INNER_EOF
+
+    systemctl reload nginx
   EOF
   )
 
   tags = {
     Name = "${var.project_name}-backend"
   }
+}
+
+resource "aws_eip" "backend_eip" {
+  instance = aws_instance.backend.id
+  domain   = "vpc"
 }
 
 # --- Frontend EC2 Instance ---
@@ -164,11 +207,11 @@ resource "aws_instance" "frontend" {
     #!/bin/bash
     set -e
 
-    # Install Docker
+    # Install Docker and Nginx
     dnf update -y
-    dnf install -y docker
-    systemctl start docker
-    systemctl enable docker
+    dnf install -y docker nginx
+    systemctl start docker nginx
+    systemctl enable docker nginx
     usermod -a -G docker ec2-user
 
     # Install Docker Compose
@@ -177,11 +220,48 @@ resource "aws_instance" "frontend" {
     ln -sf /usr/local/bin/docker-compose /usr/bin/docker-compose
 
     # Create app directory
-    mkdir -p /app/nginx
+    mkdir -p /app
+
+    # Write Nginx config
+    cat <<'INNER_EOF' > /etc/nginx/nginx.conf
+user nginx;
+worker_processes auto;
+error_log /var/log/nginx/error.log notice;
+pid /run/nginx.pid;
+
+events {
+    worker_connections 1024;
+}
+
+http {
+    include /etc/nginx/mime.types;
+    default_type application/octet-stream;
+    
+    server {
+        listen 80;
+        server_name _;
+
+        location / {
+            proxy_pass http://localhost:3000;
+            proxy_set_header Host $host;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarded-Proto $scheme;
+        }
+    }
+}
+INNER_EOF
+
+    systemctl reload nginx
   EOF
   )
 
   tags = {
     Name = "${var.project_name}-frontend"
   }
+}
+
+resource "aws_eip" "frontend_eip" {
+  instance = aws_instance.frontend.id
+  domain   = "vpc"
 }

@@ -1,5 +1,0 @@
-{
-    "commands": [
-        "cat /app/.env | grep -v PASSWORD"
-    ]
-}

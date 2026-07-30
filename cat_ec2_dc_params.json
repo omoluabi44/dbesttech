@@ -1,5 +1,0 @@
-{
-    "commands": [
-        "cat /app/docker-compose.yml"
-    ]
-}

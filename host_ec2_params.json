@@ -1,5 +1,0 @@
-{
-    "commands": [
-        "docker exec django_backend python -c \"import os; print('ALLOWED_HOSTS =', os.getenv('DJANGO_ALLOWED_HOSTS'))\""
-    ]
-}

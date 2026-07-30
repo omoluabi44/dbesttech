@@ -1,7 +1,0 @@
-{
-    "commands": [
-        "cd /app",
-        "aws ssm get-parameter --name \"/django-nextjs/production/env\" --with-decryption --region us-east-1 --query \"Parameter.Value\" --output text > .env",
-        "docker-compose up -d"
-    ]
-}

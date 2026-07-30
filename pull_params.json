@@ -1,7 +1,0 @@
-{
-    "commands": [
-        "cd /app",
-        "docker-compose pull backend",
-        "docker-compose up -d backend"
-    ]
-}

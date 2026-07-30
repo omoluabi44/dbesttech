@@ -1,6 +1,0 @@
-{
-    "commands": [
-        "docker ps",
-        "docker logs --tail 20 nginx_proxy"
-    ]
-}

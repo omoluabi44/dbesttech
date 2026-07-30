@@ -1,25 +1,14 @@
 services:
   backend:
-    image: ${ECR_BACKEND_IMAGE}
+    image: omoluabi44/primary-secondary-backend:latest
     container_name: django_backend
     restart: always
     env_file:
       - .env
     environment:
       - DJANGO_SETTINGS_MODULE=config.settings.production
-    networks:
-      - app-network
-
-  nginx:
-    image: nginx:alpine
-    container_name: nginx_proxy
-    restart: always
     ports:
-      - "80:80"
-    depends_on:
-      - backend
-    volumes:
-      - ./nginx/backend.conf:/etc/nginx/conf.d/default.conf
+      - "8000:8000"
     networks:
       - app-network
 

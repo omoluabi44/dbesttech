@@ -1,7 +1,0 @@
-{
-    "commands": [
-        "docker exec django_backend sed -i 's/django.db.backends.mysql/django.db.backends.postgresql/g' /app/config/settings/production.py",
-        "docker restart django_backend",
-        "docker exec django_backend cat /app/config/settings/production.py"
-    ]
-}

@@ -1,5 +1,0 @@
-{
-    "commands": [
-        "docker run --rm --entrypoint cat 806156384263.dkr.ecr.us-east-1.amazonaws.com/django-nextjs-app-backend:latest /app/config/settings/production.py"
-    ]
-}

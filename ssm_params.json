@@ -1,5 +1,0 @@
-{
-    "commands": [
-        "docker logs --tail 50 django_backend"
-    ]
-}
