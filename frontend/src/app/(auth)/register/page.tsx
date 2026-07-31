@@ -75,8 +75,8 @@ export default function RegisterPage() {
   return (
     <div className="w-full">
       <div className="mb-6 md:hidden flex justify-center">
-        <div className="bg-primary text-white p-3 rounded-xl">
-          <BookOpen size={32} />
+        <div className="bg-white p-2 rounded-2xl inline-flex shadow-xl">
+          <img src="/logo.jpg" alt="DBestQuiz Logo" className="w-12 h-12 object-contain rounded-xl" />
         </div>
       </div>
       
