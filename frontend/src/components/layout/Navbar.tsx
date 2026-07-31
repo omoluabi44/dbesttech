@@ -35,7 +35,7 @@ export const Navbar: React.FC = () => {
           {/* Logo */}
           <Link href="/" className="flex items-center gap-2 group">
             <div className="group-hover:scale-105 transition-transform">
-              <img src="/logo.png" alt="DBestQuiz Logo" className="w-8 h-8 object-contain rounded-lg" />
+              <img src="/logo.jpg" alt="DBestQuiz Logo" className="w-8 h-8 object-contain rounded-lg" />
             </div>
             <span className="text-xl font-bold text-foreground tracking-tight">DBestQuiz</span>
           </Link>

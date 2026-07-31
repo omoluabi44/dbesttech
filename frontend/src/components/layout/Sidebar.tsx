@@ -94,7 +94,7 @@ export const Sidebar: React.FC<{
         <div className="h-16 flex items-center px-6 border-b-4 border-surface-dark shrink-0">
           <Link href="/dashboard" className="flex items-center gap-2 group w-full">
             <div className="group-hover:scale-110 transition-transform shadow-cartoon">
-              <img src="/logo.png" alt="DBestQuiz Logo" className="w-8 h-8 object-contain rounded-lg" />
+              <img src="/logo.jpg" alt="DBestQuiz Logo" className="w-8 h-8 object-contain rounded-lg" />
             </div>
             <span className="text-xl font-extrabold text-foreground tracking-tight">DBestQuiz</span>
           </Link>

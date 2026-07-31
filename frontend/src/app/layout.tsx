@@ -14,7 +14,7 @@ export const metadata: Metadata = {
   title: "DBestQuiz — Learn, Practice, Excel",
   description: "A premium quiz platform for primary and secondary school students.",
   icons: {
-    icon: "/logo.png",
+    icon: "/logo.jpg",
   }
 };
 

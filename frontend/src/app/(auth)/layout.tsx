@@ -36,7 +36,7 @@ export default function AuthLayout({
         
         <div className="relative z-10 text-white max-w-lg text-center">
           <div className="bg-white p-2 rounded-2xl inline-flex mb-8 shadow-xl">
-            <img src="/logo.png" alt="DBestQuiz Logo" className="w-16 h-16 object-contain rounded-xl" />
+            <img src="/logo.jpg" alt="DBestQuiz Logo" className="w-16 h-16 object-contain rounded-xl" />
           </div>
           <h2 className="text-4xl font-bold mb-6 tracking-tight">Unlock Your Potential</h2>
           <p className="text-lg text-primary-light/90 leading-relaxed">
