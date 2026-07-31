@@ -106,8 +106,8 @@ export default function PracticeSessionPage() {
     try {
       // Format answers for API
       const formattedAnswers = Array.from(answers.entries()).map(([qId, oId]) => ({
-        question_id: Number(qId),
-        selected_option_id: Number(oId)
+        question_id: String(qId),
+        selected_answer: String(oId)
       }));
 
       const result = await submitPracticeStage(sessionId, { stage: currentStage, answers: formattedAnswers });

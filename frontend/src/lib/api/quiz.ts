@@ -30,7 +30,7 @@ export const startPractice = async (data: { subject_id: number; level: string; d
 
 export const submitPracticeStage = async (
   sessionId: number,
-  data: { stage: number; answers: { question_id: number; selected_option_id: number }[] }
+  data: { stage: number; answers: { question_id: string; selected_answer: string }[] }
 ): Promise<PracticeStageSubmitResponse> => {
   const res = await client.post(`/quiz/practice/sessions/${sessionId}/submit-stage/`, data);
   return res.data;
@@ -64,7 +64,7 @@ export const startPastQuestion = async (data: {
 
 export const submitPastQuestionAnswers = async (
   sessionId: number,
-  answers: { question_id: number; selected_option_id: number; time_spent_seconds: number }[]
+  answers: { question_id: string | number; selected_answer: string; time_spent_seconds: number }[]
 ): Promise<{ status: string }> => {
   const res = await client.post(`/quiz/past-questions/sessions/${sessionId}/submit/`, answers);
   return res.data;
