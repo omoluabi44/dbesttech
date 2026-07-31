@@ -21,6 +21,9 @@ class BaseQuestionResource(resources.ModelResource):
             import json
             row['incorrect_answers'] = json.dumps(incorrect_answers)
 
+        # Handle 'multiple_choice' in CSV and map it to 'mcq' to fit max_length=10
+        if row.get('questionType') == 'multiple_choice':
+            row['questionType'] = 'mcq'
 class QuizResource(BaseQuestionResource):
     class Meta:
         model = Quiz
