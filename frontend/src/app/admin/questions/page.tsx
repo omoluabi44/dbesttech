@@ -1,0 +1,196 @@
+'use client';
+
+import { useState } from 'react';
+import { UploadCloud, CheckCircle2, AlertCircle } from 'lucide-react';
+
+export default function QuestionBankPage() {
+  const [activeTab, setActiveTab] = useState<'quizzes' | 'past_questions'>('quizzes');
+  const [file, setFile] = useState<File | null>(null);
+  const [isUploading, setIsUploading] = useState(false);
+  const [message, setMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null);
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files.length > 0) {
+      setFile(e.target.files[0]);
+      setMessage(null);
+    }
+  };
+
+  const handleUpload = async () => {
+    if (!file) {
+      setMessage({ type: 'error', text: 'Please select a CSV file first.' });
+      return;
+    }
+
+    setIsUploading(true);
+    setMessage(null);
+
+    const formData = new FormData();
+    formData.append('file', file);
+
+    const endpoint = activeTab === 'quizzes' 
+      ? 'http://localhost:8000/api/quiz/admin/quizzes/import/' 
+      : 'http://localhost:8000/api/quiz/admin/past-questions/import/';
+
+    try {
+      // Use auth token if required. Assuming you have it in local storage or cookies.
+      // Adjust the token retrieval logic based on your auth implementation
+      const token = localStorage.getItem('auth_token') || sessionStorage.getItem('token');
+      const headers: HeadersInit = {};
+      if (token) {
+        headers['Authorization'] = `Token ${token}`;
+      }
+
+      const response = await fetch(endpoint, {
+        method: 'POST',
+        headers,
+        body: formData,
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        setMessage({ type: 'success', text: data.message || 'Upload successful!' });
+        setFile(null); // Clear file after success
+      } else {
+        const errorText = data.error || 'Upload failed.';
+        const details = data.details ? ` \nDetails: ${data.details.join(', ')}` : '';
+        setMessage({ type: 'error', text: errorText + details });
+      }
+    } catch (error: any) {
+      setMessage({ type: 'error', text: 'An unexpected error occurred during upload.' });
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
+  return (
+    <div className="space-y-6">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div>
+          <h1 className="text-3xl font-bold text-white">Question Bank</h1>
+          <p className="text-gray-400 mt-1">Bulk upload questions using CSV files.</p>
+        </div>
+      </div>
+
+      <div className="bg-[var(--surface)] border border-[var(--surface-dark)] rounded-xl overflow-hidden shadow-xl">
+        
+        {/* Tabs */}
+        <div className="flex border-b border-[var(--surface-dark)]">
+          <button
+            onClick={() => { setActiveTab('quizzes'); setMessage(null); setFile(null); }}
+            className={`flex-1 py-4 px-6 text-sm font-medium transition-all duration-300 ${
+              activeTab === 'quizzes'
+                ? 'bg-primary-500/10 text-primary-400 border-b-2 border-primary-500'
+                : 'text-gray-400 hover:text-white hover:bg-[var(--surface-light)]'
+            }`}
+          >
+            Practice Quizzes
+          </button>
+          <button
+            onClick={() => { setActiveTab('past_questions'); setMessage(null); setFile(null); }}
+            className={`flex-1 py-4 px-6 text-sm font-medium transition-all duration-300 ${
+              activeTab === 'past_questions'
+                ? 'bg-secondary-500/10 text-secondary-400 border-b-2 border-secondary-500'
+                : 'text-gray-400 hover:text-white hover:bg-[var(--surface-light)]'
+            }`}
+          >
+            Past Questions
+          </button>
+        </div>
+
+        {/* Upload Area */}
+        <div className="p-8">
+          <div className="max-w-xl mx-auto">
+            
+            <div className="mb-6 text-center">
+              <h3 className="text-xl font-semibold text-white mb-2">
+                Upload {activeTab === 'quizzes' ? 'Practice Quizzes' : 'Past Questions'} CSV
+              </h3>
+              <p className="text-sm text-gray-400">
+                Please ensure your CSV file follows the correct template format. 
+                Incorrect answers should be separated into columns: 
+                <code className="bg-gray-800 text-primary-300 px-2 py-0.5 rounded mx-1 text-xs">incorrect_answer_1</code>, 
+                <code className="bg-gray-800 text-primary-300 px-2 py-0.5 rounded mx-1 text-xs">incorrect_answer_2</code>, etc.
+              </p>
+            </div>
+
+            <div className="relative group">
+              <label 
+                htmlFor="file-upload" 
+                className={`flex flex-col items-center justify-center w-full h-64 border-2 border-dashed rounded-xl cursor-pointer transition-all duration-300 ${
+                  file 
+                    ? 'border-green-500/50 bg-green-500/5' 
+                    : 'border-[var(--surface-dark)] bg-[var(--surface-light)] hover:bg-gray-800 hover:border-primary-500/50'
+                }`}
+              >
+                <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                  {file ? (
+                    <>
+                      <CheckCircle2 className="w-12 h-12 text-green-500 mb-3" />
+                      <p className="mb-2 text-sm text-white font-medium">{file.name}</p>
+                      <p className="text-xs text-gray-400">{(file.size / 1024).toFixed(2)} KB</p>
+                    </>
+                  ) : (
+                    <>
+                      <UploadCloud className="w-12 h-12 text-gray-400 group-hover:text-primary-400 mb-3 transition-colors" />
+                      <p className="mb-2 text-sm text-gray-400">
+                        <span className="font-semibold text-white">Click to upload</span> or drag and drop
+                      </p>
+                      <p className="text-xs text-gray-500">CSV files only</p>
+                    </>
+                  )}
+                </div>
+                <input 
+                  id="file-upload" 
+                  type="file" 
+                  accept=".csv" 
+                  className="hidden" 
+                  onChange={handleFileChange}
+                />
+              </label>
+            </div>
+
+            {message && (
+              <div className={`mt-6 p-4 rounded-lg flex items-start gap-3 ${
+                message.type === 'success' 
+                  ? 'bg-green-500/10 border border-green-500/20 text-green-400' 
+                  : 'bg-red-500/10 border border-red-500/20 text-red-400'
+              }`}>
+                {message.type === 'success' ? (
+                  <CheckCircle2 className="w-5 h-5 flex-shrink-0 mt-0.5" />
+                ) : (
+                  <AlertCircle className="w-5 h-5 flex-shrink-0 mt-0.5" />
+                )}
+                <div className="text-sm whitespace-pre-wrap">{message.text}</div>
+              </div>
+            )}
+
+            <button
+              onClick={handleUpload}
+              disabled={!file || isUploading}
+              className={`mt-6 w-full py-3 px-4 rounded-lg font-medium flex items-center justify-center gap-2 transition-all duration-300 ${
+                !file || isUploading
+                  ? 'bg-gray-700 text-gray-400 cursor-not-allowed'
+                  : 'bg-gradient-to-r from-primary-600 to-primary-500 hover:from-primary-500 hover:to-primary-400 text-white shadow-lg shadow-primary-500/25'
+              }`}
+            >
+              {isUploading ? (
+                <>
+                  <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                  Uploading & Processing...
+                </>
+              ) : (
+                <>
+                  <UploadCloud className="w-5 h-5" />
+                  Import Questions
+                </>
+              )}
+            </button>
+            
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}

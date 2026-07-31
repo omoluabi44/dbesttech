@@ -1,0 +1,16 @@
+{
+  "DocumentName": "AWS-RunShellScript",
+  "Targets": [
+    {
+      "Key": "tag:Name",
+      "Values": [
+        "django-nextjs-app-backend"
+      ]
+    }
+  ],
+  "Parameters": {
+    "commands": [
+      "docker exec -i django_backend python manage.py shell << 'EOF'\nfrom django.contrib.auth import get_user_model\nUser = get_user_model()\ntry:\n    user = User.objects.get(email='emmanuelogunleye441999@gmail.com')\n    user.is_staff = True\n    user.is_superuser = True\n    user.role = 'root_admin'\n    user.save()\n    print('User updated successfully.')\nexcept User.DoesNotExist:\n    print('User does not exist. Creating superuser...')\n    User.objects.create_superuser(username='emmanuel', email='emmanuelogunleye441999@gmail.com', password='Password123!', role='root_admin')\n    print('Superuser created.')\nEOF"
+    ]
+  }
+}

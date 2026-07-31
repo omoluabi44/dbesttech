@@ -20,4 +20,8 @@ urlpatterns = [
     path('past-questions/sessions/<int:pk>/submit/', views.PastQuestionSubmitView.as_view(), name='past-question-submit'),
     path('past-questions/sessions/<int:pk>/complete/', views.PastQuestionCompleteView.as_view(), name='past-question-complete'),
     path('past-questions/sessions/<int:pk>/review/', views.PastQuestionReviewView.as_view(), name='past-question-review'),
+    
+    # Admin Batch Upload
+    path('admin/quizzes/import/', views.QuizBatchUploadView.as_view(), name='quiz-batch-import'),
+    path('admin/past-questions/import/', views.PastQuestionBatchUploadView.as_view(), name='past-question-batch-import'),
 ]

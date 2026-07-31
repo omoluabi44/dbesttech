@@ -1,4 +1,7 @@
 import logging
+from import_export import resources, fields
+from import_export.widgets import ForeignKeyWidget
+from import_export.admin import ImportExportModelAdmin
 
 from django.contrib import admin
 from django.utils import timezone
@@ -8,6 +11,9 @@ from .models import (
 )
 
 logger = logging.getLogger(__name__)
+
+from .resources import QuizResource
+
 
 @admin.register(Subject)
 class SubjectAdmin(admin.ModelAdmin):
@@ -24,7 +30,8 @@ class TopicAdmin(admin.ModelAdmin):
 
 
 @admin.register(Quiz)
-class QuizAdmin(admin.ModelAdmin):
+class QuizAdmin(ImportExportModelAdmin):
+    resource_classes = [QuizResource]
     list_display = ('questionType', 'questionText', 'subject', 'level', 'difficulty', 'is_practice', 'is_past_question', 'is_active')
     list_filter = ('subject', 'level', 'difficulty', 'is_practice', 'is_past_question', 'exam_body', 'year', 'is_active')
     search_fields = ('questionText',)

@@ -4,7 +4,7 @@ import { useAuthStore } from '@/lib/stores/authStore';
 import { useRouter, usePathname } from 'next/navigation';
 import { useEffect } from 'react';
 import Link from 'next/link';
-import { LayoutDashboard, GraduationCap, Users, LogOut } from 'lucide-react';
+import { LayoutDashboard, GraduationCap, Users, LogOut, FileText } from 'lucide-react';
 import { Navbar } from '@/components/layout/Navbar';
 import { Footer } from '@/components/layout/Footer';
 
@@ -34,6 +34,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     ...(user.role === 'admin'
       ? [{ name: 'Schools', href: '/admin/schools', icon: GraduationCap }]
       : [{ name: 'My Students', href: '/admin/students', icon: Users }]),
+    { name: 'Question Bank', href: '/admin/questions', icon: FileText },
   ];
 
   return (

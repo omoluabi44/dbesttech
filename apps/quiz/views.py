@@ -316,3 +316,50 @@ class PastQuestionReviewView(views.APIView):
         from .serializers import PastQuestionAnswerReviewSerializer
         return Response(PastQuestionAnswerReviewSerializer(answers, many=True).data)
 
+# ---------------------------------------------------------
+# BATCH UPLOAD API (CSV)
+# ---------------------------------------------------------
+from rest_framework.parsers import MultiPartParser, FormParser
+from tablib import Dataset
+from .resources import QuizResource, PastQuestionResource
+
+class BaseBatchUploadView(views.APIView):
+    permission_classes = [IsAuthenticated] 
+    parser_classes = [MultiPartParser, FormParser]
+    resource_class = None
+
+    def post(self, request, *args, **kwargs):
+        if 'file' not in request.FILES:
+            return Response({'error': 'No file uploaded.'}, status=status.HTTP_400_BAD_REQUEST)
+        
+        file = request.FILES['file']
+        if not file.name.endswith('.csv'):
+            return Response({'error': 'Please upload a valid CSV file.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        dataset = Dataset()
+        try:
+            # Read CSV data
+            file_data = file.read().decode('utf-8')
+            dataset.load(file_data, format='csv')
+            
+            # Import data using the resource
+            resource = self.resource_class()
+            result = resource.import_data(dataset, dry_run=False)
+            
+            if result.has_errors():
+                errors = []
+                for row_errors in result.row_errors():
+                    for error in row_errors[1]:
+                        errors.append(f"Row {row_errors[0]}: {str(error.error)}")
+                return Response({'error': 'Import failed with errors', 'details': errors}, status=status.HTTP_400_BAD_REQUEST)
+                
+            return Response({'message': f'Successfully imported {result.total_rows} questions.'}, status=status.HTTP_201_CREATED)
+            
+        except Exception as e:
+            return Response({'error': f'Failed to process file: {str(e)}'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+class QuizBatchUploadView(BaseBatchUploadView):
+    resource_class = QuizResource
+
+class PastQuestionBatchUploadView(BaseBatchUploadView):
+    resource_class = PastQuestionResource
