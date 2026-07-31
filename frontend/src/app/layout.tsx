@@ -11,7 +11,7 @@ const fredoka = Fredoka({
 });
 
 export const metadata: Metadata = {
-  title: "QuizMaster — Learn, Practice, Excel",
+  title: "DBestQuiz — Learn, Practice, Excel",
   description: "A premium quiz platform for primary and secondary school students.",
 };
 

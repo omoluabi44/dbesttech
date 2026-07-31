@@ -96,7 +96,7 @@ export const Sidebar: React.FC<{
             <div className="bg-primary text-white p-2 rounded-xl group-hover:scale-110 transition-transform shadow-cartoon">
               <Gamepad2 size={22} />
             </div>
-            <span className="text-xl font-extrabold text-foreground tracking-tight">QuizMaster</span>
+            <span className="text-xl font-extrabold text-foreground tracking-tight">DBestQuiz</span>
           </Link>
         </div>
 

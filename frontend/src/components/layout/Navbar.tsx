@@ -37,7 +37,7 @@ export const Navbar: React.FC = () => {
             <div className="bg-primary text-white p-2 rounded-xl group-hover:scale-105 transition-transform">
               <BookOpen size={24} />
             </div>
-            <span className="text-xl font-bold text-foreground tracking-tight">QuizMaster</span>
+            <span className="text-xl font-bold text-foreground tracking-tight">DBestQuiz</span>
           </Link>
 
           {/* Desktop Nav */}

@@ -40,7 +40,7 @@ export default function AuthLayout({
           </div>
           <h2 className="text-4xl font-bold mb-6 tracking-tight">Unlock Your Potential</h2>
           <p className="text-lg text-primary-light/90 leading-relaxed">
-            Join QuizMaster to access thousands of curated questions, practice WAEC and NECO past exams, and track your performance with our intelligent AI dashboard.
+            Join DBestQuiz to access thousands of curated questions, practice WAEC and NECO past exams, and track your performance with our intelligent AI dashboard.
           </p>
         </div>
       </div>

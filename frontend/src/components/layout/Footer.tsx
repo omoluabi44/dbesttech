@@ -13,7 +13,7 @@ export const Footer: React.FC = () => {
               <div className="bg-primary text-white p-1.5 rounded-lg">
                 <BookOpen size={20} />
               </div>
-              <span className="text-xl font-bold text-white tracking-tight">QuizMaster</span>
+              <span className="text-xl font-bold text-white tracking-tight">DBestQuiz</span>
             </Link>
             <p className="text-sm text-slate-400 mb-6">
               The premium platform for primary and secondary school students to learn, practice, and excel in their exams.
@@ -46,7 +46,7 @@ export const Footer: React.FC = () => {
           <div>
             <h3 className="text-white font-semibold mb-4">Contact</h3>
             <ul className="space-y-2 text-sm">
-              <li className="flex items-center gap-2"><Mail size={16} /> support@quizmaster.com</li>
+              <li className="flex items-center gap-2"><Mail size={16} /> support@dbestquiz.com</li>
               <li>123 Education Lane</li>
               <li>Lagos, Nigeria</li>
             </ul>
@@ -55,7 +55,7 @@ export const Footer: React.FC = () => {
         </div>
         
         <div className="pt-8 border-t border-slate-800 text-sm text-slate-500 flex flex-col md:flex-row justify-between items-center">
-          <p>© {new Date().getFullYear()} QuizMaster. All rights reserved.</p>
+          <p>© {new Date().getFullYear()} DBestQuiz. All rights reserved.</p>
           <div className="flex gap-4 mt-4 md:mt-0">
             <Link href="#" className="hover:text-white transition-colors">Privacy Policy</Link>
             <Link href="#" className="hover:text-white transition-colors">Terms of Service</Link>
