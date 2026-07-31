@@ -36,9 +36,10 @@ CSRF_COOKIE_SECURE = os.getenv('CSRF_COOKIE_SECURE', 'False').lower() == 'true'
 
 # CSRF Trusted Origins for cross-domain POST requests
 CSRF_TRUSTED_ORIGINS = [
-    origin.strip() 
-    for origin in os.getenv('CSRF_TRUSTED_ORIGINS', '').split(',') 
-    if origin.strip()
+    'https://dbestquiz.com',
+    'https://www.dbestquiz.com',
+    'https://api.dbestquiz.com',
+    'http://localhost:3000'
 ]
 X_FRAME_OPTIONS = 'DENY'
 SECURE_HSTS_SECONDS = int(os.getenv('SECURE_HSTS_SECONDS', '0'))
