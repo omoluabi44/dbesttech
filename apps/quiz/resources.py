@@ -18,8 +18,8 @@ class BaseQuestionResource(resources.ModelResource):
                 incorrect_answers.append(str(row[key]).strip())
                 
         if incorrect_answers:
-            row['incorrect_answers'] = incorrect_answers
-
+            import json
+            row['incorrect_answers'] = json.dumps(incorrect_answers)
 
 class QuizResource(BaseQuestionResource):
     class Meta:
