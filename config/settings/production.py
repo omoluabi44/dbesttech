@@ -37,6 +37,13 @@ SECURE_CONTENT_TYPE_NOSNIFF = True
 SECURE_SSL_REDIRECT = os.getenv('SECURE_SSL_REDIRECT', 'False').lower() == 'true'
 SESSION_COOKIE_SECURE = os.getenv('SESSION_COOKIE_SECURE', 'False').lower() == 'true'
 CSRF_COOKIE_SECURE = os.getenv('CSRF_COOKIE_SECURE', 'False').lower() == 'true'
+
+# CSRF Trusted Origins for cross-domain POST requests
+CSRF_TRUSTED_ORIGINS = [
+    origin.strip() 
+    for origin in os.getenv('CSRF_TRUSTED_ORIGINS', '').split(',') 
+    if origin.strip()
+]
 X_FRAME_OPTIONS = 'DENY'
 SECURE_HSTS_SECONDS = int(os.getenv('SECURE_HSTS_SECONDS', '0'))
 SECURE_HSTS_INCLUDE_SUBDOMAINS = False
