@@ -1,0 +1,16 @@
+{
+  "DocumentName": "AWS-RunShellScript",
+  "Targets": [
+    {
+      "Key": "tag:Name",
+      "Values": [
+        "django-nextjs-app-backend"
+      ]
+    }
+  ],
+  "Parameters": {
+    "commands": [
+      "docker exec -i django_backend python manage.py shell << 'EOF'\nfrom apps.quiz.models import Subject\nsubject, created = Subject.objects.get_or_create(name='MATHEMATICS', defaults={'slug': 'mathematics'})\nif created:\n    print('Subject MATHEMATICS created successfully.')\nelse:\n    print('Subject MATHEMATICS already exists.')\nEOF"
+    ]
+  }
+}

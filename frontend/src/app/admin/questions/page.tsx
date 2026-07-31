@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { UploadCloud, CheckCircle2, AlertCircle } from 'lucide-react';
+import client from '@/lib/api/client';
 
 export default function QuestionBankPage() {
   const [activeTab, setActiveTab] = useState<'quizzes' | 'past_questions'>('quizzes');
@@ -29,36 +30,26 @@ export default function QuestionBankPage() {
     formData.append('file', file);
 
     const endpoint = activeTab === 'quizzes' 
-      ? 'http://localhost:8000/api/quiz/admin/quizzes/import/' 
-      : 'http://localhost:8000/api/quiz/admin/past-questions/import/';
+      ? '/quiz/admin/quizzes/import/' 
+      : '/quiz/admin/past-questions/import/';
 
     try {
-      // Use auth token if required. Assuming you have it in local storage or cookies.
-      // Adjust the token retrieval logic based on your auth implementation
-      const token = localStorage.getItem('auth_token') || sessionStorage.getItem('token');
-      const headers: HeadersInit = {};
-      if (token) {
-        headers['Authorization'] = `Token ${token}`;
-      }
-
-      const response = await fetch(endpoint, {
-        method: 'POST',
-        headers,
-        body: formData,
+      const response = await client.post(endpoint, formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
       });
 
-      const data = await response.json();
-
-      if (response.ok) {
-        setMessage({ type: 'success', text: data.message || 'Upload successful!' });
-        setFile(null); // Clear file after success
-      } else {
-        const errorText = data.error || 'Upload failed.';
-        const details = data.details ? ` \nDetails: ${data.details.join(', ')}` : '';
-        setMessage({ type: 'error', text: errorText + details });
-      }
+      setMessage({ type: 'success', text: response.data.message || 'Upload successful!' });
+      setFile(null); // Clear file after success
     } catch (error: any) {
-      setMessage({ type: 'error', text: 'An unexpected error occurred during upload.' });
+      if (error.response && error.response.data) {
+        const errorText = error.response.data.error || 'Upload failed.';
+        const details = error.response.data.details ? ` \nDetails: ${error.response.data.details.join(', ')}` : '';
+        setMessage({ type: 'error', text: errorText + details });
+      } else {
+        setMessage({ type: 'error', text: 'An unexpected error occurred during upload.' });
+      }
     } finally {
       setIsUploading(false);
     }
@@ -171,8 +162,8 @@ export default function QuestionBankPage() {
               disabled={!file || isUploading}
               className={`mt-6 w-full py-3 px-4 rounded-lg font-medium flex items-center justify-center gap-2 transition-all duration-300 ${
                 !file || isUploading
-                  ? 'bg-gray-700 text-gray-400 cursor-not-allowed'
-                  : 'bg-gradient-to-r from-primary-600 to-primary-500 hover:from-primary-500 hover:to-primary-400 text-white shadow-lg shadow-primary-500/25'
+                  ? 'bg-[var(--surface-dark)] text-gray-500 cursor-not-allowed'
+                  : 'bg-[var(--primary)] text-white hover:bg-[var(--primary-hover)] shadow-sm'
               }`}
             >
               {isUploading ? (
