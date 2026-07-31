@@ -24,12 +24,8 @@ DATABASES = {
     }
 }
 
-# CORS — restrict to explicitly allowed origins
-CORS_ALLOWED_ORIGINS = [
-    origin.strip()
-    for origin in os.getenv('CORS_ALLOWED_ORIGINS', '').split(',')
-    if origin.strip()
-]
+# CORS — allow all origins (relaxed security per user request)
+CORS_ALLOW_ALL_ORIGINS = True
 
 # Security settings — HTTP-only for now (no domain/SSL yet)
 SECURE_BROWSER_XSS_FILTER = True
