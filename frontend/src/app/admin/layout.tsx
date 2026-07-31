@@ -43,10 +43,13 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       <div className="flex-1 flex overflow-hidden">
         {/* Sidebar */}
         <aside className="w-64 bg-[var(--surface)] border-r border-[var(--surface-dark)] hidden md:flex flex-col">
-          <div className="p-6">
-            <h2 className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-primary-400 to-secondary-400">
-              Admin Panel
-            </h2>
+          <div className="p-6 flex flex-col gap-3">
+            <div className="flex items-center gap-3">
+              <img src="/logo.png" alt="DBestQuiz Logo" className="w-8 h-8 object-contain rounded-lg shadow-sm" />
+              <h2 className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-primary-400 to-secondary-400">
+                Admin Panel
+              </h2>
+            </div>
             <p className="text-sm text-gray-400 mt-1">
               {user.role === 'admin' ? 'Root Administrator' : 'School Administrator'}
             </p>
