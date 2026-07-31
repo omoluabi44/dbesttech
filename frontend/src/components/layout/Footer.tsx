@@ -10,8 +10,8 @@ export const Footer: React.FC = () => {
           
           <div className="col-span-1 md:col-span-1">
             <Link href="/" className="flex items-center gap-2 mb-4">
-              <div className="bg-primary text-white p-1.5 rounded-lg">
-                <BookOpen size={20} />
+              <div className="bg-white p-1 rounded-lg">
+                <img src="/logo.png" alt="DBestQuiz Logo" className="w-6 h-6 object-contain" />
               </div>
               <span className="text-xl font-bold text-white tracking-tight">DBestQuiz</span>
             </Link>

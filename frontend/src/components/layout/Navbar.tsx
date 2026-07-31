@@ -34,8 +34,8 @@ export const Navbar: React.FC = () => {
         <div className="flex justify-between items-center">
           {/* Logo */}
           <Link href="/" className="flex items-center gap-2 group">
-            <div className="bg-primary text-white p-2 rounded-xl group-hover:scale-105 transition-transform">
-              <BookOpen size={24} />
+            <div className="group-hover:scale-105 transition-transform">
+              <img src="/logo.png" alt="DBestQuiz Logo" className="w-8 h-8 object-contain rounded-lg" />
             </div>
             <span className="text-xl font-bold text-foreground tracking-tight">DBestQuiz</span>
           </Link>
