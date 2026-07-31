@@ -12,28 +12,25 @@ export interface ButtonProps extends Omit<HTMLMotionProps<"button">, 'ref'> {
 export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
   ({ className = '', variant = 'primary', size = 'md', isLoading, leftIcon, rightIcon, children, disabled, ...props }, ref) => {
     
-    const baseStyles = "inline-flex items-center justify-center font-extrabold rounded-2xl transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none";
+    const baseStyles = "inline-flex items-center justify-center font-medium rounded-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none";
     
     const variants = {
-      primary: "bg-primary text-white border-primary-dark hover:bg-primary-hover focus:ring-primary active:translate-y-1 active:border-b-0 border-b-4",
-      secondary: "bg-secondary text-secondary-900 border-yellow-500 hover:bg-secondary-hover focus:ring-secondary active:translate-y-1 active:border-b-0 border-b-4",
-      ghost: "bg-transparent text-foreground border-transparent border-b-0 hover:bg-surface-dark focus:ring-surface-dark",
-      danger: "bg-danger text-white border-red-700 hover:bg-red-600 focus:ring-danger active:translate-y-1 active:border-b-0 border-b-4",
-      cartoon: "bg-primary text-white border-primary-dark hover:bg-primary-hover focus:ring-primary active:translate-y-1 active:border-b-0 border-b-[6px] rounded-full shadow-cartoon hover:shadow-cartoon-lg",
-      gameAction: "bg-secondary text-secondary-900 border-secondary-hover hover:bg-secondary focus:ring-secondary active:translate-y-1 active:border-b-0 border-b-[6px] rounded-full shadow-cartoon-lg text-xl tracking-wide",
+      primary: "bg-[var(--primary)] text-white border border-[var(--primary-dark)] hover:bg-[var(--primary-hover)] focus:ring-[var(--primary)] shadow-sm hover:shadow active:translate-y-[1px]",
+      secondary: "bg-[var(--surface-dark)] text-[var(--foreground)] border border-gray-200 hover:bg-gray-100 focus:ring-gray-200 shadow-sm hover:shadow active:translate-y-[1px]",
+      ghost: "bg-transparent text-[var(--foreground)] border-transparent hover:bg-[var(--surface-dark)] focus:ring-[var(--surface-dark)]",
+      danger: "bg-red-600 text-white border-red-700 hover:bg-red-700 focus:ring-red-600 shadow-sm hover:shadow active:translate-y-[1px]",
+      cartoon: "bg-[var(--primary)] text-white border border-[var(--primary-dark)] hover:bg-[var(--primary-hover)] focus:ring-[var(--primary)] shadow-sm hover:shadow active:translate-y-[1px]", // fallback
+      gameAction: "bg-[var(--primary)] text-white border border-[var(--primary-dark)] hover:bg-[var(--primary-hover)] focus:ring-[var(--primary)] shadow-sm hover:shadow active:translate-y-[1px]", // fallback
     };
     
     const sizes = {
-      sm: "h-10 px-4 text-sm",
-      md: "h-12 px-6 text-base",
-      lg: "h-16 px-8 text-xl",
+      sm: "h-9 px-3 text-sm",
+      md: "h-10 px-4 text-sm",
+      lg: "h-11 px-8 text-base",
     };
 
-    const motionProps = (variant === 'cartoon' || variant === 'gameAction') ? {
-      whileHover: disabled || isLoading ? {} : { scale: 1.05 },
-      whileTap: disabled || isLoading ? {} : { scale: 0.95 },
-    } : {
-      whileTap: { scale: disabled || isLoading ? 1 : 0.95 },
+    const motionProps = {
+      whileTap: { scale: disabled || isLoading ? 1 : 0.97 },
     };
     
     return (

@@ -10,15 +10,15 @@ export interface CardProps extends Omit<HTMLMotionProps<"div">, 'ref'> {
 export const Card = React.forwardRef<HTMLDivElement, CardProps>(
   ({ className = '', variant = 'default', padding = 'md', hoverEffect = false, children, ...props }, ref) => {
     
-    const baseStyles = "rounded-3xl overflow-hidden";
+    const baseStyles = "rounded-xl overflow-hidden";
     
     const variants = {
-      default: "bg-surface border-4 border-surface-dark shadow-sm",
-      outlined: "bg-transparent border-4 border-surface-dark",
-      elevated: "bg-surface shadow-xl border-4 border-surface-dark",
+      default: "bg-[var(--surface)] border border-[var(--surface-dark)] shadow-sm",
+      outlined: "bg-transparent border border-[var(--surface-dark)]",
+      elevated: "bg-[var(--surface)] shadow-md border border-[var(--surface-dark)]",
       glass: "glass-card",
-      cartoon: "bg-white border-4 border-sky-200 shadow-cartoon hover:shadow-cartoon-lg transition-all duration-200 hover:-translate-y-1",
-      achievement: "bg-secondary/10 border-4 border-secondary shadow-sm",
+      cartoon: "premium-card", // fallback
+      achievement: "bg-[var(--secondary)]/10 border border-[var(--secondary)] shadow-sm",
     };
     
     const paddings = {

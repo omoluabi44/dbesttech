@@ -1,0 +1,17 @@
+{
+  "DocumentName": "AWS-RunShellScript",
+  "Targets": [
+    {
+      "Key": "tag:Name",
+      "Values": [
+        "django-nextjs-app-backend"
+      ]
+    }
+  ],
+  "Parameters": {
+    "commands": [
+      "docker logs django_backend > /tmp/err.log 2>&1",
+      "tail -n 100 /tmp/err.log"
+    ]
+  }
+}

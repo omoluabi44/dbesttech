@@ -29,15 +29,15 @@ export const ProgressBar: React.FC<ProgressBarProps> = ({
   };
 
   const trackStyles = {
-    default: 'bg-gray-200 rounded-full',
-    cartoon: 'bg-sky-100 rounded-full border-2 border-sky-200',
-    rainbow: 'bg-gray-100 rounded-full border-2 border-purple-200',
+    default: 'bg-[var(--surface-dark)] rounded-full',
+    cartoon: 'bg-[var(--surface-dark)] rounded-full', // fallback
+    rainbow: 'bg-[var(--surface-dark)] rounded-full', // fallback
   };
 
   const fillStyles = {
     default: color,
-    cartoon: 'bg-primary',
-    rainbow: 'bg-secondary',
+    cartoon: 'bg-gradient-to-r from-[var(--primary)] to-[var(--secondary)]', // fallback to gradient
+    rainbow: 'bg-gradient-to-r from-[var(--primary)] to-[var(--secondary)]',
   };
 
   const milestones = [25, 50, 75, 100];
@@ -46,26 +46,17 @@ export const ProgressBar: React.FC<ProgressBarProps> = ({
     <div className={`w-full ${className}`}>
       {showLabel && (
         <div className="flex justify-between items-center mb-1">
-          <span className="text-sm font-medium text-foreground">Progress</span>
-          <span className="text-sm font-bold text-foreground">{Math.round(safeProgress)}%</span>
+          <span className="text-sm font-medium text-[var(--foreground)]">Progress</span>
+          <span className="text-sm font-bold text-[var(--foreground)]">{Math.round(safeProgress)}%</span>
         </div>
       )}
       <div className={`relative w-full overflow-hidden ${heights[height]} ${trackStyles[variant]}`}>
         <motion.div
-          className={`h-full rounded-full ${fillStyles[variant]}`}
+          className={`h-full rounded-full ${fillStyles[variant]} shadow-sm`}
           initial={{ width: 0 }}
           animate={{ width: `${safeProgress}%` }}
           transition={{ duration: 0.8, ease: "easeOut" }}
         />
-        {/* Star endpoint for cartoon variant */}
-        {variant === 'cartoon' && safeProgress > 5 && (
-          <motion.div
-            className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-4 h-4 bg-white border-2 border-primary rounded-full shadow-sm"
-            initial={{ left: '0%' }}
-            animate={{ left: `${safeProgress}%` }}
-            transition={{ duration: 0.8, ease: "easeOut" }}
-          />
-        )}
       </div>
       {/* Milestone flags */}
       {showMilestones && variant !== 'default' && (

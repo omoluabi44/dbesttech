@@ -68,8 +68,8 @@ export default function QuestionBankPage() {
     <div className="space-y-6">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-white">Question Bank</h1>
-          <p className="text-gray-400 mt-1">Bulk upload questions using CSV files.</p>
+          <h1 className="text-3xl font-bold text-[var(--foreground)]">Question Bank</h1>
+          <p className="text-gray-500 mt-1">Bulk upload questions using CSV files.</p>
         </div>
       </div>
 
@@ -81,8 +81,8 @@ export default function QuestionBankPage() {
             onClick={() => { setActiveTab('quizzes'); setMessage(null); setFile(null); }}
             className={`flex-1 py-4 px-6 text-sm font-medium transition-all duration-300 ${
               activeTab === 'quizzes'
-                ? 'bg-primary-500/10 text-primary-400 border-b-2 border-primary-500'
-                : 'text-gray-400 hover:text-white hover:bg-[var(--surface-light)]'
+                ? 'bg-primary-500/10 text-primary-600 border-b-2 border-primary-500'
+                : 'text-gray-500 hover:text-primary-600 hover:bg-primary-500/10'
             }`}
           >
             Practice Quizzes
@@ -91,8 +91,8 @@ export default function QuestionBankPage() {
             onClick={() => { setActiveTab('past_questions'); setMessage(null); setFile(null); }}
             className={`flex-1 py-4 px-6 text-sm font-medium transition-all duration-300 ${
               activeTab === 'past_questions'
-                ? 'bg-secondary-500/10 text-secondary-400 border-b-2 border-secondary-500'
-                : 'text-gray-400 hover:text-white hover:bg-[var(--surface-light)]'
+                ? 'bg-secondary-500/10 text-secondary-600 border-b-2 border-secondary-500'
+                : 'text-gray-500 hover:text-secondary-600 hover:bg-secondary-500/10'
             }`}
           >
             Past Questions
@@ -104,10 +104,10 @@ export default function QuestionBankPage() {
           <div className="max-w-xl mx-auto">
             
             <div className="mb-6 text-center">
-              <h3 className="text-xl font-semibold text-white mb-2">
+              <h3 className="text-xl font-semibold text-[var(--foreground)] mb-2">
                 Upload {activeTab === 'quizzes' ? 'Practice Quizzes' : 'Past Questions'} CSV
               </h3>
-              <p className="text-sm text-gray-400">
+              <p className="text-sm text-gray-500">
                 Please ensure your CSV file follows the correct template format. 
                 Incorrect answers should be separated into columns: 
                 <code className="bg-gray-800 text-primary-300 px-2 py-0.5 rounded mx-1 text-xs">incorrect_answer_1</code>, 
@@ -128,16 +128,16 @@ export default function QuestionBankPage() {
                   {file ? (
                     <>
                       <CheckCircle2 className="w-12 h-12 text-green-500 mb-3" />
-                      <p className="mb-2 text-sm text-white font-medium">{file.name}</p>
-                      <p className="text-xs text-gray-400">{(file.size / 1024).toFixed(2)} KB</p>
+                      <p className="mb-2 text-sm text-[var(--foreground)] font-medium">{file.name}</p>
+                      <p className="text-xs text-gray-500">{(file.size / 1024).toFixed(2)} KB</p>
                     </>
                   ) : (
                     <>
-                      <UploadCloud className="w-12 h-12 text-gray-400 group-hover:text-primary-400 mb-3 transition-colors" />
-                      <p className="mb-2 text-sm text-gray-400">
-                        <span className="font-semibold text-white">Click to upload</span> or drag and drop
+                      <UploadCloud className="w-12 h-12 text-gray-400 group-hover:text-primary-500 mb-3 transition-colors" />
+                      <p className="mb-2 text-sm text-gray-500">
+                        <span className="font-semibold text-[var(--foreground)]">Click to upload</span> or drag and drop
                       </p>
-                      <p className="text-xs text-gray-500">CSV files only</p>
+                      <p className="text-xs text-gray-400">CSV files only</p>
                     </>
                   )}
                 </div>
