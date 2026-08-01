@@ -39,7 +39,7 @@ export default function PracticeSessionPage() {
   const [submitting, setSubmitting] = useState(false);
   const [showInterstitial, setShowInterstitial] = useState(false);
   const [stageResult, setStageResult] = useState<PracticeStageSubmitResponse | null>(null);
-  const [timeLeft, setTimeLeft] = useState(120); // 2 minutes per stage
+  const [timeLeft, setTimeLeft] = useState(120); // 2 minutes per question
   const [totalScore, setTotalScore] = useState(0);
 
   const { 
@@ -62,6 +62,11 @@ export default function PracticeSessionPage() {
       router.push('/quiz/setup');
     }
   }, [practiceSession, router]);
+
+  // Reset timer when question changes
+  useEffect(() => {
+    setTimeLeft(120);
+  }, [currentIndex]);
 
   if (!practiceSession || practiceQuestions.length === 0) {
     return (
@@ -148,7 +153,11 @@ export default function PracticeSessionPage() {
     if (showInterstitial || !practiceSession || submitting) return;
 
     if (timeLeft <= 0) {
-      handleSubmitStage(true);
+      if (isLastQuestion) {
+        handleSubmitStage(true);
+      } else {
+        handleNext();
+      }
       return;
     }
 
@@ -166,7 +175,7 @@ export default function PracticeSessionPage() {
     }, 1000);
 
     return () => clearInterval(timer);
-  }, [timeLeft, showInterstitial, practiceSession, submitting, speakEncouragement, playCountdown]);
+  }, [timeLeft, showInterstitial, practiceSession, submitting, speakEncouragement, playCountdown, isLastQuestion, currentIndex]);
 
   return (
     <div className={`min-h-screen bg-background flex flex-col font-sans transition-colors duration-500 overflow-hidden relative`}>
