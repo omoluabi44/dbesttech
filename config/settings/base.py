@@ -180,6 +180,7 @@ REST_AUTH = {
     'USE_JWT': False,
     'SESSION_LOGIN': True,
     'REGISTER_SERIALIZER': 'apps.accounts.serializers.UserRegistrationSerializer',
+    'PASSWORD_RESET_SERIALIZER': 'apps.accounts.serializers.CustomPasswordResetSerializer',
     'PASSWORD_RESET_USE_SITES_DOMAIN': False,
     'PASSWORD_RESET_URL': 'https://dbestquiz.com/reset-password?uid={uid}&token={token}',
 }

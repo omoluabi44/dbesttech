@@ -2,6 +2,9 @@ from rest_framework import serializers
 from django.contrib.auth import authenticate
 from django.contrib.auth.password_validation import validate_password
 from dj_rest_auth.registration.serializers import RegisterSerializer
+from dj_rest_auth.serializers import PasswordResetSerializer
+from allauth.account.forms import ResetPasswordForm
+from django.contrib.sites.models import Site
 from .models import User, StudentProfile, School
 from utils.constants import SCHOOL_LEVELS, SCHOOL_CATEGORIES
 
@@ -133,3 +136,41 @@ class ChangePasswordSerializer(serializers.Serializer):
         if not user.check_password(value):
             raise serializers.ValidationError('Old password is incorrect.')
         return value
+
+
+class CustomResetPasswordForm(ResetPasswordForm):
+    def save(self, request, **kwargs):
+        email = self.cleaned_data["email"]
+        token_generator = kwargs.get("token_generator")
+        
+        frontend_url = "https://dbestquiz.com/reset-password"
+        
+        for user in self.users:
+            from allauth.account.utils import user_pk_to_url_str
+            temp_key = token_generator.make_token(user)
+            uid = user_pk_to_url_str(user)
+            
+            url = f"{frontend_url}?uid={uid}&token={temp_key}"
+            
+            try:
+                site = Site.objects.get_current(request)
+            except Site.DoesNotExist:
+                site = None
+                
+            context = {
+                "site": site,
+                "user": user,
+                "password_reset_url": url,
+                "request": request,
+            }
+            
+            from allauth.account.adapter import get_adapter
+            get_adapter(request).send_mail(
+                "account/email/password_reset_key", email, context
+            )
+
+
+class CustomPasswordResetSerializer(PasswordResetSerializer):
+    @property
+    def password_reset_form_class(self):
+        return CustomResetPasswordForm

@@ -71,7 +71,14 @@ def _update_performance_metrics(session):
         
     # Update subjects_practiced (it's a JSON list)
     if isinstance(weekly.subjects_practiced, str):
-        weekly.subjects_practiced = json.loads(weekly.subjects_practiced)
+        try:
+            weekly.subjects_practiced = json.loads(weekly.subjects_practiced)
+        except json.JSONDecodeError:
+            weekly.subjects_practiced = []
+            
+    if not isinstance(weekly.subjects_practiced, list):
+        weekly.subjects_practiced = []
+        
     if subject.name not in weekly.subjects_practiced:
         weekly.subjects_practiced.append(subject.name)
         
