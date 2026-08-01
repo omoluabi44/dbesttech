@@ -22,6 +22,10 @@ export default function LoginPage() {
   const setAuth = useAuthStore(state => state.setAuth);
   const [isLoading, setIsLoading] = useState(false);
 
+  const [showResend, setShowResend] = useState(false);
+  const [unverifiedEmail, setUnverifiedEmail] = useState('');
+  const [isResending, setIsResending] = useState(false);
+
   const {
     register,
     handleSubmit,
@@ -33,6 +37,7 @@ export default function LoginPage() {
   const onSubmit = async (data: LoginFormValues) => {
     try {
       setIsLoading(true);
+      setShowResend(false);
       const res = await login(data);
       setAuth(res.user, res.token);
       toast.success(res.message || 'Login successful!');
@@ -43,8 +48,28 @@ export default function LoginPage() {
                        error.response?.data?.message || 
                        'Invalid email or password. Please try again.';
       toast.error(errorMsg);
+      
+      if (errorMsg.includes('verify your email')) {
+        setShowResend(true);
+        setUnverifiedEmail(data.email);
+      }
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const handleResend = async () => {
+    try {
+      setIsResending(true);
+      const api = (await import('@/lib/api/client')).default;
+      await api.post('/auth/resend-verification/', { email: unverifiedEmail });
+      toast.success('Verification email resent! Check your inbox.');
+      setShowResend(false);
+    } catch (error: any) {
+      const msg = error.response?.data?.detail || 'Failed to resend. Try again later.';
+      toast.error(msg);
+    } finally {
+      setIsResending(false);
     }
   };
 
@@ -94,6 +119,21 @@ export default function LoginPage() {
         >
           Sign In
         </Button>
+        
+        {showResend && (
+          <div className="mt-4 pt-4 border-t border-slate-100 text-center animate-fade-in">
+            <p className="text-sm text-slate-600 mb-3">Didn't receive the email?</p>
+            <Button
+              type="button"
+              variant="outline"
+              className="w-full border-primary text-primary hover:bg-primary/5"
+              onClick={handleResend}
+              isLoading={isResending}
+            >
+              Resend Verification Email
+            </Button>
+          </div>
+        )}
       </form>
 
       <div className="mt-8 text-center text-sm text-slate-600">
