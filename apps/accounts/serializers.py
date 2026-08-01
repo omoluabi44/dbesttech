@@ -75,15 +75,18 @@ class UserRegistrationSerializer(RegisterSerializer):
     def save(self, request):
         try:
             user = super().save(request)
+            
+            # Use get() explicitly instead of reverse relation just in case it's not cached properly
+            from .models import StudentProfile
+            profile, created = StudentProfile.objects.get_or_create(user=user)
+            profile.level = self.validated_data.get('level', '')
+            profile.save()
+            
+            return user
         except Exception as e:
-            raise serializers.ValidationError({"detail": f"Server Error during signup (Check Email/SMTP Config): {str(e)}"})
-        
-        # At this point, the user is saved and the post_save signal has created the profile
-        profile = user.student_profile
-        profile.level = self.validated_data.get('level', '')
-        profile.save()
-        
-        return user
+            import traceback
+            traceback.print_exc()
+            raise serializers.ValidationError({"detail": f"Server Error during signup: {str(e)}"})
 
 
 class LoginSerializer(serializers.Serializer):
