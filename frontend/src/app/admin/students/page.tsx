@@ -240,7 +240,7 @@ export default function StudentsPage() {
                   <Input label="Confirm Password" type="password" value={formData.password_confirm} onChange={e => setFormData({...formData, password_confirm: e.target.value})} required />
                 </div>
                 <div className="pt-4 flex justify-end gap-3">
-                  <Button type="button" variant="outline" onClick={() => setIsAddModalOpen(false)}>Cancel</Button>
+                  <Button type="button" variant="ghost" onClick={() => setIsAddModalOpen(false)}>Cancel</Button>
                   <Button type="submit" isLoading={isSubmitting}>Create Student</Button>
                 </div>
               </form>
