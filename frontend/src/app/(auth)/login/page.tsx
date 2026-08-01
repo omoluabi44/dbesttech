@@ -125,8 +125,8 @@ export default function LoginPage() {
             <p className="text-sm text-slate-600 mb-3">Didn't receive the email?</p>
             <Button
               type="button"
-              variant="outline"
-              className="w-full border-primary text-primary hover:bg-primary/5"
+              variant="ghost"
+              className="w-full border border-primary text-primary hover:bg-primary/5"
               onClick={handleResend}
               isLoading={isResending}
             >
