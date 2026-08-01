@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Verify Your Account</title>
+    <style>
+        body { font-family: 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f8fafc; color: #334155; margin: 0; padding: 0; }
+        .container { max-w-md: 600px; margin: 40px auto; background-color: #ffffff; border-radius: 16px; overflow: hidden; box-shadow: 0 10px 25px rgba(0,0,0,0.05); }
+        .header { background: linear-gradient(135deg, #0ea5e9, #0284c7); padding: 30px; text-align: center; }
+        .header h1 { color: #ffffff; margin: 0; font-size: 24px; font-weight: 800; }
+        .content { padding: 40px 30px; text-align: center; }
+        .content h2 { color: #0f172a; margin-top: 0; }
+        .content p { line-height: 1.6; color: #475569; font-size: 16px; margin-bottom: 30px; }
+        .btn { display: inline-block; background-color: #0ea5e9; color: #ffffff; text-decoration: none; padding: 14px 32px; border-radius: 50px; font-weight: bold; font-size: 16px; }
+        .btn:hover { background-color: #0284c7; }
+        .footer { background-color: #f1f5f9; padding: 20px; text-align: center; font-size: 14px; color: #64748b; border-top: 1px solid #e2e8f0; }
+        .footer a { color: #0ea5e9; text-decoration: none; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>DBestQuiz</h1>
+        </div>
+        <div class="content">
+            <h2>Welcome aboard! 🎉</h2>
+            <p>We're thrilled to have you join DBestQuiz. To get started and unlock your full potential, please verify your email address by clicking the button below.</p>
+            <a href="{{ activate_url }}" class="btn">Verify Email Address</a>
+            <p style="margin-top: 30px; font-size: 14px; color: #94a3b8;">If you did not sign up for this account, you can safely ignore this email.</p>
+        </div>
+        <div class="footer">
+            &copy; 2026 DBestQuiz. All rights reserved.<br>
+            <a href="https://dbestquiz.com">dbestquiz.com</a>
+        </div>
+    </div>
+</body>
+</html>
