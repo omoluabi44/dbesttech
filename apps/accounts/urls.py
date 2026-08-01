@@ -1,6 +1,7 @@
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
 from dj_rest_auth.registration.views import VerifyEmailView
+from dj_rest_auth.views import PasswordResetView, PasswordResetConfirmView
 from . import views
 from . import admin_views
 
@@ -18,6 +19,8 @@ urlpatterns = [
     path('profile/', views.ProfileView.as_view(), name='profile'),
     path('student-profile/', views.StudentProfileView.as_view(), name='student-profile'),
     path('change-password/', views.ChangePasswordView.as_view(), name='change-password'),
+    path('password/reset/', PasswordResetView.as_view(), name='rest_password_reset'),
+    path('password/reset/confirm/', PasswordResetConfirmView.as_view(), name='rest_password_reset_confirm'),
     path('resend-verification/', views.ResendVerificationView.as_view(), name='resend-verification'),
     path('registration/verify-email/', VerifyEmailView.as_view(), name='rest_verify_email'),
     path('', include(router.urls)),

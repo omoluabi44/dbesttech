@@ -106,7 +106,7 @@ export default function LoginPage() {
             {...register('password')}
           />
           <div className="mt-2 text-right">
-            <Link href="#" className="text-sm font-medium text-primary hover:text-primary-dark transition-colors">
+            <Link href="/forgot-password" className="text-sm font-medium text-primary hover:text-primary-dark transition-colors">
               Forgot password?
             </Link>
           </div>
