@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { toast } from 'sonner';
-import { Mail, Lock, User, BookOpen, School } from 'lucide-react';
+import { Mail, Lock, User, BookOpen, School, CheckCircle2 } from 'lucide-react';
 import { z } from 'zod';
 
 import { registerSchema } from '@/lib/utils/validators';
@@ -22,6 +22,8 @@ export default function RegisterPage() {
   const router = useRouter();
   const setAuth = useAuthStore(state => state.setAuth);
   const [isLoading, setIsLoading] = useState(false);
+  const [isSuccess, setIsSuccess] = useState(false);
+  const [registeredEmail, setRegisteredEmail] = useState('');
 
   const {
     register,
@@ -39,9 +41,17 @@ export default function RegisterPage() {
     try {
       setIsLoading(true);
       const res = await registerApi(data);
-      setAuth(res.user, res.token);
-      toast.success('Account created successfully!');
-      router.push('/dashboard');
+      
+      // When email verification is mandatory, token and user are not returned.
+      // Instead, a message is returned telling them to verify.
+      if (res.token && res.user) {
+        setAuth(res.user, res.token);
+        toast.success('Account created successfully!');
+        router.push('/dashboard');
+      } else {
+        setRegisteredEmail(data.email);
+        setIsSuccess(true);
+      }
     } catch (error: any) {
       console.error('Registration error:', error);
       
@@ -71,6 +81,26 @@ export default function RegisterPage() {
       setIsLoading(false);
     }
   };
+
+  if (isSuccess) {
+    return (
+      <div className="w-full text-center">
+        <div className="flex justify-center mb-6 text-green-500">
+          <CheckCircle2 size={64} />
+        </div>
+        <h1 className="text-3xl font-bold text-slate-900 mb-4">Check Your Email</h1>
+        <p className="text-slate-600 mb-8">
+          We've sent a verification link to <strong>{registeredEmail}</strong>. Please check your inbox and verify your email address before logging in.
+        </p>
+        <Button
+          onClick={() => router.push('/login')}
+          className="w-full shadow-md"
+        >
+          Go to Login
+        </Button>
+      </div>
+    );
+  }
 
   return (
     <div className="w-full">

@@ -1,6 +1,7 @@
 from rest_framework import serializers
 from django.contrib.auth import authenticate
 from django.contrib.auth.password_validation import validate_password
+from dj_rest_auth.registration.serializers import RegisterSerializer
 from .models import User, StudentProfile, School
 from utils.constants import SCHOOL_LEVELS, SCHOOL_CATEGORIES
 
@@ -35,38 +36,39 @@ class UserSerializer(serializers.ModelSerializer):
         read_only_fields = ['id', 'email', 'role']
 
 
-class UserRegistrationSerializer(serializers.ModelSerializer):
+class UserRegistrationSerializer(RegisterSerializer):
     """Serializer for user registration."""
-    password = serializers.CharField(write_only=True, validators=[validate_password])
-    password_confirm = serializers.CharField(write_only=True)
+    first_name = serializers.CharField(required=True)
+    last_name = serializers.CharField(required=True)
     level = serializers.ChoiceField(choices=SCHOOL_LEVELS, write_only=True)
+    
+    def __init__(self, *args, **kwargs):
+        # Map frontend's password & password_confirm to dj_rest_auth's expected password1 & password2
+        if 'data' in kwargs and hasattr(kwargs['data'], 'copy'):
+            data = kwargs['data'].copy()
+            if 'password' in data:
+                data['password1'] = data['password']
+            if 'password_confirm' in data:
+                data['password2'] = data['password_confirm']
+            kwargs['data'] = data
+        super().__init__(*args, **kwargs)
 
-    class Meta:
-        model = User
-        fields = ['email', 'username', 'first_name', 'last_name', 'password', 'password_confirm', 'level']
+    def get_cleaned_data(self):
+        cleaned_data = super().get_cleaned_data()
+        cleaned_data['first_name'] = self.validated_data.get('first_name', '')
+        cleaned_data['last_name'] = self.validated_data.get('last_name', '')
+        cleaned_data['level'] = self.validated_data.get('level', '')
+        return cleaned_data
 
-    def validate(self, attrs):
-        if attrs['password'] != attrs.pop('password_confirm'):
-            raise serializers.ValidationError({'password_confirm': 'Passwords do not match.'})
-        return attrs
-
-    def create(self, validated_data):
-        level = validated_data.pop('level')
-
-        user = User.objects.create_user(
-            email=validated_data['email'],
-            username=validated_data['username'],
-            first_name=validated_data.get('first_name', ''),
-            last_name=validated_data.get('last_name', ''),
-            password=validated_data['password'],
-            role='student',
-        )
+    def custom_signup(self, request, user):
+        user.first_name = self.validated_data.get('first_name', '')
+        user.last_name = self.validated_data.get('last_name', '')
+        user.role = 'student'
+        user.save(update_fields=['first_name', 'last_name', 'role'])
 
         profile = user.student_profile
-        profile.level = level
+        profile.level = self.validated_data.get('level', '')
         profile.save()
-
-        return user
 
 
 class LoginSerializer(serializers.Serializer):
