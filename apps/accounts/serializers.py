@@ -73,7 +73,10 @@ class UserRegistrationSerializer(RegisterSerializer):
         # DO NOT save the user here, dj_rest_auth will call user.save() right after this method
 
     def save(self, request):
-        user = super().save(request)
+        try:
+            user = super().save(request)
+        except Exception as e:
+            raise serializers.ValidationError({"detail": f"Server Error during signup (Check Email/SMTP Config): {str(e)}"})
         
         # At this point, the user is saved and the post_save signal has created the profile
         profile = user.student_profile

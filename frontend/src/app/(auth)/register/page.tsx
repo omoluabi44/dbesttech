@@ -60,13 +60,16 @@ export default function RegisterPage() {
         const data = error.response.data;
         let hasSpecificError = false;
         
-        // Loop through all error keys (e.g. email, username, password, non_field_errors)
+        // Loop through all error keys (e.g. email, username, password, non_field_errors, detail)
         Object.keys(data).forEach(key => {
           const messages = data[key];
           if (Array.isArray(messages) && messages.length > 0) {
             // Capitalize the field name for display
             const fieldName = key.charAt(0).toUpperCase() + key.slice(1).replace('_', ' ');
             toast.error(`${fieldName}: ${messages[0]}`);
+            hasSpecificError = true;
+          } else if (typeof messages === 'string') {
+            toast.error(messages);
             hasSpecificError = true;
           }
         });
