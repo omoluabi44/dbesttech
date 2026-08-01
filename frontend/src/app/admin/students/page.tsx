@@ -55,7 +55,7 @@ export default function StudentsPage() {
   const fetchStudents = async () => {
     try {
       setLoading(true);
-      const res = await api.get('/accounts/admin-students/');
+      const res = await api.get('/auth/admin-students/');
       setStudents(res.data);
     } catch (err) {
       toast.error('Failed to load students.');
@@ -74,7 +74,7 @@ export default function StudentsPage() {
     
     try {
       setIsSubmitting(true);
-      await api.post('/accounts/admin-students/', formData);
+      await api.post('/auth/admin-students/', formData);
       toast.success('Student created successfully!');
       setIsAddModalOpen(false);
       setFormData({
@@ -93,7 +93,7 @@ export default function StudentsPage() {
   const handleVerify = async (id: number) => {
     if (!confirm('Are you sure you want to manually verify this user\'s email?')) return;
     try {
-      await api.post(`/accounts/admin-students/${id}/verify/`);
+      await api.post(`/auth/admin-students/${id}/verify/`);
       toast.success('User email verified successfully.');
       fetchStudents();
     } catch (err) {
@@ -104,7 +104,7 @@ export default function StudentsPage() {
   const handleDelete = async (id: number) => {
     if (!confirm('Are you absolutely sure you want to delete this student? This action cannot be undone.')) return;
     try {
-      await api.delete(`/accounts/admin-students/${id}/`);
+      await api.delete(`/auth/admin-students/${id}/`);
       toast.success('Student deleted successfully.');
       fetchStudents();
     } catch (err) {

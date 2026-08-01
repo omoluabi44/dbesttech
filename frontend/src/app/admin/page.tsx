@@ -20,7 +20,7 @@ export default function AdminDashboard() {
     const fetchStats = async () => {
       try {
         if (user?.role === 'admin') {
-          const res = await api.get('/accounts/schools/stats/');
+          const res = await api.get('/auth/schools/stats/');
           setStats(res.data);
         }
       } catch (err) {
