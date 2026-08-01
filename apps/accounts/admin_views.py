@@ -73,7 +73,7 @@ class SchoolAdminStudentViewSet(viewsets.ModelViewSet):
     permission_classes = [permissions.IsAuthenticated, IsSchoolAdmin]
 
     def get_queryset(self):
-        if self.request.user.role == 'root_admin' or self.request.user.is_superuser:
+        if self.request.user.role in ['root_admin', 'admin'] or self.request.user.is_superuser:
             return User.objects.filter(role='student').order_by('-date_joined')
             
         try:

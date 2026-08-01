@@ -56,7 +56,14 @@ export default function StudentsPage() {
     try {
       setLoading(true);
       const res = await api.get('/auth/admin-students/');
-      setStudents(res.data);
+      if (Array.isArray(res.data)) {
+        setStudents(res.data);
+      } else if (res.data && Array.isArray(res.data.results)) {
+        setStudents(res.data.results);
+      } else {
+        setStudents([]);
+        console.error('Expected array of students but got:', res.data);
+      }
     } catch (err) {
       toast.error('Failed to load students.');
       console.error(err);

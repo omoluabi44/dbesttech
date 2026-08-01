@@ -28,7 +28,7 @@ class IsSchoolAdmin(BasePermission):
     """Allow access only to school admins."""
     def has_permission(self, request, view):
         is_school = request.user.is_authenticated and request.user.role == 'school_admin'
-        is_root = request.user.is_authenticated and (request.user.role == 'root_admin' or getattr(request.user, 'is_superuser', False))
+        is_root = request.user.is_authenticated and (request.user.role in ['root_admin', 'admin'] or getattr(request.user, 'is_superuser', False))
         return is_school or is_root
 
 class IsOwner(BasePermission):
