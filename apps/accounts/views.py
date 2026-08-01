@@ -25,8 +25,16 @@ class RegisterView(generics.CreateAPIView):
         serializer.is_valid(raise_exception=True)
         # dj-rest-auth's RegisterSerializer requires the request object to be passed to save()
         user = serializer.save(request)
+        
+        from django.conf import settings
+        email_verification = getattr(settings, 'ACCOUNT_EMAIL_VERIFICATION', 'optional')
+        
+        if email_verification == 'mandatory':
+            return Response({
+                'detail': 'Verification e-mail sent.'
+            }, status=status.HTTP_201_CREATED)
+            
         token, _ = Token.objects.get_or_create(user=user)
-
         return Response({
             'message': 'Registration successful.',
             'user': UserSerializer(user).data,
