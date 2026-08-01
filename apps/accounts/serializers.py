@@ -70,11 +70,17 @@ class UserRegistrationSerializer(RegisterSerializer):
         user.first_name = self.validated_data.get('first_name', '')
         user.last_name = self.validated_data.get('last_name', '')
         user.role = 'student'
-        user.save(update_fields=['first_name', 'last_name', 'role'])
+        # DO NOT save the user here, dj_rest_auth will call user.save() right after this method
 
+    def save(self, request):
+        user = super().save(request)
+        
+        # At this point, the user is saved and the post_save signal has created the profile
         profile = user.student_profile
         profile.level = self.validated_data.get('level', '')
         profile.save()
+        
+        return user
 
 
 class LoginSerializer(serializers.Serializer):
