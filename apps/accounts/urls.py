@@ -1,5 +1,6 @@
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
+from dj_rest_auth.registration.views import VerifyEmailView
 from . import views
 from . import admin_views
 
@@ -18,5 +19,6 @@ urlpatterns = [
     path('student-profile/', views.StudentProfileView.as_view(), name='student-profile'),
     path('change-password/', views.ChangePasswordView.as_view(), name='change-password'),
     path('resend-verification/', views.ResendVerificationView.as_view(), name='resend-verification'),
+    path('registration/verify-email/', VerifyEmailView.as_view(), name='rest_verify_email'),
     path('', include(router.urls)),
 ]
