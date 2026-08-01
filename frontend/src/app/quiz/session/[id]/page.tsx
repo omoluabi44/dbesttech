@@ -78,9 +78,9 @@ export default function PracticeSessionPage() {
 
   const question = practiceQuestions[currentIndex];
   const totalInStage = practiceQuestions.length;
-  const answeredCount = practiceQuestions.filter(q => answers.has(q.id)).length;
+  const answeredCount = practiceQuestions.filter(q => answers.has(String(q.id))).length;
   const isLastQuestion = currentIndex === totalInStage - 1;
-  const canSubmit = practiceQuestions.every(q => answers.has(q.id));
+  const canSubmit = practiceQuestions.every(q => answers.has(String(q.id)));
 
   const handleOptionSelect = (optionText: string) => {
     playPop();
@@ -299,7 +299,7 @@ export default function PracticeSessionPage() {
                   }
 
                   return options.map((optionText: string, index: number) => {
-                    const isSelected = answers.get(question.id) === optionText;
+                    const isSelected = answers.get(String(question.id)) === optionText;
                     const label = String.fromCharCode(65 + index); // A, B, C, D
                     
                     return (
