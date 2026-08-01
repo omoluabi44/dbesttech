@@ -29,11 +29,17 @@ class StudentProfileSerializer(serializers.ModelSerializer):
 class UserSerializer(serializers.ModelSerializer):
     """Read-only user serializer."""
     student_profile = StudentProfileSerializer(read_only=True)
+    email_verified = serializers.SerializerMethodField()
 
     class Meta:
         model = User
-        fields = ['id', 'email', 'username', 'first_name', 'last_name', 'role', 'student_profile']
+        fields = ['id', 'email', 'username', 'first_name', 'last_name', 'role', 'student_profile', 'email_verified']
         read_only_fields = ['id', 'email', 'role']
+
+    def get_email_verified(self, obj):
+        from allauth.account.models import EmailAddress
+        email = EmailAddress.objects.filter(user=obj, primary=True).first()
+        return email.verified if email else False
 
 
 class UserRegistrationSerializer(RegisterSerializer):

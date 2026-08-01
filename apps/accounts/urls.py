@@ -6,6 +6,7 @@ from . import admin_views
 router = DefaultRouter()
 router.register(r'schools', admin_views.SchoolViewSet, basename='school')
 router.register(r'admin-dashboard', admin_views.SchoolAdminDashboardViewSet, basename='admin-dashboard')
+router.register(r'admin-students', admin_views.SchoolAdminStudentViewSet, basename='admin-students')
 
 app_name = 'accounts'
 
