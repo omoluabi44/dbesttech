@@ -22,6 +22,58 @@ class RegisterView(generics.CreateAPIView):
     permission_classes = [AllowAny]
 
     def create(self, request, *args, **kwargs):
+        email = request.data.get('email')
+        
+        # Intercept registration if the email exists but is unverified
+        if email:
+            try:
+                existing_user = User.objects.get(email=email)
+                email_obj = EmailAddress.objects.filter(user=existing_user, primary=True).first()
+                
+                # If user exists but email is NOT verified, overwrite them!
+                if not email_obj or not email_obj.verified:
+                    new_username = request.data.get('username')
+                    
+                    # Ensure new username isn't taken by someone else
+                    if new_username and new_username != existing_user.username:
+                        if User.objects.filter(username=new_username).exists():
+                            return Response({'username': ['A user with that username already exists.']}, status=status.HTTP_400_BAD_REQUEST)
+                        existing_user.username = new_username
+                    
+                    # Overwrite details
+                    existing_user.first_name = request.data.get('first_name', existing_user.first_name)
+                    existing_user.last_name = request.data.get('last_name', existing_user.last_name)
+                    
+                    password = request.data.get('password') or request.data.get('password1')
+                    if password:
+                        existing_user.set_password(password)
+                        
+                    existing_user.save()
+                    
+                    # Update profile level
+                    level = request.data.get('level')
+                    if level:
+                        profile, _ = StudentProfile.objects.get_or_create(user=existing_user)
+                        profile.level = level
+                        profile.save()
+                        
+                    # Resend verification
+                    if not email_obj:
+                        email_obj = EmailAddress.objects.create(
+                            user=existing_user, email=existing_user.email, primary=True, verified=False
+                        )
+                    email_obj.send_confirmation(request, signup=True)
+                    
+                    return Response({
+                        'detail': 'Verification e-mail sent.'
+                    }, status=status.HTTP_201_CREATED)
+                    
+                else:
+                    # User exists AND is verified. Let normal serializer raise duplicate error.
+                    pass
+            except User.DoesNotExist:
+                pass
+
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         # dj-rest-auth's RegisterSerializer requires the request object to be passed to save()
