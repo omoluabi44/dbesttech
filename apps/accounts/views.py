@@ -5,7 +5,6 @@ from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.authtoken.models import Token
 from django.contrib.auth import login, logout
 from allauth.account.models import EmailAddress
-from allauth.account.utils import send_email_confirmation
 
 from .models import User, StudentProfile
 from .serializers import (
@@ -143,7 +142,12 @@ class ResendVerificationView(APIView):
             return Response({'detail': 'This email is already verified. You can log in.'})
 
         try:
-            send_email_confirmation(request, user, signup=False)
+            # If no EmailAddress record exists yet, create one
+            if not email_obj:
+                email_obj = EmailAddress.objects.create(
+                    user=user, email=user.email, primary=True, verified=False
+                )
+            email_obj.send_confirmation(request, signup=False)
             return Response({'detail': 'Verification email sent. Please check your inbox.'})
         except Exception as e:
             import traceback
