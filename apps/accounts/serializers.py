@@ -104,6 +104,15 @@ class LoginSerializer(serializers.Serializer):
         if not user.is_active:
             raise serializers.ValidationError('User account is disabled.')
 
+        # Block login for unverified students
+        if user.role == 'student':
+            from allauth.account.models import EmailAddress
+            email_obj = EmailAddress.objects.filter(user=user, primary=True).first()
+            if not email_obj or not email_obj.verified:
+                raise serializers.ValidationError(
+                    'Please verify your email address before logging in. Check your inbox for the verification link.'
+                )
+
         attrs['user'] = user
         return attrs
 

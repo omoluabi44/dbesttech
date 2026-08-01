@@ -12,6 +12,7 @@ import { z } from 'zod';
 import { registerSchema } from '@/lib/utils/validators';
 import { SCHOOL_CATEGORIES, SCHOOL_LEVELS } from '@/lib/utils/constants';
 import { register as registerApi } from '@/lib/api/auth';
+import api from '@/lib/api/client';
 import { useAuthStore } from '@/lib/stores/authStore';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
@@ -85,6 +86,21 @@ export default function RegisterPage() {
     }
   };
 
+  const [isResending, setIsResending] = useState(false);
+
+  const handleResend = async () => {
+    try {
+      setIsResending(true);
+      await api.post('/auth/resend-verification/', { email: registeredEmail });
+      toast.success('Verification email resent! Check your inbox.');
+    } catch (error: any) {
+      const msg = error.response?.data?.detail || 'Failed to resend. Try again later.';
+      toast.error(msg);
+    } finally {
+      setIsResending(false);
+    }
+  };
+
   if (isSuccess) {
     return (
       <div className="w-full text-center">
@@ -93,14 +109,21 @@ export default function RegisterPage() {
         </div>
         <h1 className="text-3xl font-bold text-slate-900 mb-4">Check Your Email</h1>
         <p className="text-slate-600 mb-8">
-          We've sent a verification link to <strong>{registeredEmail}</strong>. Please check your inbox and verify your email address before logging in.
+          We've sent a verification link to <strong>{registeredEmail}</strong>. Please check your inbox (and spam folder) and verify your email address before logging in.
         </p>
         <Button
-          onClick={() => router.push('/login')}
+          onClick={handleResend}
           className="w-full shadow-md"
+          isLoading={isResending}
         >
-          Go to Login
+          Resend Confirmation Email
         </Button>
+        <p className="mt-4 text-sm text-slate-500">
+          Already verified?{' '}
+          <button onClick={() => router.push('/login')} className="font-semibold text-primary hover:text-primary-dark transition-colors underline">
+            Go to Login
+          </button>
+        </p>
       </div>
     );
   }

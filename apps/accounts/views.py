@@ -4,6 +4,8 @@ from rest_framework.response import Response
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.authtoken.models import Token
 from django.contrib.auth import login, logout
+from allauth.account.models import EmailAddress
+from allauth.account.utils import send_email_confirmation
 
 from .models import User, StudentProfile
 from .serializers import (
@@ -119,3 +121,34 @@ class ChangePasswordView(APIView):
             'message': 'Password changed successfully.',
             'token': token.key,
         })
+
+
+class ResendVerificationView(APIView):
+    """Resend verification email to an unverified user."""
+    permission_classes = [AllowAny]
+
+    def post(self, request):
+        email = request.data.get('email')
+        if not email:
+            return Response({'detail': 'Email is required.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            user = User.objects.get(email=email)
+        except User.DoesNotExist:
+            # Don't reveal that the email doesn't exist
+            return Response({'detail': 'If an account with that email exists, a verification email has been sent.'})
+
+        email_obj = EmailAddress.objects.filter(user=user, primary=True).first()
+        if email_obj and email_obj.verified:
+            return Response({'detail': 'This email is already verified. You can log in.'})
+
+        try:
+            send_email_confirmation(request, user, signup=False)
+            return Response({'detail': 'Verification email sent. Please check your inbox.'})
+        except Exception as e:
+            import traceback
+            traceback.print_exc()
+            return Response(
+                {'detail': 'Failed to send verification email. Please try again later.'},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )

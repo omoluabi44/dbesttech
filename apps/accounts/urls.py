@@ -17,5 +17,6 @@ urlpatterns = [
     path('profile/', views.ProfileView.as_view(), name='profile'),
     path('student-profile/', views.StudentProfileView.as_view(), name='student-profile'),
     path('change-password/', views.ChangePasswordView.as_view(), name='change-password'),
+    path('resend-verification/', views.ResendVerificationView.as_view(), name='resend-verification'),
     path('', include(router.urls)),
 ]
