@@ -23,7 +23,8 @@ class RegisterView(generics.CreateAPIView):
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        user = serializer.save()
+        # dj-rest-auth's RegisterSerializer requires the request object to be passed to save()
+        user = serializer.save(request)
         token, _ = Token.objects.get_or_create(user=user)
 
         return Response({
