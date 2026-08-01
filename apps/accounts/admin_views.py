@@ -73,6 +73,9 @@ class SchoolAdminStudentViewSet(viewsets.ModelViewSet):
     permission_classes = [permissions.IsAuthenticated, IsSchoolAdmin]
 
     def get_queryset(self):
+        if self.request.user.role == 'root_admin' or self.request.user.is_superuser:
+            return User.objects.filter(role='student').order_by('-date_joined')
+            
         try:
             admin_profile = self.request.user.school_admin_profile
             return User.objects.filter(
@@ -95,11 +98,15 @@ class SchoolAdminStudentViewSet(viewsets.ModelViewSet):
         # but we also need to ensure the student is tied to the admin's school.
         user = serializer.save(request)
         
-        # Tie to admin's school
-        admin_profile = request.user.school_admin_profile
-        profile = user.student_profile
-        profile.school = admin_profile.school
-        profile.save()
+        # Tie to admin's school if school admin
+        if self.request.user.role == 'school_admin' or hasattr(self.request.user, 'school_admin_profile'):
+            try:
+                admin_profile = request.user.school_admin_profile
+                profile = user.student_profile
+                profile.school = admin_profile.school
+                profile.save()
+            except SchoolAdminProfile.DoesNotExist:
+                pass
         
         headers = self.get_success_headers(serializer.data)
         return Response(UserSerializer(user).data, status=status.HTTP_201_CREATED, headers=headers)
