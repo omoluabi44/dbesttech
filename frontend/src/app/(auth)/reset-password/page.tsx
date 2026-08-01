@@ -36,8 +36,8 @@ function ResetPasswordContent() {
       await api.post('/auth/password/reset/confirm/', { 
         uid, 
         token, 
-        new_password: password, 
-        new_password1: password // Some versions of dj-rest-auth expect new_password1
+        new_password1: password,
+        new_password2: confirmPassword
       });
       
       toast.success('Password has been reset successfully! You can now log in.');
