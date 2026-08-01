@@ -5,7 +5,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { toast } from 'sonner';
 import { Loader2, CheckCircle2, XCircle } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
-import api from '@/lib/api/config';
+import api from '@/lib/api/client';
 
 function VerifyEmailContent() {
   const router = useRouter();
