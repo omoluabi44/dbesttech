@@ -133,7 +133,7 @@ export default function UsersPage() {
         <div className="flex items-center gap-4">
           <select 
             aria-label="Filter by role"
-            className="bg-[var(--surface-light)] border border-[var(--surface-dark)] text-white text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 p-2.5"
+            className="bg-[var(--surface-light)] border border-[var(--surface-dark)] text-foreground text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 p-2.5"
             value={roleFilter}
             onChange={(e) => { setRoleFilter(e.target.value); setPage(1); }}
           >
@@ -182,13 +182,13 @@ export default function UsersPage() {
                           {user.first_name?.[0] || user.username[0].toUpperCase()}
                         </div>
                         <div>
-                          <p className="text-white font-medium">{user.first_name} {user.last_name}</p>
+                          <p className="text-foreground font-medium">{user.first_name} {user.last_name}</p>
                           <p className="text-sm text-gray-500">@{user.username}</p>
                         </div>
                       </div>
                     </td>
-                    <td className="p-4 text-gray-300">{user.email}</td>
-                    <td className="p-4 text-gray-300 capitalize">
+                    <td className="p-4 text-gray-600 dark:text-gray-300">{user.email}</td>
+                    <td className="p-4 text-gray-600 dark:text-gray-300 capitalize">
                       {user.role === 'student' ? user.student_profile?.level_display || 'Student' : user.role.replace('_', ' ')}
                     </td>
                     <td className="p-4 text-center">
@@ -232,7 +232,7 @@ export default function UsersPage() {
               <button 
                 onClick={() => setPage(p => Math.max(1, p - 1))}
                 disabled={page === 1}
-                className="p-2 rounded bg-[var(--surface-light)] text-gray-300 disabled:opacity-50 hover:bg-[var(--surface-dark)] focus:outline-none focus:ring-2 focus:ring-primary-500"
+                className="p-2 rounded bg-[var(--surface-light)] text-gray-600 dark:text-gray-300 disabled:opacity-50 hover:bg-[var(--surface-dark)] focus:outline-none focus:ring-2 focus:ring-primary-500"
                 aria-label="Previous Page"
               >
                 <ChevronLeft size={18} aria-hidden="true" />
@@ -240,7 +240,7 @@ export default function UsersPage() {
               <button 
                 onClick={() => setPage(p => Math.min(totalPages, p + 1))}
                 disabled={page === totalPages}
-                className="p-2 rounded bg-[var(--surface-light)] text-gray-300 disabled:opacity-50 hover:bg-[var(--surface-dark)] focus:outline-none focus:ring-2 focus:ring-primary-500"
+                className="p-2 rounded bg-[var(--surface-light)] text-gray-600 dark:text-gray-300 disabled:opacity-50 hover:bg-[var(--surface-dark)] focus:outline-none focus:ring-2 focus:ring-primary-500"
                 aria-label="Next Page"
               >
                 <ChevronRight size={18} aria-hidden="true" />
@@ -253,9 +253,9 @@ export default function UsersPage() {
       {/* Add User Modal */}
       {isAddModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm" role="dialog" aria-modal="true" aria-labelledby="add-user-title">
-          <div className="bg-[#1e293b] border border-slate-700 w-full max-w-md rounded-2xl shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-200">
-            <div className="flex justify-between items-center p-6 border-b border-slate-700">
-              <h2 id="add-user-title" className="text-xl font-bold text-white">Add New User</h2>
+          <div className="bg-[var(--surface)] border border-[var(--surface-dark)] w-full max-w-md rounded-2xl shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+            <div className="flex justify-between items-center p-6 border-b border-[var(--surface-dark)]">
+              <h2 id="add-user-title" className="text-xl font-bold text-foreground">Add New User</h2>
               <button onClick={() => setIsAddModalOpen(false)} className="text-gray-400 hover:text-white transition-colors focus:outline-none focus:ring-2 focus:ring-primary-500 rounded" aria-label="Close modal">
                 <X size={20} aria-hidden="true" />
               </button>
@@ -275,7 +275,7 @@ export default function UsersPage() {
                   <select
                     id="role-select"
                     required
-                    className="w-full bg-slate-800 border border-slate-700 text-white text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block p-2.5"
+                    className="w-full bg-[var(--surface-light)] border border-[var(--surface-dark)] text-foreground text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block p-2.5"
                     value={formData.role}
                     onChange={e => setFormData({...formData, role: e.target.value})}
                   >
@@ -289,7 +289,7 @@ export default function UsersPage() {
                     <select
                       id="level-select"
                       required
-                      className="w-full bg-slate-800 border border-slate-700 text-white text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block p-2.5"
+                      className="w-full bg-[var(--surface-light)] border border-[var(--surface-dark)] text-foreground text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block p-2.5"
                       value={formData.level}
                       onChange={e => setFormData({...formData, level: e.target.value})}
                     >
@@ -321,9 +321,9 @@ export default function UsersPage() {
       {/* View Details Modal */}
       {viewUser && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm" role="dialog" aria-modal="true" aria-labelledby="view-user-title">
-          <div className="bg-[#1e293b] border border-slate-700 w-full max-w-md rounded-2xl shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-200">
-            <div className="flex justify-between items-center p-6 border-b border-slate-700">
-              <h2 id="view-user-title" className="text-xl font-bold text-white">User Details</h2>
+          <div className="bg-[var(--surface)] border border-[var(--surface-dark)] w-full max-w-md rounded-2xl shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+            <div className="flex justify-between items-center p-6 border-b border-[var(--surface-dark)]">
+              <h2 id="view-user-title" className="text-xl font-bold text-foreground">User Details</h2>
               <button onClick={() => setViewUser(null)} className="text-gray-400 hover:text-white transition-colors focus:outline-none focus:ring-2 focus:ring-primary-500 rounded" aria-label="Close modal">
                 <X size={20} aria-hidden="true" />
               </button>
@@ -334,30 +334,30 @@ export default function UsersPage() {
                   {viewUser.first_name?.[0] || viewUser.username[0].toUpperCase()}
                 </div>
                 <div>
-                  <h3 className="text-xl font-bold text-white">{viewUser.first_name} {viewUser.last_name}</h3>
+                  <h3 className="text-xl font-bold text-foreground">{viewUser.first_name} {viewUser.last_name}</h3>
                   <p className="text-gray-400">@{viewUser.username}</p>
                 </div>
               </div>
               
               <div className="grid grid-cols-2 gap-4">
-                <div className="bg-slate-800 p-4 rounded-xl border border-slate-700">
+                <div className="bg-[var(--surface-light)] p-4 rounded-xl border border-[var(--surface-dark)]">
                   <p className="text-xs text-gray-500 mb-1 uppercase tracking-wider">Email</p>
-                  <p className="text-sm text-gray-200 flex items-center gap-2">
+                  <p className="text-sm text-gray-700 dark:text-gray-200 flex items-center gap-2">
                     <Mail size={14} className="text-gray-400" aria-hidden="true" />
                     {viewUser.email}
                   </p>
                 </div>
-                <div className="bg-slate-800 p-4 rounded-xl border border-slate-700">
+                <div className="bg-[var(--surface-light)] p-4 rounded-xl border border-[var(--surface-dark)]">
                   <p className="text-xs text-gray-500 mb-1 uppercase tracking-wider">Role</p>
-                  <p className="text-sm text-gray-200 capitalize">{viewUser.role.replace('_', ' ')}</p>
+                  <p className="text-sm text-gray-700 dark:text-gray-200 capitalize">{viewUser.role.replace('_', ' ')}</p>
                 </div>
                 {viewUser.role === 'student' && (
-                  <div className="bg-slate-800 p-4 rounded-xl border border-slate-700">
+                  <div className="bg-[var(--surface-light)] p-4 rounded-xl border border-[var(--surface-dark)]">
                     <p className="text-xs text-gray-500 mb-1 uppercase tracking-wider">Class Level</p>
-                    <p className="text-sm text-gray-200">{viewUser.student_profile?.level_display || 'N/A'}</p>
+                    <p className="text-sm text-gray-700 dark:text-gray-200">{viewUser.student_profile?.level_display || 'N/A'}</p>
                   </div>
                 )}
-                <div className="bg-slate-800 p-4 rounded-xl border border-slate-700">
+                <div className="bg-[var(--surface-light)] p-4 rounded-xl border border-[var(--surface-dark)]">
                   <p className="text-xs text-gray-500 mb-1 uppercase tracking-wider">Status</p>
                   <p className="text-sm flex items-center gap-1">
                     {viewUser.email_verified ? (

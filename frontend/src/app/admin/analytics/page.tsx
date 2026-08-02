@@ -87,7 +87,7 @@ export default function AnalyticsPage() {
               <Users className="w-5 h-5" aria-hidden="true" />
             </div>
           </div>
-          <p className="text-3xl font-bold text-white">{stats?.total_students || 0}</p>
+          <p className="text-3xl font-bold text-foreground">{stats?.total_students || 0}</p>
           <p className="text-sm text-green-400 mt-2 flex items-center gap-1">
             <TrendingUp size={14} /> +12% this month
           </p>
@@ -100,7 +100,7 @@ export default function AnalyticsPage() {
               <UserPlus className="w-5 h-5" aria-hidden="true" />
             </div>
           </div>
-          <p className="text-3xl font-bold text-white">142</p>
+          <p className="text-3xl font-bold text-foreground">142</p>
           <p className="text-sm text-green-400 mt-2 flex items-center gap-1">
             <TrendingUp size={14} /> +5% vs last week
           </p>
@@ -113,7 +113,7 @@ export default function AnalyticsPage() {
               <Activity className="w-5 h-5" aria-hidden="true" />
             </div>
           </div>
-          <p className="text-3xl font-bold text-white">856</p>
+          <p className="text-3xl font-bold text-foreground">856</p>
           <p className="text-sm text-gray-400 mt-2">Currently online: 45</p>
         </div>
       </div>

@@ -181,29 +181,29 @@ export default function QuestionBankPage() {
           <div className="p-6">
             {/* Filters */}
             <div className="grid grid-cols-1 md:grid-cols-5 gap-4 mb-6">
-              <select name="subject_id" value={filters.subject_id} onChange={handleFilterChange} className="bg-[var(--background)] border border-[var(--surface-dark)] rounded-lg px-3 py-2 text-white focus:border-primary-500 outline-none">
+              <select name="subject_id" value={filters.subject_id} onChange={handleFilterChange} className="bg-[var(--background)] border border-[var(--surface-dark)] rounded-lg px-3 py-2 text-foreground focus:border-primary-500 outline-none">
                 <option value="">All Subjects</option>
                 {subjects.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
               </select>
-              <select name="level" value={filters.level} onChange={handleFilterChange} className="bg-[var(--background)] border border-[var(--surface-dark)] rounded-lg px-3 py-2 text-white focus:border-primary-500 outline-none">
+              <select name="level" value={filters.level} onChange={handleFilterChange} className="bg-[var(--background)] border border-[var(--surface-dark)] rounded-lg px-3 py-2 text-foreground focus:border-primary-500 outline-none">
                 <option value="">All Levels</option>
                 <option value="primary_1">Primary 1</option>
                 <option value="jss_1">JSS 1</option>
                 <option value="ss_1">SS 1</option>
                 <option value="ss_3">SS 3</option>
               </select>
-              <select name="difficulty" value={filters.difficulty} onChange={handleFilterChange} className="bg-[var(--background)] border border-[var(--surface-dark)] rounded-lg px-3 py-2 text-white focus:border-primary-500 outline-none">
+              <select name="difficulty" value={filters.difficulty} onChange={handleFilterChange} className="bg-[var(--background)] border border-[var(--surface-dark)] rounded-lg px-3 py-2 text-foreground focus:border-primary-500 outline-none">
                 <option value="">All Difficulties</option>
                 <option value="easy">Easy</option>
                 <option value="medium">Medium</option>
                 <option value="hard">Hard</option>
               </select>
-              <select name="is_practice" value={filters.is_practice} onChange={handleFilterChange} className="bg-[var(--background)] border border-[var(--surface-dark)] rounded-lg px-3 py-2 text-white focus:border-primary-500 outline-none">
+              <select name="is_practice" value={filters.is_practice} onChange={handleFilterChange} className="bg-[var(--background)] border border-[var(--surface-dark)] rounded-lg px-3 py-2 text-foreground focus:border-primary-500 outline-none">
                 <option value="">Any Type</option>
                 <option value="true">Practice Quiz</option>
                 <option value="false">Not Practice</option>
               </select>
-              <select name="is_past_question" value={filters.is_past_question} onChange={handleFilterChange} className="bg-[var(--background)] border border-[var(--surface-dark)] rounded-lg px-3 py-2 text-white focus:border-primary-500 outline-none">
+              <select name="is_past_question" value={filters.is_past_question} onChange={handleFilterChange} className="bg-[var(--background)] border border-[var(--surface-dark)] rounded-lg px-3 py-2 text-foreground focus:border-primary-500 outline-none">
                 <option value="">Any Source</option>
                 <option value="true">Past Questions</option>
                 <option value="false">Not Past Questions</option>
@@ -229,7 +229,7 @@ export default function QuestionBankPage() {
                   ) : (
                     questions.map((q) => (
                       <tr key={q.id} className="hover:bg-[var(--background)] transition-colors">
-                        <td className="p-4 text-white text-sm max-w-md truncate">{q.questionText}</td>
+                        <td className="p-4 text-foreground text-sm max-w-md truncate">{q.questionText}</td>
                         <td className="p-4 text-gray-400 text-sm">{q.questionType === 'mcq' ? 'Multiple Choice' : 'Theory'}</td>
                         <td className="p-4 text-green-400 font-medium text-sm">{q.correct_answer}</td>
                         <td className="p-4 text-center">
@@ -259,14 +259,14 @@ export default function QuestionBankPage() {
                   <button 
                     disabled={!pagination.previous}
                     onClick={() => fetchQuestions(pagination.previous!)}
-                    className="p-2 bg-[var(--background)] border border-[var(--surface-dark)] rounded-lg text-gray-400 hover:text-white disabled:opacity-50 transition-colors"
+                    className="p-2 bg-[var(--background)] border border-[var(--surface-dark)] rounded-lg text-gray-400 hover:text-foreground disabled:opacity-50 transition-colors"
                   >
                     <ChevronLeft className="w-5 h-5" />
                   </button>
                   <button 
                     disabled={!pagination.next}
                     onClick={() => fetchQuestions(pagination.next!)}
-                    className="p-2 bg-[var(--background)] border border-[var(--surface-dark)] rounded-lg text-gray-400 hover:text-white disabled:opacity-50 transition-colors"
+                    className="p-2 bg-[var(--background)] border border-[var(--surface-dark)] rounded-lg text-gray-400 hover:text-foreground disabled:opacity-50 transition-colors"
                   >
                     <ChevronRight className="w-5 h-5" />
                   </button>
@@ -283,13 +283,13 @@ export default function QuestionBankPage() {
                 <div className="bg-[var(--background)] p-1 rounded-lg flex border border-[var(--surface-dark)]">
                   <button 
                     onClick={() => setImportType('quizzes')} 
-                    className={`px-4 py-2 text-sm rounded-md transition-colors ${importType === 'quizzes' ? 'bg-[var(--surface-dark)] text-white' : 'text-gray-500'}`}
+                    className={`px-4 py-2 text-sm rounded-md transition-colors ${importType === 'quizzes' ? 'bg-[var(--surface-dark)] text-foreground' : 'text-gray-500'}`}
                   >
                     Practice Quizzes
                   </button>
                   <button 
                     onClick={() => setImportType('past_questions')} 
-                    className={`px-4 py-2 text-sm rounded-md transition-colors ${importType === 'past_questions' ? 'bg-[var(--surface-dark)] text-white' : 'text-gray-500'}`}
+                    className={`px-4 py-2 text-sm rounded-md transition-colors ${importType === 'past_questions' ? 'bg-[var(--surface-dark)] text-foreground' : 'text-gray-500'}`}
                   >
                     Past Questions
                   </button>

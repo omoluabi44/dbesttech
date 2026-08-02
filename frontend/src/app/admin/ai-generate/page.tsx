@@ -124,7 +124,7 @@ export default function AIGeneratePage() {
           <BrainCircuit className="w-6 h-6 text-primary-400" />
         </div>
         <div>
-          <h1 className="text-2xl font-bold text-white">AI Quiz Generator</h1>
+          <h1 className="text-2xl font-bold text-foreground">AI Quiz Generator</h1>
           <p className="text-gray-400">Generate high-quality multiple choice questions instantly using Gemini AI.</p>
         </div>
       </div>
@@ -133,14 +133,14 @@ export default function AIGeneratePage() {
         {/* Generator Form */}
         <div className="lg:col-span-1 space-y-6">
           <div className="bg-[var(--surface)] border border-[var(--surface-dark)] rounded-2xl p-6">
-            <h2 className="text-lg font-semibold text-white mb-4">Generation Settings</h2>
+            <h2 className="text-lg font-semibold text-foreground mb-4">Generation Settings</h2>
             
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-gray-400 mb-1">Subject</label>
                 <select 
                   {...register('subject_id', { required: true })}
-                  className="w-full bg-[var(--background)] border border-[var(--surface-dark)] rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-primary-500"
+                  className="w-full bg-[var(--background)] border border-[var(--surface-dark)] rounded-lg px-4 py-2.5 text-foreground focus:outline-none focus:border-primary-500"
                 >
                   <option value="">Select Subject...</option>
                   {subjects.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
@@ -151,7 +151,7 @@ export default function AIGeneratePage() {
                 <label className="block text-sm font-medium text-gray-400 mb-1">Topic (Optional)</label>
                 <select 
                   {...register('topic_id')}
-                  className="w-full bg-[var(--background)] border border-[var(--surface-dark)] rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-primary-500"
+                  className="w-full bg-[var(--background)] border border-[var(--surface-dark)] rounded-lg px-4 py-2.5 text-foreground focus:outline-none focus:border-primary-500"
                 >
                   <option value="">Any Topic (Mixed)</option>
                   {topics.map(t => <option key={t.id} value={t.id}>{t.name}</option>)}
@@ -162,7 +162,7 @@ export default function AIGeneratePage() {
                 <label className="block text-sm font-medium text-gray-400 mb-1">Class Level</label>
                 <select 
                   {...register('level', { required: true })}
-                  className="w-full bg-[var(--background)] border border-[var(--surface-dark)] rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-primary-500"
+                  className="w-full bg-[var(--background)] border border-[var(--surface-dark)] rounded-lg px-4 py-2.5 text-foreground focus:outline-none focus:border-primary-500"
                 >
                   <option value="">Select Level...</option>
                   <option value="primary_1">Primary 1</option>
@@ -185,7 +185,7 @@ export default function AIGeneratePage() {
                   <label className="block text-sm font-medium text-gray-400 mb-1">Difficulty</label>
                   <select 
                     {...register('difficulty')}
-                    className="w-full bg-[var(--background)] border border-[var(--surface-dark)] rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-primary-500"
+                    className="w-full bg-[var(--background)] border border-[var(--surface-dark)] rounded-lg px-4 py-2.5 text-foreground focus:outline-none focus:border-primary-500"
                   >
                     <option value="easy">Easy</option>
                     <option value="medium">Medium</option>
@@ -199,7 +199,7 @@ export default function AIGeneratePage() {
                     min="1"
                     max="50"
                     {...register('num_questions', { required: true, min: 1, max: 50 })}
-                    className="w-full bg-[var(--background)] border border-[var(--surface-dark)] rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-primary-500"
+                    className="w-full bg-[var(--background)] border border-[var(--surface-dark)] rounded-lg px-4 py-2.5 text-foreground focus:outline-none focus:border-primary-500"
                   />
                 </div>
               </div>
@@ -210,7 +210,7 @@ export default function AIGeneratePage() {
                   {...register('prompt')}
                   placeholder="E.g., Focus on WAEC standard questions about Osmosis in plant cells..."
                   rows={4}
-                  className="w-full bg-[var(--background)] border border-[var(--surface-dark)] rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-primary-500 resize-none"
+                  className="w-full bg-[var(--background)] border border-[var(--surface-dark)] rounded-lg px-4 py-2.5 text-foreground focus:outline-none focus:border-primary-500 resize-none"
                 />
               </div>
 
@@ -235,7 +235,7 @@ export default function AIGeneratePage() {
             <div className="space-y-4">
               <div className="flex items-center justify-between bg-[var(--surface)] p-4 rounded-xl border border-[var(--surface-dark)]">
                 <div>
-                  <h3 className="text-lg font-bold text-white">Preview Generated Questions</h3>
+                  <h3 className="text-lg font-bold text-foreground">Preview Generated Questions</h3>
                   <p className="text-sm text-gray-400">{generatedQuestions.length} questions drafted. Review and edit before saving.</p>
                 </div>
                 <button
@@ -257,7 +257,7 @@ export default function AIGeneratePage() {
                         <textarea
                           value={editForm?.question_text}
                           onChange={(e) => setEditForm(prev => prev ? {...prev, question_text: e.target.value} : null)}
-                          className="w-full bg-[var(--background)] border border-[var(--surface-dark)] rounded-lg p-3 text-white"
+                          className="w-full bg-[var(--background)] border border-[var(--surface-dark)] rounded-lg p-3 text-foreground"
                           rows={3}
                         />
                         <div className="grid grid-cols-2 gap-3">
@@ -288,7 +288,7 @@ export default function AIGeneratePage() {
                                     return { ...prev, options: newOpts };
                                   });
                                 }}
-                                className="flex-1 bg-[var(--background)] border border-[var(--surface-dark)] rounded p-2 text-sm text-white"
+                                className="flex-1 bg-[var(--background)] border border-[var(--surface-dark)] rounded p-2 text-sm text-foreground"
                               />
                             </div>
                           ))}
@@ -299,7 +299,7 @@ export default function AIGeneratePage() {
                             type="text"
                             value={editForm?.explanation}
                             onChange={(e) => setEditForm(prev => prev ? {...prev, explanation: e.target.value} : null)}
-                            className="w-full bg-[var(--background)] border border-[var(--surface-dark)] rounded p-2 text-sm text-gray-300"
+                            className="w-full bg-[var(--background)] border border-[var(--surface-dark)] rounded p-2 text-sm text-gray-600 dark:text-gray-300"
                           />
                         </div>
                         <div className="flex justify-end gap-2">
@@ -311,7 +311,7 @@ export default function AIGeneratePage() {
                       // View Mode
                       <div>
                         <div className="flex justify-between items-start mb-3">
-                          <h4 className="text-white font-medium text-lg leading-relaxed pr-8">
+                          <h4 className="text-foreground font-medium text-lg leading-relaxed pr-8">
                             <span className="text-primary-500 mr-2">{idx + 1}.</span> 
                             {q.question_text}
                           </h4>
@@ -331,7 +331,7 @@ export default function AIGeneratePage() {
                               <div className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${opt.is_correct ? 'bg-green-500 text-white' : 'bg-[var(--surface-dark)] text-gray-400'}`}>
                                 {opt.label}
                               </div>
-                              <span className={opt.is_correct ? 'text-green-400' : 'text-gray-300'}>{opt.text}</span>
+                              <span className={opt.is_correct ? 'text-green-400' : 'text-gray-600 dark:text-gray-300'}>{opt.text}</span>
                               {opt.is_correct && <CheckCircle2 className="w-4 h-4 text-green-500 ml-auto" />}
                             </div>
                           ))}
@@ -350,7 +350,7 @@ export default function AIGeneratePage() {
           ) : (
             <div className="h-full min-h-[400px] border-2 border-dashed border-[var(--surface-dark)] rounded-2xl flex flex-col items-center justify-center text-center p-8">
               <BrainCircuit className="w-16 h-16 text-gray-600 mb-4" />
-              <h3 className="text-xl font-semibold text-gray-300 mb-2">No Questions Generated Yet</h3>
+              <h3 className="text-xl font-semibold text-gray-600 dark:text-gray-300 mb-2">No Questions Generated Yet</h3>
               <p className="text-gray-500 max-w-sm">
                 Use the form on the left to configure your requirements, and our AI will draft high-quality educational questions for you.
               </p>

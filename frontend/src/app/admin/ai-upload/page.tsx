@@ -115,7 +115,7 @@ export default function AIUploadPage() {
           <UploadCloud className="w-6 h-6 text-primary-400" />
         </div>
         <div>
-          <h1 className="text-2xl font-bold text-white">Upload Past Questions</h1>
+          <h1 className="text-2xl font-bold text-foreground">Upload Past Questions</h1>
           <p className="text-gray-400">Upload a PDF or Image of a past exam and AI will automatically extract and save the questions.</p>
         </div>
       </div>
@@ -132,7 +132,7 @@ export default function AIUploadPage() {
                   <BrainCircuit className="w-8 h-8 text-primary-500 absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2" />
                 </div>
                 <div>
-                  <h3 className="text-xl font-bold text-white mb-2">AI is Processing Document</h3>
+                  <h3 className="text-xl font-bold text-foreground mb-2">AI is Processing Document</h3>
                   <p className="text-gray-400 max-w-md mx-auto">
                     The AI is currently reading the document, identifying questions, options, and correct answers. 
                     This usually takes 1-3 minutes depending on the document length. Please don't close this page.
@@ -147,9 +147,9 @@ export default function AIUploadPage() {
                   <CheckCircle2 className="w-12 h-12 text-green-500" />
                 </div>
                 <div>
-                  <h3 className="text-2xl font-bold text-white mb-2">Extraction Complete!</h3>
+                  <h3 className="text-2xl font-bold text-foreground mb-2">Extraction Complete!</h3>
                   <p className="text-gray-400 mb-6 text-lg">
-                    Successfully extracted <span className="text-white font-bold">{extractedCount}</span> questions.
+                    Successfully extracted <span className="text-foreground font-bold">{extractedCount}</span> questions.
                   </p>
                   <button 
                     onClick={handleReset}
@@ -167,13 +167,13 @@ export default function AIUploadPage() {
                   <AlertCircle className="w-12 h-12 text-red-500" />
                 </div>
                 <div>
-                  <h3 className="text-2xl font-bold text-white mb-2">Extraction Failed</h3>
+                  <h3 className="text-2xl font-bold text-foreground mb-2">Extraction Failed</h3>
                   <p className="text-red-400 max-w-md mx-auto mb-6 bg-red-500/10 p-4 rounded-lg border border-red-500/20">
                     {errorMsg || "An unknown error occurred during extraction."}
                   </p>
                   <button 
                     onClick={() => { setUploadId(null); setStatus(null); }}
-                    className="px-6 py-2.5 bg-[var(--surface-dark)] hover:bg-gray-700 text-white rounded-lg font-medium transition-colors"
+                    className="px-6 py-2.5 bg-[var(--surface-dark)] hover:bg-gray-700 text-foreground rounded-lg font-medium transition-colors"
                   >
                     Try Again
                   </button>
@@ -189,7 +189,7 @@ export default function AIUploadPage() {
                 <label className="block text-sm font-medium text-gray-400 mb-1">Subject</label>
                 <select 
                   {...register('subject_id', { required: true })}
-                  className="w-full bg-[var(--background)] border border-[var(--surface-dark)] rounded-lg px-4 py-3 text-white focus:outline-none focus:border-primary-500"
+                  className="w-full bg-[var(--background)] border border-[var(--surface-dark)] rounded-lg px-4 py-3 text-foreground focus:outline-none focus:border-primary-500"
                 >
                   <option value="">Select Subject...</option>
                   {subjects.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
@@ -200,7 +200,7 @@ export default function AIUploadPage() {
                 <label className="block text-sm font-medium text-gray-400 mb-1">Class Level</label>
                 <select 
                   {...register('level', { required: true })}
-                  className="w-full bg-[var(--background)] border border-[var(--surface-dark)] rounded-lg px-4 py-3 text-white focus:outline-none focus:border-primary-500"
+                  className="w-full bg-[var(--background)] border border-[var(--surface-dark)] rounded-lg px-4 py-3 text-foreground focus:outline-none focus:border-primary-500"
                 >
                   <option value="">Select Level...</option>
                   <option value="primary_1">Primary 1</option>
@@ -222,7 +222,7 @@ export default function AIUploadPage() {
                 <label className="block text-sm font-medium text-gray-400 mb-1">Exam Body</label>
                 <select 
                   {...register('exam_body', { required: true })}
-                  className="w-full bg-[var(--background)] border border-[var(--surface-dark)] rounded-lg px-4 py-3 text-white focus:outline-none focus:border-primary-500"
+                  className="w-full bg-[var(--background)] border border-[var(--surface-dark)] rounded-lg px-4 py-3 text-foreground focus:outline-none focus:border-primary-500"
                 >
                   <option value="">Select Exam Body...</option>
                   <option value="federal_common_entrance">Federal Common Entrance</option>
@@ -244,7 +244,7 @@ export default function AIUploadPage() {
                   max={new Date().getFullYear()}
                   {...register('year', { required: true })}
                   placeholder="e.g., 2023"
-                  className="w-full bg-[var(--background)] border border-[var(--surface-dark)] rounded-lg px-4 py-3 text-white focus:outline-none focus:border-primary-500"
+                  className="w-full bg-[var(--background)] border border-[var(--surface-dark)] rounded-lg px-4 py-3 text-foreground focus:outline-none focus:border-primary-500"
                 />
               </div>
             </div>
@@ -268,13 +268,13 @@ export default function AIUploadPage() {
                   </div>
                   {file ? (
                     <>
-                      <h4 className="text-lg font-medium text-white mb-1">{file.name}</h4>
+                      <h4 className="text-lg font-medium text-foreground mb-1">{file.name}</h4>
                       <p className="text-sm text-gray-400">{(file.size / (1024 * 1024)).toFixed(2)} MB</p>
                       <span className="text-primary-500 text-sm mt-3 font-medium hover:underline">Change File</span>
                     </>
                   ) : (
                     <>
-                      <h4 className="text-lg font-medium text-white mb-1">Click to browse</h4>
+                      <h4 className="text-lg font-medium text-foreground mb-1">Click to browse</h4>
                       <p className="text-sm text-gray-400 max-w-sm">
                         Upload a scanned PDF or clear images of the past questions. The AI will read the text automatically.
                       </p>

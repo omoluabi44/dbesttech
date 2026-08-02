@@ -68,7 +68,7 @@ export default function AdminDashboard() {
                 <GraduationCap className="w-5 h-5" />
               </div>
             </div>
-            <p className="text-3xl font-bold text-white">{stats?.total_schools || 0}</p>
+            <p className="text-3xl font-bold text-foreground">{stats?.total_schools || 0}</p>
           </article>
         )}
 
@@ -79,7 +79,7 @@ export default function AdminDashboard() {
               <Users className="w-5 h-5" />
             </div>
           </div>
-          <p className="text-3xl font-bold text-white">{stats?.total_students || 0}</p>
+          <p className="text-3xl font-bold text-foreground">{stats?.total_students || 0}</p>
         </article>
       </section>
     </div>
