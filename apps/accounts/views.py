@@ -28,7 +28,7 @@ class RegisterView(generics.CreateAPIView):
         if email:
             try:
                 existing_user = User.objects.get(email=email)
-                email_obj = EmailAddress.objects.filter(user=existing_user, primary=True).first()
+                email_obj = EmailAddress.objects.filter(user=existing_user, email=email).first()
                 
                 # If user exists but email is NOT verified, overwrite them!
                 if not email_obj or not email_obj.verified:
@@ -62,6 +62,9 @@ class RegisterView(generics.CreateAPIView):
                         email_obj = EmailAddress.objects.create(
                             user=existing_user, email=existing_user.email, primary=True, verified=False
                         )
+                    elif not email_obj.primary:
+                        email_obj.primary = True
+                        email_obj.save()
                     email_obj.send_confirmation(request, signup=True)
                     
                     return Response({
@@ -189,7 +192,7 @@ class ResendVerificationView(APIView):
             # Don't reveal that the email doesn't exist
             return Response({'detail': 'If an account with that email exists, a verification email has been sent.'})
 
-        email_obj = EmailAddress.objects.filter(user=user, primary=True).first()
+        email_obj = EmailAddress.objects.filter(user=user, email=email).first()
         if email_obj and email_obj.verified:
             return Response({'detail': 'This email is already verified. You can log in.'})
 
@@ -199,6 +202,9 @@ class ResendVerificationView(APIView):
                 email_obj = EmailAddress.objects.create(
                     user=user, email=user.email, primary=True, verified=False
                 )
+            elif not email_obj.primary:
+                email_obj.primary = True
+                email_obj.save()
             email_obj.send_confirmation(request, signup=False)
             return Response({'detail': 'Verification email sent. Please check your inbox.'})
         except Exception as e:
