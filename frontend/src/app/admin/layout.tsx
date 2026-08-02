@@ -16,7 +16,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   useEffect(() => {
     if (!isLoading && !user) {
       router.push('/login');
-    } else if (user && !['root_admin', 'school_admin'].includes(user.role)) {
+    } else if (user && !['root_admin', 'school_admin', 'admin'].includes(user.role)) {
       router.push('/dashboard');
     }
   }, [user, isLoading, router]);
@@ -31,7 +31,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
   const navItems = [
     { name: 'Dashboard', href: '/admin', icon: LayoutDashboard },
-    ...(user.role === 'admin'
+    ...(['admin', 'root_admin'].includes(user.role)
       ? [
           { name: 'AI Quiz Gen', href: '/admin/ai-generate', icon: BrainCircuit },
           { name: 'Upload PQ', href: '/admin/ai-upload', icon: UploadCloud },
@@ -54,7 +54,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
               </h2>
             </div>
             <p className="text-sm text-gray-400 mt-1">
-              {user.role === 'admin' ? 'Root Administrator' : 'Administrator'}
+              {['admin', 'root_admin'].includes(user.role) ? 'Root Administrator' : 'Administrator'}
             </p>
           </div>
           <nav className="flex-1 px-4 space-y-2" aria-label="Admin Navigation">
