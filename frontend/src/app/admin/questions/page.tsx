@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { UploadCloud, CheckCircle2, AlertCircle, Search, Filter, Edit2, Trash2, Loader2, ChevronLeft, ChevronRight } from 'lucide-react';
 import client from '@/lib/api/client';
 import { getSubjects, getAdminQuestions } from '@/lib/api/quiz';
-import { Subject } from '@/types/quiz';
+import { Subject } from '@/lib/types/quiz';
 import { toast } from 'react-hot-toast';
 
 export default function QuestionBankPage() {
