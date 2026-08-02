@@ -52,8 +52,10 @@ if os.getenv('USE_HTTPS_PROXY', 'False').lower() == 'true':
 # Static files — whitenoise for serving without separate volume
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
-# Email — configure a real email backend in production
-EMAIL_BACKEND = 'config.email_backend.ThreadedEmailBackend'
+# Email — sent asynchronously via Celery
+EMAIL_BACKEND = 'config.email_backend.CeleryEmailBackend'
+
+# The actual SMTP config used by the Celery worker to send emails
 EMAIL_HOST = os.getenv('EMAIL_HOST', 'smtp.zoho.com')
 EMAIL_PORT = int(os.getenv('EMAIL_PORT', '465'))
 EMAIL_USE_SSL = True
@@ -61,3 +63,11 @@ EMAIL_USE_TLS = False
 EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER', 'dbestquiz@dbestquiz.com')
 EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD', '')
 DEFAULT_FROM_EMAIL = os.getenv('DEFAULT_FROM_EMAIL', 'DBestQuiz <dbestquiz@dbestquiz.com>')
+
+# Celery Configuration
+CELERY_BROKER_URL = os.getenv('CELERY_BROKER_URL', 'redis://redis:6379/0')
+CELERY_RESULT_BACKEND = os.getenv('CELERY_RESULT_BACKEND', 'redis://redis:6379/0')
+CELERY_ACCEPT_CONTENT = ['json']
+CELERY_TASK_SERIALIZER = 'json'
+CELERY_RESULT_SERIALIZER = 'json'
+CELERY_TIMEZONE = 'UTC'

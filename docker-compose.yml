@@ -1,6 +1,15 @@
 version: '3.8'
 
 services:
+  redis:
+    image: redis:7-alpine
+    container_name: redis
+    restart: always
+    ports:
+      - "6379:6379"
+    networks:
+      - app-network
+
   backend:
     build:
       context: .
@@ -12,7 +21,25 @@ services:
       - .env
     ports:
       - "8000:8000"
+    depends_on:
+      - redis
     command: gunicorn --bind 0.0.0.0:8000 config.wsgi:application
+    networks:
+      - app-network
+
+  celery_worker:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: django-backend:latest
+    container_name: celery_worker
+    restart: always
+    env_file:
+      - .env
+    depends_on:
+      - redis
+      - backend
+    command: celery -A config worker --loglevel=info --concurrency=2
     networks:
       - app-network
 

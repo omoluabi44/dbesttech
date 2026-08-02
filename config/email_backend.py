@@ -1,42 +1,41 @@
 """
-Threaded email backend that sends emails in a background thread
-so the HTTP response is not blocked by slow SMTP connections.
+Celery email backend that sends emails asynchronously via Celery tasks.
 """
-import threading
-from django.core.mail.backends.smtp import EmailBackend as SMTPBackend
+from django.core.mail.backends.base import BaseEmailBackend
+from .tasks import send_email_task
 
 
-class ThreadedEmailBackend(SMTPBackend):
+class CeleryEmailBackend(BaseEmailBackend):
     """
-    A wrapper around Django's default SMTP email backend that sends
-    each email in a separate thread, preventing slow SMTP servers
-    (like Zoho) from blocking the API response.
+    Email backend that queues all emails as Celery tasks.
+    Emails are sent via SMTP in the Celery worker process,
+    not in the Django request/response cycle.
     """
 
     def send_messages(self, email_messages):
-        """
-        Send one or more EmailMessage objects in a background thread
-        and return the number of email messages (optimistically).
-        """
         if not email_messages:
             return 0
 
-        thread = threading.Thread(
-            target=self._send_in_background,
-            args=(email_messages,),
-            daemon=True,
-        )
-        thread.start()
+        count = 0
+        for message in email_messages:
+            try:
+                send_email_task.delay(
+                    subject=message.subject,
+                    body=message.body,
+                    from_email=message.from_email,
+                    recipient_list=list(message.to),
+                    html_message=self._get_html_body(message),
+                )
+                count += 1
+            except Exception:
+                if not self.fail_silently:
+                    raise
+        return count
 
-        # Return immediately — assume all messages will be sent
-        return len(email_messages)
-
-    def _send_in_background(self, email_messages):
-        """Actually send the emails using the parent SMTP backend."""
-        try:
-            super().send_messages(email_messages)
-        except Exception as e:
-            # Log the error but don't crash the thread
-            import logging
-            logger = logging.getLogger(__name__)
-            logger.error(f"Background email sending failed: {e}")
+    def _get_html_body(self, message):
+        """Extract HTML alternative from the email message if present."""
+        if hasattr(message, 'alternatives'):
+            for content, mimetype in message.alternatives:
+                if mimetype == 'text/html':
+                    return content
+        return None
