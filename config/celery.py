@@ -7,7 +7,7 @@ from celery import Celery
 # Set the default Django settings module
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'config.settings.production')
 
-app = Celery('config')
+app = Celery('config', include=['config.tasks'])
 
 # Load config from Django settings, using the CELERY_ namespace
 app.config_from_object('django.conf:settings', namespace='CELERY')
