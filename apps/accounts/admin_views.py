@@ -66,22 +66,39 @@ class SchoolAdminDashboardViewSet(viewsets.ViewSet):
         except SchoolAdminProfile.DoesNotExist:
             return Response({'error': 'Not assigned to any school.'}, status=403)
 
+from rest_framework.pagination import PageNumberPagination
+
+class StandardResultsSetPagination(PageNumberPagination):
+    page_size = 10
+    page_size_query_param = 'page_size'
+    max_page_size = 100
+
 class SchoolAdminStudentViewSet(viewsets.ModelViewSet):
     """
     ViewSet for School Admins to manage students in their school.
     """
     permission_classes = [permissions.IsAuthenticated, IsSchoolAdmin]
+    pagination_class = StandardResultsSetPagination
 
     def get_queryset(self):
+        role = self.request.query_params.get('role')
         if self.request.user.role in ['root_admin', 'admin'] or self.request.user.is_superuser:
-            return User.objects.filter(role='student').order_by('-date_joined')
+            qs = User.objects.all().order_by('-date_joined')
+            if role:
+                qs = qs.filter(role=role)
+            else:
+                qs = qs.filter(role__in=['student', 'admin', 'root_admin'])
+            return qs
             
         try:
             admin_profile = self.request.user.school_admin_profile
-            return User.objects.filter(
+            qs = User.objects.filter(
                 role='student',
                 student_profile__school=admin_profile.school
             ).order_by('-date_joined')
+            if role == 'student':
+                return qs
+            return qs # school admin only manages students
         except SchoolAdminProfile.DoesNotExist:
             return User.objects.none()
 

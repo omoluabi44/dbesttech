@@ -80,3 +80,45 @@ export const getPastQuestionReview = async (sessionId: number): Promise<import('
   return res.data;
 };
 
+// Admin AI Endpoints
+export const uploadPastQuestionsForAI = async (formData: FormData) => {
+  const res = await client.post('/quiz/admin/ai/upload/', formData, {
+    headers: {
+      'Content-Type': 'multipart/form-data',
+    },
+  });
+  return res.data;
+};
+
+export const checkAIUploadStatus = async (uploadId: number) => {
+  const res = await client.get(`/quiz/admin/ai/upload/${uploadId}/status/`);
+  return res.data;
+};
+
+export const generateQuizWithAI = async (data: {
+  subject_id: number;
+  topic_id?: number | null;
+  level: string;
+  difficulty: string;
+  num_questions: number;
+  prompt: string;
+}) => {
+  const res = await client.post('/quiz/admin/ai/generate/', data);
+  return res.data;
+};
+
+export const bulkSaveAIQuiz = async (data: {
+  questions: any[];
+  subject_id: number;
+  topic_id?: number | null;
+  level: string;
+  difficulty: string;
+}) => {
+  const res = await client.post('/quiz/admin/ai/bulk-save/', data);
+  return res.data;
+};
+
+export const getAdminQuestions = async (params: any) => {
+  const res = await client.get('/quiz/admin/questions/', { params });
+  return res.data;
+};

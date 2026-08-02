@@ -4,7 +4,7 @@ import { useAuthStore } from '@/lib/stores/authStore';
 import { useRouter, usePathname } from 'next/navigation';
 import { useEffect } from 'react';
 import Link from 'next/link';
-import { LayoutDashboard, GraduationCap, Users, LogOut, FileText } from 'lucide-react';
+import { LayoutDashboard, Users, LogOut, FileText, BarChart, GraduationCap, BrainCircuit, UploadCloud } from 'lucide-react';
 import { Navbar } from '@/components/layout/Navbar';
 import { Footer } from '@/components/layout/Footer';
 
@@ -31,8 +31,12 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
   const navItems = [
     { name: 'Dashboard', href: '/admin', icon: LayoutDashboard },
-    ...(user.role === 'admin'
-      ? [{ name: 'Schools', href: '/admin/schools', icon: GraduationCap }]
+    ...(user.role === 'root_admin'
+      ? [
+          { name: 'Schools', href: '/admin/schools', icon: GraduationCap },
+          { name: 'AI Quiz Gen', href: '/admin/ai-generate', icon: BrainCircuit },
+          { name: 'Upload PQ', href: '/admin/ai-upload', icon: UploadCloud },
+        ]
       : [{ name: 'My Students', href: '/admin/students', icon: Users }]),
     { name: 'Question Bank', href: '/admin/questions', icon: FileText },
   ];
@@ -42,7 +46,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       <Navbar />
       <div className="flex-1 flex overflow-hidden">
         {/* Sidebar */}
-        <aside className="w-64 bg-[var(--surface)] border-r border-[var(--surface-dark)] hidden md:flex flex-col">
+        <aside className="w-64 bg-[var(--surface)] border-r border-[var(--surface-dark)] hidden md:flex flex-col" aria-label="Admin Sidebar">
           <div className="p-6 flex flex-col gap-3">
             <div className="flex items-center gap-3">
               <img src="/logo.jpg" alt="DBestQuiz Logo" className="w-8 h-8 object-contain rounded-lg shadow-sm" />
@@ -51,10 +55,10 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
               </h2>
             </div>
             <p className="text-sm text-gray-400 mt-1">
-              {user.role === 'admin' ? 'Root Administrator' : 'School Administrator'}
+              {user.role === 'admin' ? 'Root Administrator' : 'Administrator'}
             </p>
           </div>
-          <nav className="flex-1 px-4 space-y-2">
+          <nav className="flex-1 px-4 space-y-2" aria-label="Admin Navigation">
             {navItems.map((item) => {
               const Icon = item.icon;
               const isActive = pathname === item.href;

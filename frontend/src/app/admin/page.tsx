@@ -51,37 +51,37 @@ export default function AdminDashboard() {
   }
 
   return (
-    <div className="space-y-8">
-      <div>
+    <div className="space-y-8" role="main" aria-label="Admin Dashboard Overview">
+      <header>
         <h1 className="text-3xl font-bold mb-2">Overview</h1>
         <p className="text-gray-400">
-          {user?.role === 'admin' ? 'Global Platform Statistics' : `Statistics for ${stats?.school_name || 'your school'}`}
+          {user?.role === 'admin' ? 'Global Platform Statistics' : `Statistics for ${stats?.school_name || 'your dashboard'}`}
         </p>
-      </div>
+      </header>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6" aria-label="Quick Stats">
         {user?.role === 'admin' && (
-          <div className="glass-card p-6 border-l-4 border-l-secondary-500">
+          <article className="glass-card p-6 border-l-4 border-l-secondary-500 rounded-xl" aria-label="Total Schools metric">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-gray-400 font-medium">Total Schools</h3>
-              <div className="w-10 h-10 rounded-full bg-secondary-500/20 flex items-center justify-center text-secondary-400">
+              <div className="w-10 h-10 rounded-full bg-secondary-500/20 flex items-center justify-center text-secondary-400" aria-hidden="true">
                 <GraduationCap className="w-5 h-5" />
               </div>
             </div>
             <p className="text-3xl font-bold text-white">{stats?.total_schools || 0}</p>
-          </div>
+          </article>
         )}
 
-        <div className="glass-card p-6 border-l-4 border-l-primary-500">
+        <article className="glass-card p-6 border-l-4 border-l-primary-500 rounded-xl" aria-label="Total Students metric">
           <div className="flex items-center justify-between mb-4">
-            <h3 className="text-gray-400 font-medium">Total Students</h3>
-            <div className="w-10 h-10 rounded-full bg-primary-500/20 flex items-center justify-center text-primary-400">
+            <h3 className="text-gray-400 font-medium">Total Users</h3>
+            <div className="w-10 h-10 rounded-full bg-primary-500/20 flex items-center justify-center text-primary-400" aria-hidden="true">
               <Users className="w-5 h-5" />
             </div>
           </div>
           <p className="text-3xl font-bold text-white">{stats?.total_students || 0}</p>
-        </div>
-      </div>
+        </article>
+      </section>
     </div>
   );
 }

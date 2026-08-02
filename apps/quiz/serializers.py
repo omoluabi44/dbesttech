@@ -1,7 +1,8 @@
 from rest_framework import serializers
 from .models import (
     Subject, Topic, Quiz, PracticeSession, PracticeAnswer,
-    PastQuestion, PastQuestionSession, PastQuestionAnswer
+    PastQuestion, PastQuestionSession, PastQuestionAnswer,
+    PastQuestionUpload
 )
 
 class SubjectSerializer(serializers.ModelSerializer):
@@ -51,6 +52,15 @@ class PastQuestionSerializer(serializers.ModelSerializer):
             'id', 'questionText', 'questionType', 'correct_answer', 
             'incorrect_answers', 'explanation'
         ]
+
+class PastQuestionUploadSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = PastQuestionUpload
+        fields = [
+            'id', 'subject', 'level', 'exam_body', 'year', 'file',
+            'status', 'questions_extracted', 'error_message', 'uploaded_at', 'processed_at'
+        ]
+        read_only_fields = ['status', 'questions_extracted', 'error_message', 'uploaded_at', 'processed_at']
 
 
 class PracticeSessionSerializer(serializers.ModelSerializer):
