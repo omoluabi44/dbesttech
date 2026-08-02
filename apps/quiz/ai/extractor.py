@@ -11,7 +11,7 @@ import logging
 from django.db import transaction
 from django.utils import timezone
 
-from ..models import Question, Option, PastQuestionUpload
+from ..models import Quiz, PastQuestionUpload
 
 logger = logging.getLogger(__name__)
 
@@ -154,38 +154,42 @@ class PastQuestionExtractor:
             question_text = q_data['question_text']
 
             # Check for duplicates
-            exists = Question.objects.filter(
+            exists = Quiz.objects.filter(
                 subject=subject,
-                question_text=question_text,
+                questionText=question_text,
                 year=year,
+                exam_body=exam_body,
+                is_past_question=True,
             ).exists()
 
             if exists:
                 logger.info(f"Skipping duplicate question: {question_text[:60]}...")
                 continue
 
+            options_dict = {}
+            correct_label = 'A'
+            for opt_data in q_data['options']:
+                options_dict[opt_data['label']] = opt_data['text']
+                if opt_data['is_correct']:
+                    correct_label = opt_data['label']
+
             # Create the question
-            question = Question.objects.create(
+            quiz = Quiz.objects.create(
                 subject=subject,
-                topic=None,  # Past questions are not topic-assigned by default
+                topic_obj=None,  # Past questions are not topic-assigned by default
                 level=level,
                 difficulty='medium',  # Default; can be updated by admin later
-                source='past_question',
-                question_text=question_text,
+                is_practice=False,
+                is_past_question=True,
+                questionText=question_text,
                 explanation=q_data.get('explanation', ''),
                 year=year,
                 exam_body=exam_body,
                 is_active=True,
+                questionType='mcq',
+                correct_answer=correct_label,
+                incorrect_answers=options_dict,
             )
-
-            # Create options
-            for opt_data in q_data['options']:
-                Option.objects.create(
-                    question=question,
-                    label=opt_data['label'],
-                    text=opt_data['text'],
-                    is_correct=opt_data['is_correct'],
-                )
 
             saved_count += 1
 
