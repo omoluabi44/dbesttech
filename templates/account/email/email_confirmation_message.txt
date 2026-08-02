@@ -1,0 +1,11 @@
+Welcome aboard!
+
+We're thrilled to have you join DBestQuiz. To get started and unlock your full potential, please verify your email address by visiting the link below:
+
+{{ activate_url }}
+
+If you did not sign up for this account, you can safely ignore this email.
+
+Best regards,
+The DBestQuiz Team
+https://www.dbestquiz.com
