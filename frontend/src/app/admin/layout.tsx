@@ -5,7 +5,6 @@ import { useRouter, usePathname } from 'next/navigation';
 import { useEffect } from 'react';
 import Link from 'next/link';
 import { LayoutDashboard, Users, LogOut, FileText, BarChart, GraduationCap, BrainCircuit, UploadCloud } from 'lucide-react';
-import { Navbar } from '@/components/layout/Navbar';
 import { Footer } from '@/components/layout/Footer';
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
@@ -42,8 +41,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   ];
 
   return (
-    <div className="min-h-screen flex flex-col">
-      <Navbar />
+    <div className="min-h-screen flex flex-col bg-[var(--background)]">
       <div className="flex-1 flex overflow-hidden">
         {/* Sidebar */}
         <aside className="w-64 bg-[var(--surface)] border-r border-[var(--surface-dark)] hidden md:flex flex-col" aria-label="Admin Sidebar">
