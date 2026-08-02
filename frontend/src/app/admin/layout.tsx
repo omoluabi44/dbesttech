@@ -35,6 +35,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       ? [
           { name: 'AI Quiz Gen', href: '/admin/ai-generate', icon: BrainCircuit },
           { name: 'Upload PQ', href: '/admin/ai-upload', icon: UploadCloud },
+          { name: 'User Management', href: '/admin/users', icon: Users },
         ]
       : []),
     { name: 'Question Bank', href: '/admin/questions', icon: FileText },
