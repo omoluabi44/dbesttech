@@ -53,7 +53,7 @@ if os.getenv('USE_HTTPS_PROXY', 'False').lower() == 'true':
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 # Email — configure a real email backend in production
-EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_BACKEND = 'config.email_backend.ThreadedEmailBackend'
 EMAIL_HOST = os.getenv('EMAIL_HOST', 'smtp.zoho.com')
 EMAIL_PORT = int(os.getenv('EMAIL_PORT', '465'))
 EMAIL_USE_SSL = True
