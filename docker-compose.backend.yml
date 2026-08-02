@@ -1,4 +1,11 @@
 services:
+  redis:
+    image: redis:7-alpine
+    container_name: redis
+    restart: always
+    networks:
+      - app-network
+
   backend:
     image: omoluabi44/primary-secondary-backend:latest
     container_name: django_backend
@@ -9,6 +16,22 @@ services:
       - DJANGO_SETTINGS_MODULE=config.settings.production
     ports:
       - "8000:8000"
+    depends_on:
+      - redis
+    networks:
+      - app-network
+
+  celery_worker:
+    image: omoluabi44/primary-secondary-backend:latest
+    container_name: celery_worker
+    restart: always
+    env_file:
+      - .env
+    environment:
+      - DJANGO_SETTINGS_MODULE=config.settings.production
+    depends_on:
+      - redis
+    command: celery -A config worker --loglevel=info --concurrency=2
     networks:
       - app-network
 
