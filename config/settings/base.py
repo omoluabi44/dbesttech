@@ -157,7 +157,7 @@ ACCOUNT_EMAIL_REQUIRED = True
 ACCOUNT_ADAPTER = 'config.adapters.CustomAccountAdapter'
 SOCIALACCOUNT_AUTO_SIGNUP = True
 
-DEFAULT_FROM_EMAIL = 'noreply@dbestquiz.com'
+DEFAULT_FROM_EMAIL = 'DBestQuiz <dbestquiz@dbestquiz.com>'
 
 # Google OAuth2 provider configuration
 SOCIALACCOUNT_PROVIDERS = {
