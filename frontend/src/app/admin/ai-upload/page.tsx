@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { getSubjects, uploadPastQuestionsForAI, checkAIUploadStatus } from '@/lib/api/quiz';
 import { Subject } from '@/lib/types/quiz';
-import { UploadCloud, Loader2, FileText, CheckCircle2, AlertCircle } from 'lucide-react';
+import { UploadCloud, Loader2, FileText, CheckCircle2, AlertCircle, BrainCircuit } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 
 interface UploadForm {

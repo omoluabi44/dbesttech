@@ -31,13 +31,12 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
   const navItems = [
     { name: 'Dashboard', href: '/admin', icon: LayoutDashboard },
-    ...(user.role === 'root_admin'
+    ...(user.role === 'admin'
       ? [
-          { name: 'Schools', href: '/admin/schools', icon: GraduationCap },
           { name: 'AI Quiz Gen', href: '/admin/ai-generate', icon: BrainCircuit },
           { name: 'Upload PQ', href: '/admin/ai-upload', icon: UploadCloud },
         ]
-      : [{ name: 'My Students', href: '/admin/students', icon: Users }]),
+      : []),
     { name: 'Question Bank', href: '/admin/questions', icon: FileText },
   ];
 
