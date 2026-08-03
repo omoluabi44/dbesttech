@@ -22,6 +22,11 @@ export default function QuestionBankPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [pagination, setPagination] = useState({ count: 0, next: null as string | null, previous: null as string | null, current: 1 });
   
+  // Edit State
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [editingQuestion, setEditingQuestion] = useState<any>(null);
+  const [isSaving, setIsSaving] = useState(false);
+  
   // Filters
   const [filters, setFilters] = useState({
     subject_id: '',
@@ -142,6 +147,32 @@ export default function QuestionBankPage() {
     }
   };
 
+  const handleEditClick = (q: any) => {
+    // Deep copy to avoid mutating state directly
+    setEditingQuestion(JSON.parse(JSON.stringify(q)));
+    setIsEditModalOpen(true);
+  };
+
+  const handleSaveEdit = async () => {
+    try {
+      setIsSaving(true);
+      await client.patch(`/quiz/admin/questions/${editingQuestion.id}/`, {
+        questionText: editingQuestion.questionText,
+        correct_answer: editingQuestion.correct_answer,
+        incorrect_answers: editingQuestion.incorrect_answers,
+        explanation: editingQuestion.explanation
+      });
+      toast.success('Question updated successfully.');
+      setIsEditModalOpen(false);
+      setEditingQuestion(null);
+      fetchQuestions();
+    } catch (error) {
+      toast.error('Failed to update question.');
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
@@ -234,7 +265,7 @@ export default function QuestionBankPage() {
                         <td className="p-4 text-green-400 font-medium text-sm">{q.correct_answer}</td>
                         <td className="p-4 text-center">
                           <div className="flex items-center justify-center gap-3">
-                            <button className="text-gray-400 hover:text-primary-400 transition-colors" title="Edit">
+                            <button onClick={() => handleEditClick(q)} className="text-gray-400 hover:text-primary-400 transition-colors" title="Edit">
                               <Edit2 className="w-4 h-4" />
                             </button>
                             <button onClick={() => handleDelete(q.id)} className="text-gray-400 hover:text-red-400 transition-colors" title="Delete">
@@ -385,6 +416,102 @@ export default function QuestionBankPage() {
           </div>
         )}
       </div>
+
+      {/* Edit Modal */}
+      {isEditModalOpen && editingQuestion && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-[var(--surface)] border border-[var(--surface-dark)] rounded-2xl w-full max-w-2xl max-h-[90vh] flex flex-col shadow-2xl">
+            <div className="p-6 border-b border-[var(--surface-dark)] flex justify-between items-center">
+              <h2 className="text-xl font-bold text-foreground">Edit Question</h2>
+              <button onClick={() => setIsEditModalOpen(false)} className="text-gray-400 hover:text-white transition-colors">&times;</button>
+            </div>
+            
+            <div className="p-6 overflow-y-auto space-y-4 custom-scrollbar">
+              <div>
+                <label className="block text-sm font-medium text-gray-400 mb-1">Question Text</label>
+                <textarea 
+                  value={editingQuestion.questionText}
+                  onChange={(e) => setEditingQuestion({...editingQuestion, questionText: e.target.value})}
+                  className="w-full bg-[var(--background)] border border-[var(--surface-dark)] rounded-lg p-3 text-foreground focus:border-primary-500 outline-none"
+                  rows={3}
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-400 mb-1">Correct Answer</label>
+                <input 
+                  type="text"
+                  value={editingQuestion.correct_answer}
+                  onChange={(e) => setEditingQuestion({...editingQuestion, correct_answer: e.target.value})}
+                  className="w-full bg-[var(--background)] border border-[var(--surface-dark)] rounded-lg p-3 text-green-400 focus:border-primary-500 outline-none font-medium"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-400 mb-2">Incorrect Answers</label>
+                <div className="space-y-2">
+                  {Object.entries(editingQuestion.incorrect_answers || {}).map(([key, value]) => (
+                    <div key={key} className="flex gap-2 items-center">
+                      <span className="text-gray-500 w-6">{key}.</span>
+                      <input 
+                        type="text"
+                        value={value as string}
+                        onChange={(e) => {
+                          const newIncorrect = { ...editingQuestion.incorrect_answers, [key]: e.target.value };
+                          setEditingQuestion({...editingQuestion, incorrect_answers: newIncorrect});
+                        }}
+                        className="flex-1 bg-[var(--background)] border border-[var(--surface-dark)] rounded-lg p-2 text-foreground focus:border-primary-500 outline-none"
+                      />
+                    </div>
+                  ))}
+                  {/* For array-based incorrect answers if some models use arrays */}
+                  {Array.isArray(editingQuestion.incorrect_answers) && editingQuestion.incorrect_answers.map((ans: string, idx: number) => (
+                    <div key={idx} className="flex gap-2 items-center">
+                      <span className="text-gray-500">{idx + 1}.</span>
+                      <input 
+                        type="text"
+                        value={ans}
+                        onChange={(e) => {
+                          const newArr = [...editingQuestion.incorrect_answers];
+                          newArr[idx] = e.target.value;
+                          setEditingQuestion({...editingQuestion, incorrect_answers: newArr});
+                        }}
+                        className="flex-1 bg-[var(--background)] border border-[var(--surface-dark)] rounded-lg p-2 text-foreground focus:border-primary-500 outline-none"
+                      />
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-400 mb-1">Explanation</label>
+                <textarea 
+                  value={editingQuestion.explanation || ''}
+                  onChange={(e) => setEditingQuestion({...editingQuestion, explanation: e.target.value})}
+                  className="w-full bg-[var(--background)] border border-[var(--surface-dark)] rounded-lg p-3 text-foreground focus:border-primary-500 outline-none"
+                  rows={2}
+                />
+              </div>
+            </div>
+
+            <div className="p-6 border-t border-[var(--surface-dark)] flex justify-end gap-3 bg-[var(--surface-light)] rounded-b-2xl">
+              <button 
+                onClick={() => setIsEditModalOpen(false)}
+                className="px-6 py-2.5 text-gray-400 hover:text-white transition-colors font-medium"
+              >
+                Cancel
+              </button>
+              <button 
+                onClick={handleSaveEdit}
+                disabled={isSaving}
+                className="px-6 py-2.5 bg-primary-500 hover:bg-primary-400 text-white rounded-lg font-medium transition-colors flex items-center gap-2"
+              >
+                {isSaving ? <Loader2 className="w-5 h-5 animate-spin" /> : 'Save Changes'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

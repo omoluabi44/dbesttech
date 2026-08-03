@@ -16,6 +16,9 @@ const config: Config = {
           hover: "var(--primary-hover)",
           light: "var(--primary-light)",
           dark: "var(--primary-dark)",
+          400: "var(--primary-light)",
+          500: "var(--primary)",
+          600: "var(--primary-hover)",
         },
         secondary: {
           DEFAULT: "var(--secondary)",
