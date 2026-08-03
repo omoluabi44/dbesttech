@@ -5,6 +5,10 @@ export interface User {
   first_name: string;
   last_name: string;
   role: 'student' | 'teacher' | 'admin';
+  subscription_plan?: 'free' | 'basic' | 'premium';
+  subscription_status?: 'active' | 'expired' | 'cancelled';
+  quizzes_taken_today?: number;
+  daily_quiz_limit?: number;
 }
 
 export interface StudentProfile {
@@ -23,6 +27,10 @@ export interface StudentProfile {
 
 export interface UserWithProfile extends User {
   student_profile: StudentProfile;
+  subscription_plan?: 'free' | 'basic' | 'premium';
+  subscription_status?: 'active' | 'expired' | 'cancelled';
+  quizzes_taken_today?: number;
+  daily_quiz_limit?: number;
 }
 
 export interface LoginResponse {

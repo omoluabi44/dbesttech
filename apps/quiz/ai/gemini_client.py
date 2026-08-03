@@ -9,7 +9,9 @@ import logging
 
 from django.conf import settings
 
-import google.generativeai as genai
+import base64
+from google import genai
+from google.genai import types
 
 from .prompts import (
     QUIZ_GENERATION_SYSTEM,
@@ -31,13 +33,12 @@ class GeminiQuizClient:
     """
 
     def __init__(self):
-        api_key = settings.GEMINI_API_KEY
-        if not api_key:
-            raise ValueError(
-                "GEMINI_API_KEY is not configured. "
-                "Add it to your .env file."
-            )
-        genai.configure(api_key=api_key)
+        project_id = getattr(settings, 'GCP_PROJECT_ID', None)
+        location = getattr(settings, 'GCP_LOCATION', 'us-central1')
+        if not project_id:
+            raise ValueError("GCP_PROJECT_ID is not configured in settings.")
+        
+        self.client = genai.Client(vertexai=True, project=project_id, location=location)
         self.model_name = settings.GEMINI_MODEL
 
     def _get_temperature(self, difficulty: str) -> float:
@@ -153,22 +154,15 @@ class GeminiQuizClient:
                 num_questions=num_questions,
             )
 
-            model = genai.GenerativeModel(
-                model_name=self.model_name,
-                system_instruction=QUIZ_GENERATION_SYSTEM,
-                generation_config=genai.GenerationConfig(
+            response = self.client.models.generate_content(
+                model=self.model_name,
+                contents=prompt,
+                config=types.GenerateContentConfig(
+                    system_instruction=QUIZ_GENERATION_SYSTEM,
                     temperature=self._get_temperature(difficulty),
                     response_mime_type="application/json",
-                ),
+                )
             )
-
-            logger.info(
-                f"Generating {num_questions} questions: "
-                f"subject={subject_name}, topic={topic_name}, "
-                f"level={level}, difficulty={difficulty}"
-            )
-
-            response = model.generate_content(prompt)
 
             # Parse JSON response
             raw_text = response.text.strip()
@@ -222,13 +216,10 @@ class GeminiQuizClient:
                 level=level,
             )
 
-            model = genai.GenerativeModel(
-                model_name=self.model_name,
+            config = types.GenerateContentConfig(
                 system_instruction=EXTRACTION_SYSTEM,
-                generation_config=genai.GenerationConfig(
-                    temperature=0.2,  # Low temperature for faithful extraction
-                    response_mime_type="application/json",
-                ),
+                temperature=0.2,
+                response_mime_type="application/json",
             )
 
             logger.info(
@@ -240,16 +231,25 @@ class GeminiQuizClient:
             if file_type == 'pdf':
                 # For PDF, file_content is already extracted text
                 content = f"EXAM PAPER TEXT:\n\n{file_content}\n\n{prompt}"
-                response = model.generate_content(content)
+                response = self.client.models.generate_content(
+                    model=self.model_name,
+                    contents=content,
+                    config=config
+                )
             else:
                 # For images, send as multimodal input
-                image_part = {
-                    "inline_data": {
-                        "mime_type": file_type,
-                        "data": file_content,  # base64 encoded
-                    }
-                }
-                response = model.generate_content([image_part, prompt])
+                # If file_content is base64 string, decode it first
+                if isinstance(file_content, str):
+                    raw_bytes = base64.b64decode(file_content)
+                else:
+                    raw_bytes = file_content
+                    
+                image_part = types.Part.from_bytes(data=raw_bytes, mime_type=file_type)
+                response = self.client.models.generate_content(
+                    model=self.model_name,
+                    contents=[image_part, prompt],
+                    config=config
+                )
 
             # Parse JSON response
             raw_text = response.text.strip()

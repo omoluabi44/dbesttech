@@ -4,6 +4,7 @@ from dj_rest_auth.registration.views import VerifyEmailView
 from dj_rest_auth.views import PasswordResetView, PasswordResetConfirmView
 from . import views
 from . import admin_views
+from . import payment_views
 
 router = DefaultRouter()
 router.register(r'schools', admin_views.SchoolViewSet, basename='school')
@@ -23,5 +24,13 @@ urlpatterns = [
     path('password/reset/confirm/', PasswordResetConfirmView.as_view(), name='rest_password_reset_confirm'),
     path('resend-verification/', views.ResendVerificationView.as_view(), name='resend-verification'),
     path('registration/verify-email/', VerifyEmailView.as_view(), name='rest_verify_email'),
+    
+    # Subscription & Payment
+    path('subscription/plans/', payment_views.SubscriptionPlansView.as_view(), name='subscription-plans'),
+    path('subscription/current/', payment_views.CurrentSubscriptionView.as_view(), name='current-subscription'),
+    path('subscription/initialize/', payment_views.InitializePaymentView.as_view(), name='initialize-payment'),
+    path('subscription/verify/', payment_views.VerifyPaymentView.as_view(), name='verify-payment'),
+    path('subscription/webhook/', payment_views.FlutterwaveWebhookView.as_view(), name='payment-webhook'),
+    
     path('', include(router.urls)),
 ]

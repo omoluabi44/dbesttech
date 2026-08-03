@@ -5,7 +5,7 @@ from dj_rest_auth.registration.serializers import RegisterSerializer
 from dj_rest_auth.serializers import PasswordResetSerializer
 from allauth.account.forms import ResetPasswordForm
 from django.contrib.sites.models import Site
-from .models import User, StudentProfile, School
+from .models import User, StudentProfile, School, PaymentTransaction
 from utils.constants import SCHOOL_LEVELS, SCHOOL_CATEGORIES
 
 class SchoolSerializer(serializers.ModelSerializer):
@@ -33,10 +33,11 @@ class UserSerializer(serializers.ModelSerializer):
     """Read-only user serializer."""
     student_profile = StudentProfileSerializer(read_only=True)
     email_verified = serializers.SerializerMethodField()
+    daily_quiz_limit = serializers.ReadOnlyField()
 
     class Meta:
         model = User
-        fields = ['id', 'email', 'username', 'first_name', 'last_name', 'role', 'student_profile', 'email_verified']
+        fields = ['id', 'email', 'username', 'first_name', 'last_name', 'role', 'student_profile', 'email_verified', 'subscription_plan', 'subscription_status', 'quizzes_taken_today', 'daily_quiz_limit']
         read_only_fields = ['id', 'email', 'role']
 
     def get_email_verified(self, obj):
@@ -174,3 +175,11 @@ class CustomPasswordResetSerializer(PasswordResetSerializer):
     @property
     def password_reset_form_class(self):
         return CustomResetPasswordForm
+
+
+class PaymentTransactionSerializer(serializers.ModelSerializer):
+    """Serializer for payment transaction history."""
+    class Meta:
+        model = PaymentTransaction
+        fields = ['id', 'tx_ref', 'amount', 'currency', 'plan', 'status', 'payment_type', 'created_at', 'verified_at']
+        read_only_fields = fields

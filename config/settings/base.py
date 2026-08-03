@@ -187,9 +187,15 @@ REST_AUTH = {
     'PASSWORD_RESET_URL': 'https://dbestquiz.com/reset-password?uid={uid}&token={token}',
 }
 
-# Gemini AI Configuration
-GEMINI_API_KEY = os.getenv('GEMINI_API_KEY', '')
-GEMINI_MODEL = os.getenv('GEMINI_MODEL', 'gemini-2.0-flash')
+# Google Cloud Vertex AI Configuration
+GCP_PROJECT_ID = os.getenv('GCP_PROJECT_ID', '')
+GCP_LOCATION = os.getenv('GCP_LOCATION', 'us-central1')
+GEMINI_MODEL = os.getenv('GEMINI_MODEL', 'gemini-2.5-flash')
+
+# Flutterwave Payment Configuration
+FLUTTERWAVE_PUBLIC_KEY = os.getenv('FLUTTERWAVE_PUBLIC_KEY', '')
+FLUTTERWAVE_SECRET_KEY = os.getenv('FLUTTERWAVE_SECRET_KEY', '')
+FLUTTERWAVE_WEBHOOK_SECRET = os.getenv('FLUTTERWAVE_WEBHOOK_SECRET', '')
 
 # Logging configuration to output 500 errors to console
 LOGGING = {

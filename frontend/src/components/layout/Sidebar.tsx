@@ -11,7 +11,8 @@ import {
   LogOut,
   BrainCircuit,
   Gamepad2,
-  Star
+  Star,
+  Crown
 } from 'lucide-react';
 import { useAuthStore } from '@/lib/stores/authStore';
 import { useSchoolCategory } from '@/lib/hooks/useSchoolCategory';
@@ -62,6 +63,7 @@ export const Sidebar: React.FC<{
   }
 
   const bottomItems = [
+    { label: 'Subscription', href: '/subscription', icon: <Crown size={20} /> },
     { label: 'Settings', href: '/profile', icon: <Settings size={20} /> },
   ];
 
