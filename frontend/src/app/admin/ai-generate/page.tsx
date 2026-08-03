@@ -5,7 +5,7 @@ import { useForm } from 'react-hook-form';
 import { getSubjects, getTopics, generateQuizWithAI, bulkSaveAIQuiz } from '@/lib/api/quiz';
 import { Subject, Topic } from '@/lib/types/quiz';
 import { BrainCircuit, Loader2, Save, Trash2, Edit2, CheckCircle2 } from 'lucide-react';
-import { toast } from 'react-hot-toast';
+import { toast } from 'sonner';
 
 interface GenerateForm {
   subject_id: number;

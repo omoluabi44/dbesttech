@@ -5,7 +5,7 @@ import { UploadCloud, CheckCircle2, AlertCircle, Search, Filter, Edit2, Trash2, 
 import client from '@/lib/api/client';
 import { getSubjects, getAdminQuestions } from '@/lib/api/quiz';
 import { Subject } from '@/lib/types/quiz';
-import { toast } from 'react-hot-toast';
+import { toast } from 'sonner';
 
 export default function QuestionBankPage() {
   const [activeTab, setActiveTab] = useState<'list' | 'import'>('list');
