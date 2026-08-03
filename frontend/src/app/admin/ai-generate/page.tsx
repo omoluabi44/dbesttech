@@ -217,7 +217,7 @@ export default function AIGeneratePage() {
               <button
                 type="submit"
                 disabled={isGenerating}
-                className="w-full py-3 bg-gradient-to-r from-primary-600 to-primary-500 hover:from-primary-500 hover:to-primary-400 text-white rounded-lg font-medium shadow-[0_0_20px_rgba(var(--primary-rgb),0.3)] transition-all flex items-center justify-center gap-2 disabled:opacity-50"
+                className="w-full py-3 bg-primary hover:bg-[var(--primary-hover)] text-white rounded-lg font-medium shadow-md transition-all flex items-center justify-center gap-2 disabled:opacity-50"
               >
                 {isGenerating ? (
                   <><Loader2 className="w-5 h-5 animate-spin" /> Generating...</>
