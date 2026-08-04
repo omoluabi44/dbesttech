@@ -203,17 +203,8 @@ export default function AIUploadPage() {
                   className="w-full bg-[var(--background)] border border-[var(--surface-dark)] rounded-lg px-4 py-3 text-foreground focus:outline-none focus:border-primary-500"
                 >
                   <option value="">Select Level...</option>
-                  <option value="primary_1">Primary 1</option>
-                  <option value="primary_2">Primary 2</option>
-                  <option value="primary_3">Primary 3</option>
-                  <option value="primary_4">Primary 4</option>
-                  <option value="primary_5">Primary 5</option>
                   <option value="primary_6">Primary 6</option>
-                  <option value="jss_1">JSS 1</option>
-                  <option value="jss_2">JSS 2</option>
                   <option value="jss_3">JSS 3</option>
-                  <option value="ss_1">SS 1</option>
-                  <option value="ss_2">SS 2</option>
                   <option value="ss_3">SS 3</option>
                 </select>
               </div>
