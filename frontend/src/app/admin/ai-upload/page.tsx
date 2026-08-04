@@ -1,10 +1,10 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useForm } from 'react-hook-form';
 import { getSubjects, uploadPastQuestionsForAI, checkAIUploadStatus } from '@/lib/api/quiz';
 import { Subject } from '@/lib/types/quiz';
-import { UploadCloud, Loader2, FileText, CheckCircle2, AlertCircle, BrainCircuit } from 'lucide-react';
+import { UploadCloud, Loader2, FileText, CheckCircle2, AlertCircle, BrainCircuit, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
 
 interface UploadForm {
@@ -14,14 +14,20 @@ interface UploadForm {
   year: number;
 }
 
+interface FileUpload {
+  file: File;
+  id?: number;
+  status: 'pending' | 'processing' | 'completed' | 'failed' | null;
+  extractedCount: number;
+  errorMsg: string;
+}
+
 export default function AIUploadPage() {
   const [subjects, setSubjects] = useState<Subject[]>([]);
-  const [file, setFile] = useState<File | null>(null);
+  const [uploads, setUploads] = useState<FileUpload[]>([]);
   const [isUploading, setIsUploading] = useState(false);
-  const [uploadId, setUploadId] = useState<number | null>(null);
-  const [status, setStatus] = useState<'pending' | 'processing' | 'completed' | 'failed' | null>(null);
-  const [extractedCount, setExtractedCount] = useState(0);
-  const [errorMsg, setErrorMsg] = useState('');
+  const [isDragging, setIsDragging] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const { register, handleSubmit, reset } = useForm<UploadForm>();
 
@@ -29,26 +35,45 @@ export default function AIUploadPage() {
     getSubjects().then(res => setSubjects(res.results)).catch(console.error);
   }, []);
 
-  // Poll status when uploadId is set and status is processing/pending
+  // Poll status for all processing/pending uploads
   useEffect(() => {
     let interval: NodeJS.Timeout;
     
-    if (uploadId && (status === 'pending' || status === 'processing' || status === null)) {
+    const pendingUploads = uploads.filter(u => u.id && (u.status === 'pending' || u.status === 'processing'));
+    
+    if (pendingUploads.length > 0) {
       interval = setInterval(async () => {
-        try {
-          const res = await checkAIUploadStatus(uploadId);
-          setStatus(res.status);
-          if (res.status === 'completed') {
-            setExtractedCount(res.questions_extracted);
-            toast.success(`Successfully extracted ${res.questions_extracted} questions!`);
-            clearInterval(interval);
-          } else if (res.status === 'failed') {
-            setErrorMsg(res.error_message);
-            toast.error('Failed to extract questions.');
-            clearInterval(interval);
+        const newUploads = [...uploads];
+        let hasChanges = false;
+        
+        for (let i = 0; i < newUploads.length; i++) {
+          const u = newUploads[i];
+          if (u.id && (u.status === 'pending' || u.status === 'processing')) {
+            try {
+              const res = await checkAIUploadStatus(u.id);
+              if (res.status !== u.status || res.questions_extracted !== u.extractedCount) {
+                newUploads[i] = {
+                  ...u,
+                  status: res.status,
+                  extractedCount: res.questions_extracted || 0,
+                  errorMsg: res.error_message || ''
+                };
+                hasChanges = true;
+                
+                if (res.status === 'completed') {
+                  toast.success(`Extracted ${res.questions_extracted} questions from ${u.file.name}!`);
+                } else if (res.status === 'failed') {
+                  toast.error(`Failed to extract questions from ${u.file.name}.`);
+                }
+              }
+            } catch (error) {
+              console.error("Status check failed for", u.file.name, error);
+            }
           }
-        } catch (error) {
-          console.error("Status check failed", error);
+        }
+        
+        if (hasChanges) {
+          setUploads(newUploads);
         }
       }, 3000); // Check every 3 seconds
     }
@@ -56,56 +81,117 @@ export default function AIUploadPage() {
     return () => {
       if (interval) clearInterval(interval);
     };
-  }, [uploadId, status]);
+  }, [uploads]);
 
-  const onFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) {
-      const f = e.target.files[0];
-      const validTypes = ['application/pdf', 'image/jpeg', 'image/png', 'image/webp'];
+  const handleFiles = (newFiles: FileList | File[]) => {
+    const validTypes = ['application/pdf', 'image/jpeg', 'image/png', 'image/webp'];
+    const validFiles: FileUpload[] = [];
+    
+    Array.from(newFiles).forEach(f => {
       if (!validTypes.includes(f.type)) {
-        toast.error('Only PDF, JPEG, PNG, and WEBP files are allowed.');
-        return;
+        toast.error(`${f.name} is not supported. Only PDF, JPEG, PNG, and WEBP are allowed.`);
+      } else {
+        // Prevent duplicates by name and size
+        if (!uploads.some(u => u.file.name === f.name && u.file.size === f.size)) {
+          validFiles.push({
+            file: f,
+            status: null,
+            extractedCount: 0,
+            errorMsg: ''
+          });
+        }
       }
-      setFile(f);
-      // Reset state on new file
-      setUploadId(null);
-      setStatus(null);
+    });
+
+    if (validFiles.length > 0) {
+      setUploads(prev => [...prev, ...validFiles]);
     }
   };
 
+  const onFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files.length > 0) {
+      handleFiles(e.target.files);
+    }
+    // Reset input so the same file can be selected again if removed
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+  };
+
+  const onDragOver = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    setIsDragging(true);
+  };
+
+  const onDragLeave = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    setIsDragging(false);
+  };
+
+  const onDrop = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    setIsDragging(false);
+    if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+      handleFiles(e.dataTransfer.files);
+    }
+  };
+
+  const removeFile = (index: number) => {
+    setUploads(prev => prev.filter((_, i) => i !== index));
+  };
+
   const onSubmit = async (data: UploadForm) => {
-    if (!file) {
-      toast.error('Please select a file to upload.');
+    const pendingFiles = uploads.filter(u => u.status === null || u.status === 'failed');
+    
+    if (pendingFiles.length === 0) {
+      toast.error('Please add files to upload.');
       return;
     }
     
-    try {
-      setIsUploading(true);
-      const formData = new FormData();
-      formData.append('file', file);
-      formData.append('subject', data.subject_id.toString());
-      formData.append('level', data.level);
-      formData.append('exam_body', data.exam_body);
-      formData.append('year', data.year.toString());
-      
-      const res = await uploadPastQuestionsForAI(formData);
-      setUploadId(res.id);
-      setStatus('pending');
-      toast.success('Upload successful! AI is now extracting questions.');
-    } catch (error: any) {
-      toast.error(error.response?.data?.error || 'Failed to upload document.');
-    } finally {
-      setIsUploading(false);
+    setIsUploading(true);
+    let allSuccess = true;
+    
+    const currentUploads = [...uploads];
+    
+    for (let i = 0; i < currentUploads.length; i++) {
+      if (currentUploads[i].status === null || currentUploads[i].status === 'failed') {
+        try {
+          const formData = new FormData();
+          formData.append('file', currentUploads[i].file);
+          formData.append('subject', data.subject_id.toString());
+          formData.append('level', data.level);
+          formData.append('exam_body', data.exam_body);
+          formData.append('year', data.year.toString());
+          
+          const res = await uploadPastQuestionsForAI(formData);
+          currentUploads[i] = {
+            ...currentUploads[i],
+            id: res.id,
+            status: 'pending'
+          };
+        } catch (error: any) {
+          allSuccess = false;
+          currentUploads[i] = {
+            ...currentUploads[i],
+            status: 'failed',
+            errorMsg: error.response?.data?.error || 'Failed to upload document.'
+          };
+          toast.error(`Failed to upload ${currentUploads[i].file.name}`);
+        }
+      }
+    }
+    
+    setUploads([...currentUploads]);
+    setIsUploading(false);
+    
+    if (allSuccess) {
+      toast.success('Uploads successful! AI is now extracting questions.');
     }
   };
 
   const handleReset = () => {
     reset();
-    setFile(null);
-    setUploadId(null);
-    setStatus(null);
-    setExtractedCount(0);
-    setErrorMsg('');
+    setUploads([]);
   };
 
   return (
@@ -116,70 +202,39 @@ export default function AIUploadPage() {
         </div>
         <div>
           <h1 className="text-2xl font-bold text-foreground">Upload Past Questions</h1>
-          <p className="text-gray-400">Upload a PDF or Image of a past exam and AI will automatically extract and save the questions.</p>
+          <p className="text-gray-400">Upload multiple PDFs or Images of past exams and AI will automatically extract and save the questions.</p>
         </div>
       </div>
 
       <div className="bg-[var(--surface)] border border-[var(--surface-dark)] rounded-2xl p-6 md:p-8">
         
-        {uploadId ? (
-          // Status Tracker View
+        {uploads.some(u => u.id !== undefined) && uploads.every(u => u.status === 'completed' || u.status === 'failed') ? (
+          // Status Tracker View when ALL are done processing
           <div className="flex flex-col items-center justify-center py-12 text-center space-y-6">
-            {(status === 'pending' || status === 'processing' || status === null) && (
-              <>
-                <div className="relative">
-                  <div className="w-24 h-24 rounded-full border-4 border-[var(--surface-dark)] border-t-primary-500 animate-spin mx-auto"></div>
-                  <BrainCircuit className="w-8 h-8 text-primary-500 absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2" />
-                </div>
-                <div>
-                  <h3 className="text-xl font-bold text-foreground mb-2">AI is Processing Document</h3>
-                  <p className="text-gray-400 max-w-md mx-auto">
-                    The AI is currently reading the document, identifying questions, options, and correct answers. 
-                    This usually takes 1-3 minutes depending on the document length. Please don't close this page.
-                  </p>
-                </div>
-              </>
-            )}
-            
-            {status === 'completed' && (
-              <>
-                <div className="w-24 h-24 bg-green-500/10 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <CheckCircle2 className="w-12 h-12 text-green-500" />
-                </div>
-                <div>
-                  <h3 className="text-2xl font-bold text-foreground mb-2">Extraction Complete!</h3>
-                  <p className="text-gray-400 mb-6 text-lg">
-                    Successfully extracted <span className="text-foreground font-bold">{extractedCount}</span> questions.
-                  </p>
-                  <button 
-                    onClick={handleReset}
-                    className="px-6 py-2.5 bg-primary-500 hover:bg-primary-400 text-white rounded-lg font-medium transition-colors"
-                  >
-                    Upload Another Document
-                  </button>
-                </div>
-              </>
-            )}
-            
-            {status === 'failed' && (
-              <>
-                <div className="w-24 h-24 bg-red-500/10 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <AlertCircle className="w-12 h-12 text-red-500" />
-                </div>
-                <div>
-                  <h3 className="text-2xl font-bold text-foreground mb-2">Extraction Failed</h3>
-                  <p className="text-red-400 max-w-md mx-auto mb-6 bg-red-500/10 p-4 rounded-lg border border-red-500/20">
-                    {errorMsg || "An unknown error occurred during extraction."}
-                  </p>
-                  <button 
-                    onClick={() => { setUploadId(null); setStatus(null); }}
-                    className="px-6 py-2.5 bg-[var(--surface-dark)] hover:bg-gray-700 text-foreground rounded-lg font-medium transition-colors"
-                  >
-                    Try Again
-                  </button>
-                </div>
-              </>
-            )}
+            <div className="w-24 h-24 bg-green-500/10 rounded-full flex items-center justify-center mx-auto mb-4">
+              <CheckCircle2 className="w-12 h-12 text-green-500" />
+            </div>
+            <div>
+              <h3 className="text-2xl font-bold text-foreground mb-2">Extraction Complete!</h3>
+              <div className="space-y-3 my-6 max-w-lg mx-auto text-left bg-[var(--background)] p-4 rounded-xl border border-[var(--surface-dark)] max-h-60 overflow-y-auto custom-scrollbar">
+                {uploads.map((u, i) => (
+                  <div key={i} className="flex justify-between items-center py-2 border-b border-[var(--surface-dark)] last:border-0">
+                    <span className="text-gray-300 truncate max-w-[200px]">{u.file.name}</span>
+                    {u.status === 'completed' ? (
+                      <span className="text-green-400 text-sm font-medium">{u.extractedCount} questions</span>
+                    ) : (
+                      <span className="text-red-400 text-sm font-medium">Failed</span>
+                    )}
+                  </div>
+                ))}
+              </div>
+              <button 
+                onClick={handleReset}
+                className="px-6 py-2.5 bg-primary-500 hover:bg-primary-400 text-white rounded-lg font-medium transition-colors"
+              >
+                Upload More Documents
+              </button>
+            </div>
           </div>
         ) : (
           // Upload Form View
@@ -241,48 +296,85 @@ export default function AIUploadPage() {
             </div>
 
             <div className="mt-6">
-              <label className="block text-sm font-medium text-gray-400 mb-2">Document File (PDF or Image)</label>
+              <label className="block text-sm font-medium text-gray-400 mb-2">Document Files (PDFs or Images)</label>
               
-              <div className={`border-2 border-dashed rounded-xl p-8 text-center transition-colors
-                ${file ? 'border-primary-500 bg-primary-500/5' : 'border-[var(--surface-dark)] hover:border-gray-500 bg-[var(--background)]'}`}
+              <div 
+                onDragOver={onDragOver}
+                onDragLeave={onDragLeave}
+                onDrop={onDrop}
+                className={`border-2 border-dashed rounded-xl p-8 text-center transition-colors
+                  ${isDragging ? 'border-primary-500 bg-primary-500/10' : 'border-[var(--surface-dark)] hover:border-gray-500 bg-[var(--background)]'}`}
               >
                 <input 
                   type="file" 
                   id="file-upload" 
                   className="hidden" 
+                  multiple
                   accept=".pdf,image/jpeg,image/png,image/webp"
                   onChange={onFileChange} 
+                  ref={fileInputRef}
                 />
-                <label htmlFor="file-upload" className="cursor-pointer flex flex-col items-center">
+                <label htmlFor="file-upload" className="cursor-pointer flex flex-col items-center w-full">
                   <div className="w-16 h-16 bg-[var(--surface-dark)] rounded-full flex items-center justify-center mb-4">
-                    {file ? <FileText className="w-8 h-8 text-primary-400" /> : <UploadCloud className="w-8 h-8 text-gray-400" />}
+                    <UploadCloud className="w-8 h-8 text-primary-400" />
                   </div>
-                  {file ? (
-                    <>
-                      <h4 className="text-lg font-medium text-foreground mb-1">{file.name}</h4>
-                      <p className="text-sm text-gray-400">{(file.size / (1024 * 1024)).toFixed(2)} MB</p>
-                      <span className="text-primary-500 text-sm mt-3 font-medium hover:underline">Change File</span>
-                    </>
-                  ) : (
-                    <>
-                      <h4 className="text-lg font-medium text-foreground mb-1">Click to browse</h4>
-                      <p className="text-sm text-gray-400 max-w-sm">
-                        Upload a scanned PDF or clear images of the past questions. The AI will read the text automatically.
-                      </p>
-                    </>
-                  )}
+                  <h4 className="text-lg font-medium text-foreground mb-1">Click to browse or drag files here</h4>
+                  <p className="text-sm text-gray-400 max-w-sm">
+                    Upload multiple scanned PDFs or clear images of past questions.
+                  </p>
                 </label>
               </div>
             </div>
+            
+            {/* Display selected files */}
+            {uploads.length > 0 && (
+              <div className="space-y-3 mt-4 max-h-60 overflow-y-auto pr-2 custom-scrollbar">
+                {uploads.map((u, idx) => (
+                  <div key={idx} className="flex items-center justify-between p-3 bg-[var(--background)] border border-[var(--surface-dark)] rounded-lg">
+                    <div className="flex items-center gap-3">
+                      <FileText className="w-5 h-5 text-gray-400" />
+                      <div>
+                        <p className="text-sm font-medium text-foreground truncate max-w-[200px] sm:max-w-xs">{u.file.name}</p>
+                        <p className="text-xs text-gray-500">{(u.file.size / (1024 * 1024)).toFixed(2)} MB</p>
+                      </div>
+                    </div>
+                    
+                    <div className="flex items-center gap-3">
+                      {u.status === 'pending' || u.status === 'processing' ? (
+                        <div className="flex items-center gap-2 text-primary-400 text-sm">
+                          <Loader2 className="w-4 h-4 animate-spin" /> Processing
+                        </div>
+                      ) : u.status === 'completed' ? (
+                        <div className="flex items-center gap-2 text-green-400 text-sm">
+                          <CheckCircle2 className="w-4 h-4" /> {u.extractedCount} Qs
+                        </div>
+                      ) : u.status === 'failed' ? (
+                        <div className="flex items-center gap-2 text-red-400 text-sm" title={u.errorMsg}>
+                          <AlertCircle className="w-4 h-4" /> Failed
+                        </div>
+                      ) : (
+                        <button 
+                          type="button" 
+                          onClick={() => removeFile(idx)}
+                          className="p-1.5 text-gray-400 hover:text-red-400 hover:bg-red-400/10 rounded transition-colors"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
 
             <div className="pt-4 border-t border-[var(--surface-dark)] flex justify-end">
               <button
                 type="submit"
-                disabled={!file || isUploading}
+                disabled={uploads.length === 0 || isUploading || uploads.some(u => u.status === 'pending' || u.status === 'processing')}
                 className="px-8 py-3 bg-primary hover:bg-[var(--primary-hover)] text-white rounded-lg font-medium shadow-md transition-all flex items-center gap-2 disabled:opacity-50"
               >
-                {isUploading ? (
-                  <><Loader2 className="w-5 h-5 animate-spin" /> Uploading...</>
+                {isUploading || uploads.some(u => u.status === 'pending' || u.status === 'processing') ? (
+                  <><Loader2 className="w-5 h-5 animate-spin" /> Processing...</>
                 ) : (
                   <><UploadCloud className="w-5 h-5" /> Upload & Extract</>
                 )}
