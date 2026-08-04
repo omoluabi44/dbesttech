@@ -87,7 +87,7 @@ export const Modal: React.FC<ModalProps> = ({
           <motion.div
             {...modalAnimation}
             className={containerStyles}
-            onClick={(e) => e.stopPropagation()}
+            onClick={(e: React.MouseEvent) => e.stopPropagation()}
           >
             {/* Celebration decorations */}
             {isCelebration && (

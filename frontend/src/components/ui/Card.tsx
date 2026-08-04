@@ -12,7 +12,7 @@ export const Card = React.forwardRef<HTMLDivElement, CardProps>(
     
     const baseStyles = "rounded-xl overflow-hidden";
     
-    const variants = {
+    const variants: Record<NonNullable<CardProps['variant']>, string> = {
       default: "bg-[var(--surface)] border border-[var(--surface-dark)] shadow-sm",
       outlined: "bg-transparent border border-[var(--surface-dark)]",
       elevated: "bg-[var(--surface)] shadow-md border border-[var(--surface-dark)]",
@@ -21,7 +21,7 @@ export const Card = React.forwardRef<HTMLDivElement, CardProps>(
       achievement: "bg-[var(--secondary)]/10 border border-[var(--secondary)] shadow-sm",
     };
     
-    const paddings = {
+    const paddings: Record<NonNullable<CardProps['padding']>, string> = {
       none: "",
       sm: "p-4",
       md: "p-6",
@@ -33,7 +33,7 @@ export const Card = React.forwardRef<HTMLDivElement, CardProps>(
     return (
       <motion.div
         ref={ref}
-        className={`${baseStyles} ${variants[variant]} ${paddings[padding]} ${hoverStyles} ${className}`}
+        className={`${baseStyles} ${variants[variant as keyof typeof variants]} ${paddings[padding as keyof typeof paddings]} ${hoverStyles} ${className}`}
         {...props}
       >
         {children}

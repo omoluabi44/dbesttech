@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
+// @ts-expect-error - missing types
 import { zodResolver } from '@hookform/resolvers/zod';
 import { toast } from 'sonner';
 import { User, Mail, Lock, Shield, School } from 'lucide-react';

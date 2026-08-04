@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
+// @ts-expect-error - missing types
 import { zodResolver } from '@hookform/resolvers/zod';
 import { toast } from 'sonner';
 import { Mail, Lock, BookOpen } from 'lucide-react';

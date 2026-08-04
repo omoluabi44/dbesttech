@@ -1,6 +1,7 @@
 import React, { useState, useRef } from 'react';
 import { X, UploadCloud, Loader2 } from 'lucide-react';
 import { useForm } from 'react-hook-form';
+// @ts-expect-error - missing types
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { toast } from 'sonner';

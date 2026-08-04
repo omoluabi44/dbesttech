@@ -14,7 +14,7 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
     
     const baseStyles = "inline-flex items-center justify-center font-medium rounded-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none";
     
-    const variants = {
+    const variants: Record<NonNullable<ButtonProps['variant']>, string> = {
       primary: "bg-[var(--primary)] text-white border border-[var(--primary-dark)] hover:bg-[var(--primary-hover)] focus:ring-[var(--primary)] shadow-sm hover:shadow active:translate-y-[1px]",
       secondary: "bg-[var(--surface-dark)] text-[var(--foreground)] border border-gray-200 hover:bg-gray-100 focus:ring-gray-200 shadow-sm hover:shadow active:translate-y-[1px]",
       ghost: "bg-transparent text-[var(--foreground)] border-transparent hover:bg-[var(--surface-dark)] focus:ring-[var(--surface-dark)]",
@@ -23,7 +23,7 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
       gameAction: "bg-[var(--primary)] text-white border border-[var(--primary-dark)] hover:bg-[var(--primary-hover)] focus:ring-[var(--primary)] shadow-sm hover:shadow active:translate-y-[1px]", // fallback
     };
     
-    const sizes = {
+    const sizes: Record<NonNullable<ButtonProps['size']>, string> = {
       sm: "h-9 px-3 text-sm",
       md: "h-10 px-4 text-sm",
       lg: "h-11 px-8 text-base",
@@ -37,7 +37,7 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
       <motion.button
         ref={ref}
         {...motionProps}
-        className={`${baseStyles} ${variants[variant]} ${sizes[size]} ${className}`}
+        className={`${baseStyles} ${variants[variant as keyof typeof variants]} ${sizes[size as keyof typeof sizes]} ${className}`}
         disabled={disabled || isLoading}
         {...props}
       >
