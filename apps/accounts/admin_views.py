@@ -31,9 +31,13 @@ class SchoolViewSet(viewsets.ModelViewSet):
         """Root Admin stats: total schools, total students"""
         total_schools = School.objects.count()
         total_students = StudentProfile.objects.count()
+        total_users = User.objects.count()
+        from allauth.account.models import EmailAddress
+        total_confirmed = EmailAddress.objects.filter(verified=True).count()
         return Response({
             'total_schools': total_schools,
-            'total_students': total_students
+            'total_students': total_users,  # Returning all users for admin
+            'total_confirmed_users': total_confirmed
         })
 
 class SchoolAdminDashboardViewSet(viewsets.ViewSet):

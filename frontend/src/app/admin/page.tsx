@@ -3,11 +3,13 @@
 import { useAuthStore } from '@/lib/stores/authStore';
 import { useEffect, useState } from 'react';
 import { GraduationCap, Users } from 'lucide-react';
+import { PieChart, Pie, Cell, Tooltip as RechartsTooltip, ResponsiveContainer, Legend } from 'recharts';
 import api from '@/lib/api/client';
 
 interface Stats {
   total_schools?: number;
   total_students?: number;
+  total_confirmed_users?: number;
   school_name?: string;
 }
 
@@ -82,6 +84,38 @@ export default function AdminDashboard() {
           <p className="text-3xl font-bold text-foreground">{stats?.total_students || 0}</p>
         </article>
       </section>
+
+      {['admin', 'root_admin'].includes(user?.role || '') && stats && (
+        <section className="glass-card p-6 rounded-xl mt-8" aria-label="User Statistics Chart">
+          <h2 className="text-xl font-bold mb-6 text-foreground">User Verification Status</h2>
+          <div className="h-[300px] w-full">
+            <ResponsiveContainer width="100%" height="100%">
+              <PieChart>
+                <Pie
+                  data={[
+                    { name: 'Confirmed Users', value: stats.total_confirmed_users || 0 },
+                    { name: 'Unconfirmed Users', value: Math.max(0, (stats.total_students || 0) - (stats.total_confirmed_users || 0)) }
+                  ]}
+                  cx="50%"
+                  cy="50%"
+                  innerRadius={60}
+                  outerRadius={100}
+                  paddingAngle={5}
+                  dataKey="value"
+                >
+                  <Cell fill="#10b981" />
+                  <Cell fill="#f43f5e" />
+                </Pie>
+                <RechartsTooltip 
+                  contentStyle={{ backgroundColor: 'var(--surface-dark)', border: 'none', borderRadius: '8px', color: '#fff' }}
+                  itemStyle={{ color: '#fff' }}
+                />
+                <Legend />
+              </PieChart>
+            </ResponsiveContainer>
+          </div>
+        </section>
+      )}
     </div>
   );
 }

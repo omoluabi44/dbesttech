@@ -53,7 +53,9 @@ export default function QuestionBankPage() {
       
       if (pageUrl) {
         const url = new URL(pageUrl);
-        endpoint = url.pathname;
+        // The API returns absolute URLs (e.g. /api/quiz/admin/questions/).
+        // Strip the leading /api/ if it exists, as the client already prepends it.
+        endpoint = url.pathname.replace(/^\/api\//, '/');
         const urlParams = Object.fromEntries(url.searchParams);
         params = { ...params, ...urlParams };
       }
