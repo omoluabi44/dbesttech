@@ -8,6 +8,7 @@ import { toast } from 'sonner';
 import { UserWithProfile } from '@/lib/types/auth';
 import { updateStudentProfile, updateUser } from '@/lib/api/auth';
 import { useAuthStore } from '@/lib/stores/authStore';
+import { SCHOOL_LEVELS } from '@/lib/utils/constants';
 
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
@@ -15,6 +16,7 @@ import { Input } from '@/components/ui/Input';
 const editProfileSchema = z.object({
   first_name: z.string().min(2, 'First name is required'),
   last_name: z.string().min(2, 'Last name is required'),
+  level: z.string().optional(),
 });
 
 type EditProfileFormValues = z.infer<typeof editProfileSchema>;
@@ -41,6 +43,7 @@ export function EditProfileModal({ user, isOpen, onClose, onUpdated }: EditProfi
     defaultValues: {
       first_name: user.first_name,
       last_name: user.last_name,
+      level: user.student_profile?.level || '',
     },
   });
 
@@ -84,6 +87,20 @@ export function EditProfileModal({ user, isOpen, onClose, onUpdated }: EditProfi
           student_profile: {
             ...updatedUser.student_profile!,
             avatar: profileRes.avatar
+          } 
+        };
+        changed = true;
+      }
+
+      // Update level if changed
+      if (data.level && user.role === 'student' && data.level !== user.student_profile?.level) {
+        const profileRes = await updateStudentProfile({ level: data.level });
+        updatedUser = { 
+          ...updatedUser, 
+          student_profile: {
+            ...updatedUser.student_profile!,
+            level: profileRes.level,
+            level_display: SCHOOL_LEVELS.find((l: any) => l.value === profileRes.level)?.label || profileRes.level
           } 
         };
         changed = true;
@@ -165,6 +182,21 @@ export function EditProfileModal({ user, isOpen, onClose, onUpdated }: EditProfi
                 {...register('last_name')}
                 error={errors.last_name?.message}
               />
+              
+              {user.role === 'student' && (
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 mb-1">School Level</label>
+                  <select 
+                    className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
+                    {...register('level')}
+                  >
+                    <option value="" disabled>Select your level</option>
+                    {SCHOOL_LEVELS.map(lvl => (
+                      <option key={lvl.value} value={lvl.value}>{lvl.label}</option>
+                    ))}
+                  </select>
+                </div>
+              )}
             </div>
 
             <div className="pt-4 flex justify-end gap-3">

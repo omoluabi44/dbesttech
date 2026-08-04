@@ -24,7 +24,7 @@ export const logout = async (): Promise<void> => {
 };
 
 export const getProfile = async (): Promise<UserWithProfile> => {
-  const res = await client.get('/auth/user/');
+  const res = await client.get('/auth/profile/');
   return res.data;
 };
 
@@ -40,7 +40,7 @@ export const updateStudentProfile = async (data: Partial<StudentProfile> | FormD
 };
 
 export const updateUser = async (data: { first_name?: string; last_name?: string }): Promise<UserWithProfile> => {
-  const res = await client.patch('/auth/user/', data);
+  const res = await client.patch('/auth/profile/', data);
   return res.data;
 };
 
