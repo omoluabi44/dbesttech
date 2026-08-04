@@ -4,6 +4,7 @@ from rest_framework.response import Response
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.authtoken.models import Token
 from django.contrib.auth import login, logout
+from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
 from allauth.account.models import EmailAddress
 
 from .models import User, StudentProfile
@@ -144,6 +145,7 @@ class StudentProfileView(generics.RetrieveUpdateAPIView):
     """Get or update student profile details."""
     serializer_class = StudentProfileSerializer
     permission_classes = [IsAuthenticated]
+    parser_classes = [MultiPartParser, FormParser, JSONParser]
 
     def get_object(self):
         profile, _ = StudentProfile.objects.get_or_create(

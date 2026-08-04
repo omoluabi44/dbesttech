@@ -18,6 +18,7 @@ import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { Avatar } from '@/components/ui/Avatar';
 import { Badge } from '@/components/ui/Badge';
+import { EditProfileModal } from '@/components/profile/EditProfileModal';
 
 type PasswordFormValues = z.infer<typeof changePasswordSchema>;
 
@@ -26,6 +27,7 @@ export default function ProfilePage() {
   const [isChangingPassword, setIsChangingPassword] = useState(false);
   const [selectedLevel, setSelectedLevel] = useState(user?.student_profile?.level || '');
   const [isUpdatingLevel, setIsUpdatingLevel] = useState(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
 
   const {
     register,
@@ -100,7 +102,7 @@ export default function ProfilePage() {
               <Badge variant="secondary">{user.role}</Badge>
             </div>
             
-            <Button variant="ghost" className="w-full">Edit Profile</Button>
+            <Button variant="ghost" className="w-full" onClick={() => setIsEditModalOpen(true)}>Edit Profile</Button>
           </Card>
 
 
@@ -121,7 +123,7 @@ export default function ProfilePage() {
               <Input label="Email Address" value={user.email} leftIcon={<Mail size={18} />} readOnly disabled />
               <Input label="Username" value={user.username} readOnly disabled />
             </div>
-            <p className="text-sm text-slate-500 mt-4">Contact your school administrator to change these details.</p>
+            <p className="text-sm text-slate-500 mt-4">Contact your school administrator to change your email or username.</p>
           </Card>
 
           {/* Academic Profile */}
@@ -198,6 +200,13 @@ export default function ProfilePage() {
         </div>
 
       </div>
+      
+      <EditProfileModal 
+        user={user}
+        isOpen={isEditModalOpen}
+        onClose={() => setIsEditModalOpen(false)}
+        onUpdated={() => {}}
+      />
     </DashboardLayout>
   );
 }

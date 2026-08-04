@@ -33,8 +33,14 @@ export const getStudentProfile = async (): Promise<StudentProfile> => {
   return res.data;
 };
 
-export const updateStudentProfile = async (data: Partial<StudentProfile>): Promise<StudentProfile> => {
-  const res = await client.patch('/auth/student-profile/', data);
+export const updateStudentProfile = async (data: Partial<StudentProfile> | FormData): Promise<StudentProfile> => {
+  const headers = data instanceof FormData ? { 'Content-Type': 'multipart/form-data' } : undefined;
+  const res = await client.patch('/auth/student-profile/', data, { headers });
+  return res.data;
+};
+
+export const updateUser = async (data: { first_name?: string; last_name?: string }): Promise<UserWithProfile> => {
+  const res = await client.patch('/auth/user/', data);
   return res.data;
 };
 
