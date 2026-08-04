@@ -291,7 +291,22 @@ export default function PracticeSessionPage() {
                   if (!question) return null;
                   
                   const seed = String(question.id).split('').reduce((acc: number, char: string) => acc + char.charCodeAt(0), 0);
-                  const options = [question.correct_answer, ...(question.incorrect_answers || [])];
+                  let correctText = question.correct_answer;
+                  let incorrectList = [];
+                  
+                  if (Array.isArray(question.incorrect_answers)) {
+                    incorrectList = question.incorrect_answers;
+                  } else if (question.incorrect_answers && typeof question.incorrect_answers === 'object') {
+                    const optionsDict = question.incorrect_answers;
+                    if (optionsDict[question.correct_answer]) {
+                      correctText = optionsDict[question.correct_answer];
+                    }
+                    incorrectList = Object.entries(optionsDict)
+                      .filter(([key, val]) => key !== question.correct_answer && val !== correctText)
+                      .map(([key, val]) => val);
+                  }
+                  
+                  const options = [correctText, ...incorrectList];
                   
                   for (let i = options.length - 1; i > 0; i--) {
                     const j = (seed + i) % (i + 1);
