@@ -128,7 +128,7 @@ export function EditProfileModal({ user, isOpen, onClose, onUpdated }: EditProfi
               >
                 {(avatarPreview || user.student_profile?.avatar) ? (
                   <img 
-                    src={avatarPreview || user.student_profile?.avatar} 
+                    src={avatarPreview || user.student_profile?.avatar || undefined} 
                     alt="Avatar" 
                     className="w-full h-full object-cover"
                   />
