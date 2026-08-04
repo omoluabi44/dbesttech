@@ -203,18 +203,29 @@ class PastQuestionFiltersView(views.APIView):
         subject_id = request.query_params.get('subject_id')
         level = request.query_params.get('level')
         
-        queryset = PastQuestion.objects.filter(is_active=True)
+        # Query both PastQuestion table and Quiz table (where AI uploads save)
+        pq_qs = PastQuestion.objects.filter(is_active=True)
+        quiz_qs = Quiz.objects.filter(is_active=True, is_past_question=True)
+        
         if subject_id:
-            queryset = queryset.filter(subject_id=subject_id)
+            pq_qs = pq_qs.filter(subject_id=subject_id)
+            quiz_qs = quiz_qs.filter(subject_id=subject_id)
         if level:
-            queryset = queryset.filter(level=level)
+            pq_qs = pq_qs.filter(level=level)
+            quiz_qs = quiz_qs.filter(level=level)
             
-        exam_bodies = queryset.values_list('exam_body', flat=True).distinct()
-        years = queryset.values_list('year', flat=True).distinct().order_by('-year')
+        pq_exam_bodies = set(pq_qs.values_list('exam_body', flat=True).distinct())
+        quiz_exam_bodies = set(quiz_qs.values_list('exam_body', flat=True).distinct())
+        
+        pq_years = set(pq_qs.values_list('year', flat=True).distinct())
+        quiz_years = set(quiz_qs.values_list('year', flat=True).distinct())
+        
+        all_exam_bodies = sorted([e for e in (pq_exam_bodies | quiz_exam_bodies) if e])
+        all_years = sorted([y for y in (pq_years | quiz_years) if y], reverse=True)
         
         return Response({
-            'exam_bodies': [e for e in exam_bodies if e],
-            'years': [y for y in years if y]
+            'exam_bodies': all_exam_bodies,
+            'years': all_years
         })
 
 
@@ -229,11 +240,18 @@ class PastQuestionStartView(views.APIView):
         
         subject = get_object_or_404(Subject, id=subject_id)
         
-        questions = PastQuestion.objects.filter(
+        # Check both PastQuestion and Quiz tables
+        pq_questions = PastQuestion.objects.filter(
             subject=subject, level=level, exam_body=exam_body, year=year, is_active=True
         )
+        quiz_questions = Quiz.objects.filter(
+            subject=subject, level=level, exam_body=exam_body, year=year,
+            is_active=True, is_past_question=True
+        )
         
-        if not questions.exists():
+        total_count = pq_questions.count() + quiz_questions.count()
+        
+        if total_count == 0:
             return Response({'error': 'No past questions found for these filters.'}, status=status.HTTP_400_BAD_REQUEST)
             
         session = PastQuestionSession.objects.create(
@@ -242,12 +260,17 @@ class PastQuestionStartView(views.APIView):
             level=level,
             exam_body=exam_body,
             year=year,
-            total_questions=questions.count()
+            total_questions=total_count
         )
+        
+        # Combine questions from both sources into a unified format
+        all_questions = []
+        all_questions.extend(PastQuestionSerializer(pq_questions, many=True).data)
+        all_questions.extend(QuizSerializer(quiz_questions, many=True).data)
         
         return Response({
             'session': PastQuestionSessionSerializer(session).data,
-            'questions': PastQuestionSerializer(questions, many=True).data
+            'questions': all_questions
         }, status=status.HTTP_201_CREATED)
 
 class PastQuestionSubmitView(views.APIView):
