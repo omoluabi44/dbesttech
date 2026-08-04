@@ -166,7 +166,7 @@ export default function PastQuestionSessionPage() {
               />
             )}
 
-            <div className="space-y-3 mt-auto">
+            <div className="space-y-3 mt-8">
               {(() => {
                 if (!question) return null;
                 
