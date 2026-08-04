@@ -93,7 +93,7 @@ export function EditProfileModal({ user, isOpen, onClose, onUpdated }: EditProfi
       }
 
       // Update level if changed
-      if (data.level && user.role === 'student' && data.level !== user.student_profile?.level) {
+      if (data.level && (user.role === 'student' || user.role === 'admin' || user.role === 'root_admin') && data.level !== user.student_profile?.level) {
         const profileRes = await updateStudentProfile({ level: data.level });
         updatedUser = { 
           ...updatedUser, 
@@ -183,7 +183,7 @@ export function EditProfileModal({ user, isOpen, onClose, onUpdated }: EditProfi
                 error={errors.last_name?.message}
               />
               
-              {user.role === 'student' && (
+              {(user.role === 'student' || user.role === 'admin' || user.role === 'root_admin') && (
                 <div>
                   <label className="block text-sm font-medium text-slate-700 mb-1">School Level</label>
                   <select 

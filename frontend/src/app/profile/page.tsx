@@ -127,7 +127,7 @@ export default function ProfilePage() {
           </Card>
 
           {/* Academic Profile */}
-          {user.role === 'student' && (
+          {(user.role === 'student' || user.role === 'admin' || user.role === 'root_admin') && (
             <Card padding="lg" className="border-slate-100 shadow-sm">
               <h3 className="text-xl font-bold text-slate-900 mb-6 flex items-center gap-2">
                 <School size={20} className="text-primary" /> Academic Profile
