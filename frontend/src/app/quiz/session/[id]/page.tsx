@@ -292,7 +292,7 @@ export default function PracticeSessionPage() {
                   
                   const seed = String(question.id).split('').reduce((acc: number, char: string) => acc + char.charCodeAt(0), 0);
                   let correctText = question.correct_answer;
-                  let incorrectList = [];
+                  let incorrectList: string[] = [];
                   
                   if (Array.isArray(question.incorrect_answers)) {
                     incorrectList = question.incorrect_answers;
