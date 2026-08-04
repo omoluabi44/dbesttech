@@ -19,8 +19,12 @@ services:
     restart: always
     env_file:
       - .env
+    environment:
+      - GOOGLE_APPLICATION_CREDENTIALS=/app/secrets/gcp-key.json
     ports:
       - "8000:8000"
+    volumes:
+      - ./secrets:/app/secrets:ro
     depends_on:
       - redis
     command: gunicorn --bind 0.0.0.0:8000 config.wsgi:application
@@ -36,6 +40,10 @@ services:
     restart: always
     env_file:
       - .env
+    environment:
+      - GOOGLE_APPLICATION_CREDENTIALS=/app/secrets/gcp-key.json
+    volumes:
+      - ./secrets:/app/secrets:ro
     depends_on:
       - redis
       - backend
