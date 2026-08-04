@@ -30,10 +30,15 @@ export default function PastQuestionSessionPage() {
   const [timeSpentSeconds, setTimeSpentSeconds] = useState(0);
 
   useEffect(() => {
-    if (!pastSession || pastSession.id !== sessionId) {
-      router.push('/past-questions');
-      return;
+    let timeout: NodeJS.Timeout;
+    if (!pastSession || String(pastSession.id) !== String(sessionId)) {
+      timeout = setTimeout(() => {
+        router.push('/past-questions');
+      }, 100);
     }
+    return () => {
+      if (timeout) clearTimeout(timeout);
+    };
   }, [pastSession, sessionId, router]);
 
   useEffect(() => {

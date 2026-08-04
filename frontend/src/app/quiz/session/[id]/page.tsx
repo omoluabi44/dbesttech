@@ -56,12 +56,16 @@ export default function PracticeSessionPage() {
     };
   }, [startBackgroundMusic, stopBackgroundMusic, speakEncouragement]);
 
-  // Redirect if no session
+  // Redirect if no session with a small delay to avoid race conditions
   useEffect(() => {
-    if (!practiceSession) {
-      router.push('/quiz/setup');
+    let timeout: NodeJS.Timeout;
+    if (!practiceSession || String(practiceSession.id) !== String(sessionId)) {
+      timeout = setTimeout(() => {
+        router.push('/quiz/setup');
+      }, 100);
     }
-  }, [practiceSession, router]);
+    return () => clearTimeout(timeout);
+  }, [practiceSession, sessionId, router]);
 
   // Reset timer when question changes
   useEffect(() => {
