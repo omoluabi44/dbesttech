@@ -19,7 +19,7 @@ export default function AdminDashboard() {
   useEffect(() => {
     const fetchStats = async () => {
       try {
-        if (user?.role === 'admin') {
+        if (['admin', 'root_admin'].includes(user?.role || '')) {
           const res = await api.get('/auth/schools/stats/');
           setStats(res.data);
         }
@@ -55,12 +55,12 @@ export default function AdminDashboard() {
       <header>
         <h1 className="text-3xl font-bold mb-2">Overview</h1>
         <p className="text-gray-400">
-          {user?.role === 'admin' ? 'Global Platform Statistics' : `Statistics for ${stats?.school_name || 'your dashboard'}`}
+          {['admin', 'root_admin'].includes(user?.role || '') ? 'Global Platform Statistics' : `Statistics for ${stats?.school_name || 'your dashboard'}`}
         </p>
       </header>
 
       <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6" aria-label="Quick Stats">
-        {user?.role === 'admin' && (
+        {['admin', 'root_admin'].includes(user?.role || '') && (
           <article className="glass-card p-6 border-l-4 border-l-secondary-500 rounded-xl" aria-label="Total Schools metric">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-gray-400 font-medium">Total Schools</h3>

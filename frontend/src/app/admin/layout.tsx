@@ -4,7 +4,7 @@ import { useAuthStore } from '@/lib/stores/authStore';
 import { useRouter, usePathname } from 'next/navigation';
 import { useEffect } from 'react';
 import Link from 'next/link';
-import { LayoutDashboard, Users, LogOut, FileText, BarChart, GraduationCap, BrainCircuit, UploadCloud } from 'lucide-react';
+import { LayoutDashboard, Users, LogOut, FileText, BarChart, GraduationCap, BrainCircuit, UploadCloud, ArrowLeft } from 'lucide-react';
 import { Footer } from '@/components/layout/Footer';
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
@@ -76,7 +76,14 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
               );
             })}
           </nav>
-          <div className="p-4 border-t border-[var(--surface-dark)]">
+          <div className="p-4 border-t border-[var(--surface-dark)] space-y-2">
+            <button
+              onClick={() => router.push('/dashboard')}
+              className="flex items-center space-x-3 px-4 py-3 rounded-lg w-full text-gray-400 hover:text-primary-400 hover:bg-primary-500/10 transition-colors"
+            >
+              <ArrowLeft className="w-5 h-5" />
+              <span>Back to App</span>
+            </button>
             <button
               onClick={() => { clearAuth(); router.push('/login'); }}
               className="flex items-center space-x-3 px-4 py-3 rounded-lg w-full text-gray-400 hover:text-red-400 hover:bg-red-500/10 transition-colors"
