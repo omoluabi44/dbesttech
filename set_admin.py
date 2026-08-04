@@ -7,7 +7,7 @@ django.setup()
 from django.contrib.auth import get_user_model
 
 User = get_user_model()
-email = 'emmanuelogunleye441999@gmail.com'
+email = 'dbesttech44@gmail.com'
 
 try:
     user = User.objects.get(email=email)

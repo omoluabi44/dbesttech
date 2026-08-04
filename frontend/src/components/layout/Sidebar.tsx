@@ -12,7 +12,8 @@ import {
   BrainCircuit,
   Gamepad2,
   Star,
-  Crown
+  Crown,
+  Shield
 } from 'lucide-react';
 import { useAuthStore } from '@/lib/stores/authStore';
 import { useSchoolCategory } from '@/lib/hooks/useSchoolCategory';
@@ -26,7 +27,7 @@ export const Sidebar: React.FC<{
   isMobile: boolean;
 }> = ({ isOpen, setIsOpen, isMobile }) => {
   const pathname = usePathname();
-  const { clearAuth } = useAuthStore();
+  const { user, clearAuth } = useAuthStore();
   const { isGraduating } = useSchoolCategory();
   const router = useRouter();
 
@@ -59,6 +60,15 @@ export const Sidebar: React.FC<{
       label: 'Subjects', 
       href: '/subjects', 
       icon: <BookOpen size={20} />
+    });
+  }
+
+  const isAdmin = user?.role === 'admin' || user?.role === 'root_admin';
+  if (isAdmin) {
+    navItems.push({ 
+      label: 'Admin Panel', 
+      href: '/admin', 
+      icon: <Shield size={20} />
     });
   }
 
