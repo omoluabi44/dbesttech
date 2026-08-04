@@ -5,6 +5,7 @@ import { UploadCloud, CheckCircle2, AlertCircle, Search, Filter, Edit2, Trash2, 
 import client from '@/lib/api/client';
 import { getSubjects, getAdminQuestions } from '@/lib/api/quiz';
 import { Subject } from '@/lib/types/quiz';
+import { SCHOOL_LEVELS } from '@/lib/utils/constants';
 import { toast } from 'sonner';
 
 export default function QuestionBankPage() {
@@ -218,10 +219,9 @@ export default function QuestionBankPage() {
               </select>
               <select name="level" value={filters.level} onChange={handleFilterChange} className="bg-[var(--background)] border border-[var(--surface-dark)] rounded-lg px-3 py-2 text-foreground focus:border-primary-500 outline-none">
                 <option value="">All Levels</option>
-                <option value="primary_1">Primary 1</option>
-                <option value="jss_1">JSS 1</option>
-                <option value="ss_1">SS 1</option>
-                <option value="ss_3">SS 3</option>
+                {SCHOOL_LEVELS.map(lvl => (
+                  <option key={lvl.value} value={lvl.value}>{lvl.label}</option>
+                ))}
               </select>
               <select name="difficulty" value={filters.difficulty} onChange={handleFilterChange} className="bg-[var(--background)] border border-[var(--surface-dark)] rounded-lg px-3 py-2 text-foreground focus:border-primary-500 outline-none">
                 <option value="">All Difficulties</option>

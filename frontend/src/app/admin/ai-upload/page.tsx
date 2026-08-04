@@ -2,8 +2,10 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { useForm } from 'react-hook-form';
+
 import { getSubjects, uploadPastQuestionsForAI, checkAIUploadStatus } from '@/lib/api/quiz';
 import { Subject } from '@/lib/types/quiz';
+import { SCHOOL_LEVELS } from '@/lib/utils/constants';
 import { UploadCloud, Loader2, FileText, CheckCircle2, AlertCircle, BrainCircuit, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -258,9 +260,9 @@ export default function AIUploadPage() {
                   className="w-full bg-[var(--background)] border border-[var(--surface-dark)] rounded-lg px-4 py-3 text-foreground focus:outline-none focus:border-primary-500"
                 >
                   <option value="">Select Level...</option>
-                  <option value="primary_6">Primary 6</option>
-                  <option value="jss_3">JSS 3</option>
-                  <option value="ss_3">SS 3</option>
+                  {SCHOOL_LEVELS.map(lvl => (
+                    <option key={lvl.value} value={lvl.value}>{lvl.label}</option>
+                  ))}
                 </select>
               </div>
 
