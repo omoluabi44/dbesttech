@@ -184,7 +184,7 @@ export default function PastQuestionSessionPage() {
                   }
                   incorrectList = Object.entries(optionsDict)
                     .filter(([key, val]) => key !== question.correct_answer && val !== correctText)
-                    .map(([key, val]) => val);
+                    .map(([key, val]) => val as string);
                 }
                 
                 const options = [correctText, ...incorrectList];
