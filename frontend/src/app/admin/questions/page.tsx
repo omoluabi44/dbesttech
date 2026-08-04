@@ -181,7 +181,7 @@ export default function QuestionBankPage() {
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <h1 className="text-3xl font-bold text-[var(--foreground)]">Question Bank</h1>
-          <p className="text-gray-500 mt-1">Manage and import questions across all subjects and levels.</p>
+          <p className="text-black mt-1">Manage and import questions across all subjects and levels.</p>
         </div>
       </div>
 
@@ -194,7 +194,7 @@ export default function QuestionBankPage() {
             className={`flex-1 py-4 px-6 text-sm font-medium transition-all duration-300 ${
               activeTab === 'list'
                 ? 'bg-primary-500/10 text-primary-600 border-b-2 border-primary-500'
-                : 'text-gray-500 hover:text-primary-600 hover:bg-primary-500/10'
+                : 'text-black hover:text-primary-600 hover:bg-primary-500/10'
             }`}
           >
             Question List
@@ -204,7 +204,7 @@ export default function QuestionBankPage() {
             className={`flex-1 py-4 px-6 text-sm font-medium transition-all duration-300 ${
               activeTab === 'import'
                 ? 'bg-primary-500/10 text-primary-600 border-b-2 border-primary-500'
-                : 'text-gray-500 hover:text-primary-600 hover:bg-primary-500/10'
+                : 'text-black hover:text-primary-600 hover:bg-primary-500/10'
             }`}
           >
             Bulk Import CSV
@@ -215,28 +215,28 @@ export default function QuestionBankPage() {
           <div className="p-6">
             {/* Filters */}
             <div className="grid grid-cols-1 md:grid-cols-5 gap-4 mb-6">
-              <select name="subject_id" value={filters.subject_id} onChange={handleFilterChange} className="bg-[var(--background)] border border-[var(--surface-dark)] rounded-lg px-3 py-2 text-foreground focus:border-primary-500 outline-none">
+              <select name="subject_id" value={filters.subject_id} onChange={handleFilterChange} className="bg-[var(--background)] border border-[var(--surface-dark)] rounded-lg px-3 py-2 text-black focus:border-primary-500 outline-none">
                 <option value="">All Subjects</option>
                 {subjects.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
               </select>
-              <select name="level" value={filters.level} onChange={handleFilterChange} className="bg-[var(--background)] border border-[var(--surface-dark)] rounded-lg px-3 py-2 text-foreground focus:border-primary-500 outline-none">
+              <select name="level" value={filters.level} onChange={handleFilterChange} className="bg-[var(--background)] border border-[var(--surface-dark)] rounded-lg px-3 py-2 text-black focus:border-primary-500 outline-none">
                 <option value="">All Levels</option>
                 {SCHOOL_LEVELS.map(lvl => (
                   <option key={lvl.value} value={lvl.value}>{lvl.label}</option>
                 ))}
               </select>
-              <select name="difficulty" value={filters.difficulty} onChange={handleFilterChange} className="bg-[var(--background)] border border-[var(--surface-dark)] rounded-lg px-3 py-2 text-foreground focus:border-primary-500 outline-none">
+              <select name="difficulty" value={filters.difficulty} onChange={handleFilterChange} className="bg-[var(--background)] border border-[var(--surface-dark)] rounded-lg px-3 py-2 text-black focus:border-primary-500 outline-none">
                 <option value="">All Difficulties</option>
                 <option value="easy">Easy</option>
                 <option value="medium">Medium</option>
                 <option value="hard">Hard</option>
               </select>
-              <select name="is_practice" value={filters.is_practice} onChange={handleFilterChange} className="bg-[var(--background)] border border-[var(--surface-dark)] rounded-lg px-3 py-2 text-foreground focus:border-primary-500 outline-none">
+              <select name="is_practice" value={filters.is_practice} onChange={handleFilterChange} className="bg-[var(--background)] border border-[var(--surface-dark)] rounded-lg px-3 py-2 text-black focus:border-primary-500 outline-none">
                 <option value="">Any Type</option>
                 <option value="true">Practice Quiz</option>
                 <option value="false">Not Practice</option>
               </select>
-              <select name="is_past_question" value={filters.is_past_question} onChange={handleFilterChange} className="bg-[var(--background)] border border-[var(--surface-dark)] rounded-lg px-3 py-2 text-foreground focus:border-primary-500 outline-none">
+              <select name="is_past_question" value={filters.is_past_question} onChange={handleFilterChange} className="bg-[var(--background)] border border-[var(--surface-dark)] rounded-lg px-3 py-2 text-black focus:border-primary-500 outline-none">
                 <option value="">Any Source</option>
                 <option value="true">Past Questions</option>
                 <option value="false">Not Past Questions</option>
@@ -247,7 +247,7 @@ export default function QuestionBankPage() {
             <div className="overflow-x-auto border border-[var(--surface-dark)] rounded-lg">
               <table className="w-full text-left border-collapse">
                 <thead>
-                  <tr className="bg-[var(--surface-dark)] text-gray-400 text-sm">
+                  <tr className="bg-[var(--surface-dark)] text-black text-sm">
                     <th className="p-4 font-medium">Question Text</th>
                     <th className="p-4 font-medium w-32">Type</th>
                     <th className="p-4 font-medium w-32">Correct Answer</th>
@@ -258,19 +258,19 @@ export default function QuestionBankPage() {
                   {isLoading ? (
                     <tr><td colSpan={4} className="p-8 text-center"><Loader2 className="w-6 h-6 animate-spin mx-auto text-primary-500" /></td></tr>
                   ) : questions.length === 0 ? (
-                    <tr><td colSpan={4} className="p-8 text-center text-gray-500">No questions found matching your filters.</td></tr>
+                    <tr><td colSpan={4} className="p-8 text-center text-black">No questions found matching your filters.</td></tr>
                   ) : (
                     questions.map((q) => (
                       <tr key={q.id} className="hover:bg-[var(--background)] transition-colors">
-                        <td className="p-4 text-foreground text-sm max-w-md truncate">{q.questionText}</td>
-                        <td className="p-4 text-gray-400 text-sm">{q.questionType === 'mcq' ? 'Multiple Choice' : 'Theory'}</td>
+                        <td className="p-4 text-black text-sm max-w-md truncate">{q.questionText}</td>
+                        <td className="p-4 text-black text-sm">{q.questionType === 'mcq' ? 'Multiple Choice' : 'Theory'}</td>
                         <td className="p-4 text-green-400 font-medium text-sm">{q.correct_answer}</td>
                         <td className="p-4 text-center">
                           <div className="flex items-center justify-center gap-3">
-                            <button onClick={() => handleEditClick(q)} className="text-gray-400 hover:text-primary-400 transition-colors" title="Edit">
+                            <button onClick={() => handleEditClick(q)} className="text-black hover:text-primary-400 transition-colors" title="Edit">
                               <Edit2 className="w-4 h-4" />
                             </button>
-                            <button onClick={() => handleDelete(q.id)} className="text-gray-400 hover:text-red-400 transition-colors" title="Delete">
+                            <button onClick={() => handleDelete(q.id)} className="text-black hover:text-red-400 transition-colors" title="Delete">
                               <Trash2 className="w-4 h-4" />
                             </button>
                           </div>
@@ -285,21 +285,21 @@ export default function QuestionBankPage() {
             {/* Pagination */}
             {!isLoading && pagination.count > 0 && (
               <div className="flex items-center justify-between mt-6">
-                <span className="text-sm text-gray-500">
+                <span className="text-sm text-black">
                   Showing page {pagination.current} of {Math.ceil(pagination.count / 10) || 1} ({pagination.count} total)
                 </span>
                 <div className="flex gap-2">
                   <button 
                     disabled={!pagination.previous}
                     onClick={() => fetchQuestions(pagination.previous!)}
-                    className="p-2 bg-[var(--background)] border border-[var(--surface-dark)] rounded-lg text-gray-400 hover:text-foreground disabled:opacity-50 transition-colors"
+                    className="p-2 bg-[var(--background)] border border-[var(--surface-dark)] rounded-lg text-black hover:text-black disabled:opacity-50 transition-colors"
                   >
                     <ChevronLeft className="w-5 h-5" />
                   </button>
                   <button 
                     disabled={!pagination.next}
                     onClick={() => fetchQuestions(pagination.next!)}
-                    className="p-2 bg-[var(--background)] border border-[var(--surface-dark)] rounded-lg text-gray-400 hover:text-foreground disabled:opacity-50 transition-colors"
+                    className="p-2 bg-[var(--background)] border border-[var(--surface-dark)] rounded-lg text-black hover:text-black disabled:opacity-50 transition-colors"
                   >
                     <ChevronRight className="w-5 h-5" />
                   </button>
@@ -316,13 +316,13 @@ export default function QuestionBankPage() {
                 <div className="bg-[var(--background)] p-1 rounded-lg flex border border-[var(--surface-dark)]">
                   <button 
                     onClick={() => setImportType('quizzes')} 
-                    className={`px-4 py-2 text-sm rounded-md transition-colors ${importType === 'quizzes' ? 'bg-[var(--surface-dark)] text-foreground' : 'text-gray-500'}`}
+                    className={`px-4 py-2 text-sm rounded-md transition-colors ${importType === 'quizzes' ? 'bg-[var(--surface-dark)] text-black' : 'text-black'}`}
                   >
                     Practice Quizzes
                   </button>
                   <button 
                     onClick={() => setImportType('past_questions')} 
-                    className={`px-4 py-2 text-sm rounded-md transition-colors ${importType === 'past_questions' ? 'bg-[var(--surface-dark)] text-foreground' : 'text-gray-500'}`}
+                    className={`px-4 py-2 text-sm rounded-md transition-colors ${importType === 'past_questions' ? 'bg-[var(--surface-dark)] text-black' : 'text-black'}`}
                   >
                     Past Questions
                   </button>
@@ -333,7 +333,7 @@ export default function QuestionBankPage() {
                 <h3 className="text-xl font-semibold text-[var(--foreground)] mb-2">
                   Upload {importType === 'quizzes' ? 'Practice Quizzes' : 'Past Questions'} CSV
                 </h3>
-                <p className="text-sm text-gray-500">
+                <p className="text-sm text-black">
                   Please ensure your CSV file follows the correct template format. 
                   Incorrect answers should be separated into columns: 
                   <code className="bg-gray-800 text-primary-300 px-2 py-0.5 rounded mx-1 text-xs">incorrect_answer_1</code>, 
@@ -355,15 +355,15 @@ export default function QuestionBankPage() {
                       <>
                         <CheckCircle2 className="w-12 h-12 text-green-500 mb-3" />
                         <p className="mb-2 text-sm text-[var(--foreground)] font-medium">{file.name}</p>
-                        <p className="text-xs text-gray-500">{(file.size / 1024).toFixed(2)} KB</p>
+                        <p className="text-xs text-black">{(file.size / 1024).toFixed(2)} KB</p>
                       </>
                     ) : (
                       <>
-                        <UploadCloud className="w-12 h-12 text-gray-400 group-hover:text-primary-500 mb-3 transition-colors" />
-                        <p className="mb-2 text-sm text-gray-500">
+                        <UploadCloud className="w-12 h-12 text-black group-hover:text-primary-500 mb-3 transition-colors" />
+                        <p className="mb-2 text-sm text-black">
                           <span className="font-semibold text-[var(--foreground)]">Click to upload</span> or drag and drop
                         </p>
-                        <p className="text-xs text-gray-400">CSV files only</p>
+                        <p className="text-xs text-black">CSV files only</p>
                       </>
                     )}
                   </div>
@@ -397,8 +397,8 @@ export default function QuestionBankPage() {
                 disabled={!file || isUploading}
                 className={`mt-6 w-full py-3 px-4 rounded-lg font-medium flex items-center justify-center gap-2 transition-all duration-300 ${
                   !file || isUploading
-                    ? 'bg-[var(--surface-dark)] text-gray-500 cursor-not-allowed'
-                    : 'bg-[var(--primary)] text-white hover:bg-[var(--primary-hover)] shadow-sm'
+                    ? 'bg-[var(--surface-dark)] text-black cursor-not-allowed'
+                    : 'bg-[var(--primary)] text-black hover:bg-[var(--primary-hover)] shadow-sm'
                 }`}
               >
                 {isUploading ? (
@@ -424,23 +424,23 @@ export default function QuestionBankPage() {
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
           <div className="bg-[var(--surface)] border border-[var(--surface-dark)] rounded-2xl w-full max-w-2xl max-h-[90vh] flex flex-col shadow-2xl">
             <div className="p-6 border-b border-[var(--surface-dark)] flex justify-between items-center">
-              <h2 className="text-xl font-bold text-foreground">Edit Question</h2>
-              <button onClick={() => setIsEditModalOpen(false)} className="text-gray-400 hover:text-white transition-colors">&times;</button>
+              <h2 className="text-xl font-bold text-black">Edit Question</h2>
+              <button onClick={() => setIsEditModalOpen(false)} className="text-black hover:text-black transition-colors">&times;</button>
             </div>
             
             <div className="p-6 overflow-y-auto space-y-4 custom-scrollbar">
               <div>
-                <label className="block text-sm font-medium text-gray-400 mb-1">Question Text</label>
+                <label className="block text-sm font-medium text-black mb-1">Question Text</label>
                 <textarea 
                   value={editingQuestion.questionText}
                   onChange={(e) => setEditingQuestion({...editingQuestion, questionText: e.target.value})}
-                  className="w-full bg-[var(--background)] border border-[var(--surface-dark)] rounded-lg p-3 text-foreground focus:border-primary-500 outline-none"
+                  className="w-full bg-[var(--background)] border border-[var(--surface-dark)] rounded-lg p-3 text-black focus:border-primary-500 outline-none"
                   rows={3}
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-400 mb-1">Correct Answer</label>
+                <label className="block text-sm font-medium text-black mb-1">Correct Answer</label>
                 <input 
                   type="text"
                   value={editingQuestion.correct_answer}
@@ -450,11 +450,11 @@ export default function QuestionBankPage() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-400 mb-2">Incorrect Answers</label>
+                <label className="block text-sm font-medium text-black mb-2">Incorrect Answers</label>
                 <div className="space-y-2">
                   {Object.entries(editingQuestion.incorrect_answers || {}).map(([key, value]) => (
                     <div key={key} className="flex gap-2 items-center">
-                      <span className="text-gray-500 w-6">{key}.</span>
+                      <span className="text-black w-6">{key}.</span>
                       <input 
                         type="text"
                         value={value as string}
@@ -462,14 +462,14 @@ export default function QuestionBankPage() {
                           const newIncorrect = { ...editingQuestion.incorrect_answers, [key]: e.target.value };
                           setEditingQuestion({...editingQuestion, incorrect_answers: newIncorrect});
                         }}
-                        className="flex-1 bg-[var(--background)] border border-[var(--surface-dark)] rounded-lg p-2 text-foreground focus:border-primary-500 outline-none"
+                        className="flex-1 bg-[var(--background)] border border-[var(--surface-dark)] rounded-lg p-2 text-black focus:border-primary-500 outline-none"
                       />
                     </div>
                   ))}
                   {/* For array-based incorrect answers if some models use arrays */}
                   {Array.isArray(editingQuestion.incorrect_answers) && editingQuestion.incorrect_answers.map((ans: string, idx: number) => (
                     <div key={idx} className="flex gap-2 items-center">
-                      <span className="text-gray-500">{idx + 1}.</span>
+                      <span className="text-black">{idx + 1}.</span>
                       <input 
                         type="text"
                         value={ans}
@@ -478,7 +478,7 @@ export default function QuestionBankPage() {
                           newArr[idx] = e.target.value;
                           setEditingQuestion({...editingQuestion, incorrect_answers: newArr});
                         }}
-                        className="flex-1 bg-[var(--background)] border border-[var(--surface-dark)] rounded-lg p-2 text-foreground focus:border-primary-500 outline-none"
+                        className="flex-1 bg-[var(--background)] border border-[var(--surface-dark)] rounded-lg p-2 text-black focus:border-primary-500 outline-none"
                       />
                     </div>
                   ))}
@@ -486,11 +486,11 @@ export default function QuestionBankPage() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-400 mb-1">Explanation</label>
+                <label className="block text-sm font-medium text-black mb-1">Explanation</label>
                 <textarea 
                   value={editingQuestion.explanation || ''}
                   onChange={(e) => setEditingQuestion({...editingQuestion, explanation: e.target.value})}
-                  className="w-full bg-[var(--background)] border border-[var(--surface-dark)] rounded-lg p-3 text-foreground focus:border-primary-500 outline-none"
+                  className="w-full bg-[var(--background)] border border-[var(--surface-dark)] rounded-lg p-3 text-black focus:border-primary-500 outline-none"
                   rows={2}
                 />
               </div>
@@ -499,14 +499,14 @@ export default function QuestionBankPage() {
             <div className="p-6 border-t border-[var(--surface-dark)] flex justify-end gap-3 bg-[var(--surface-light)] rounded-b-2xl">
               <button 
                 onClick={() => setIsEditModalOpen(false)}
-                className="px-6 py-2.5 text-gray-400 hover:text-white transition-colors font-medium"
+                className="px-6 py-2.5 text-black hover:text-black transition-colors font-medium"
               >
                 Cancel
               </button>
               <button 
                 onClick={handleSaveEdit}
                 disabled={isSaving}
-                className="px-6 py-2.5 bg-primary-500 hover:bg-primary-400 text-white rounded-lg font-medium transition-colors flex items-center gap-2"
+                className="px-6 py-2.5 bg-primary-500 hover:bg-primary-400 text-black rounded-lg font-medium transition-colors flex items-center gap-2"
               >
                 {isSaving ? <Loader2 className="w-5 h-5 animate-spin" /> : 'Save Changes'}
               </button>

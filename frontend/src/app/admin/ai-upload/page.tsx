@@ -203,8 +203,8 @@ export default function AIUploadPage() {
           <UploadCloud className="w-6 h-6 text-primary-400" />
         </div>
         <div>
-          <h1 className="text-2xl font-bold text-foreground">Upload Past Questions</h1>
-          <p className="text-gray-400">Upload multiple PDFs or Images of past exams and AI will automatically extract and save the questions.</p>
+          <h1 className="text-2xl font-bold text-black">Upload Past Questions</h1>
+          <p className="text-black">Upload multiple PDFs or Images of past exams and AI will automatically extract and save the questions.</p>
         </div>
       </div>
 
@@ -217,7 +217,7 @@ export default function AIUploadPage() {
               <CheckCircle2 className="w-12 h-12 text-green-500" />
             </div>
             <div>
-              <h3 className="text-2xl font-bold text-foreground mb-2">Extraction Complete!</h3>
+              <h3 className="text-2xl font-bold text-black mb-2">Extraction Complete!</h3>
               <div className="space-y-3 my-6 max-w-lg mx-auto text-left bg-[var(--background)] p-4 rounded-xl border border-[var(--surface-dark)] max-h-60 overflow-y-auto custom-scrollbar">
                 {uploads.map((u, i) => (
                   <div key={i} className="flex justify-between items-center py-2 border-b border-[var(--surface-dark)] last:border-0">
@@ -232,7 +232,7 @@ export default function AIUploadPage() {
               </div>
               <button 
                 onClick={handleReset}
-                className="px-6 py-2.5 bg-primary-500 hover:bg-primary-400 text-white rounded-lg font-medium transition-colors"
+                className="px-6 py-2.5 bg-primary-500 hover:bg-primary-400 text-black rounded-lg font-medium transition-colors"
               >
                 Upload More Documents
               </button>
@@ -243,10 +243,10 @@ export default function AIUploadPage() {
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
-                <label className="block text-sm font-medium text-gray-400 mb-1">Subject</label>
+                <label className="block text-sm font-medium text-black mb-1">Subject</label>
                 <select 
                   {...register('subject_id', { required: true })}
-                  className="w-full bg-[var(--background)] border border-[var(--surface-dark)] rounded-lg px-4 py-3 text-foreground focus:outline-none focus:border-primary-500"
+                  className="w-full bg-[var(--background)] border border-[var(--surface-dark)] rounded-lg px-4 py-3 text-black focus:outline-none focus:border-primary-500"
                 >
                   <option value="">Select Subject...</option>
                   {subjects.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
@@ -254,10 +254,10 @@ export default function AIUploadPage() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-400 mb-1">Class Level</label>
+                <label className="block text-sm font-medium text-black mb-1">Class Level</label>
                 <select 
                   {...register('level', { required: true })}
-                  className="w-full bg-[var(--background)] border border-[var(--surface-dark)] rounded-lg px-4 py-3 text-foreground focus:outline-none focus:border-primary-500"
+                  className="w-full bg-[var(--background)] border border-[var(--surface-dark)] rounded-lg px-4 py-3 text-black focus:outline-none focus:border-primary-500"
                 >
                   <option value="">Select Level...</option>
                   {SCHOOL_LEVELS.map(lvl => (
@@ -267,10 +267,10 @@ export default function AIUploadPage() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-400 mb-1">Exam Body</label>
+                <label className="block text-sm font-medium text-black mb-1">Exam Body</label>
                 <select 
                   {...register('exam_body', { required: true })}
-                  className="w-full bg-[var(--background)] border border-[var(--surface-dark)] rounded-lg px-4 py-3 text-foreground focus:outline-none focus:border-primary-500"
+                  className="w-full bg-[var(--background)] border border-[var(--surface-dark)] rounded-lg px-4 py-3 text-black focus:outline-none focus:border-primary-500"
                 >
                   <option value="">Select Exam Body...</option>
                   <option value="federal_common_entrance">Federal Common Entrance</option>
@@ -285,20 +285,20 @@ export default function AIUploadPage() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-400 mb-1">Year</label>
+                <label className="block text-sm font-medium text-black mb-1">Year</label>
                 <input 
                   type="number"
                   min="1990"
                   max={new Date().getFullYear()}
                   {...register('year', { required: true })}
                   placeholder="e.g., 2023"
-                  className="w-full bg-[var(--background)] border border-[var(--surface-dark)] rounded-lg px-4 py-3 text-foreground focus:outline-none focus:border-primary-500"
+                  className="w-full bg-[var(--background)] border border-[var(--surface-dark)] rounded-lg px-4 py-3 text-black focus:outline-none focus:border-primary-500"
                 />
               </div>
             </div>
 
             <div className="mt-6">
-              <label className="block text-sm font-medium text-gray-400 mb-2">Document Files (PDFs or Images)</label>
+              <label className="block text-sm font-medium text-black mb-2">Document Files (PDFs or Images)</label>
               
               <div 
                 onDragOver={onDragOver}
@@ -320,8 +320,8 @@ export default function AIUploadPage() {
                   <div className="w-16 h-16 bg-[var(--surface-dark)] rounded-full flex items-center justify-center mb-4">
                     <UploadCloud className="w-8 h-8 text-primary-400" />
                   </div>
-                  <h4 className="text-lg font-medium text-foreground mb-1">Click to browse or drag files here</h4>
-                  <p className="text-sm text-gray-400 max-w-sm">
+                  <h4 className="text-lg font-medium text-black mb-1">Click to browse or drag files here</h4>
+                  <p className="text-sm text-black max-w-sm">
                     Upload multiple scanned PDFs or clear images of past questions.
                   </p>
                 </label>
@@ -334,10 +334,10 @@ export default function AIUploadPage() {
                 {uploads.map((u, idx) => (
                   <div key={idx} className="flex items-center justify-between p-3 bg-[var(--background)] border border-[var(--surface-dark)] rounded-lg">
                     <div className="flex items-center gap-3">
-                      <FileText className="w-5 h-5 text-gray-400" />
+                      <FileText className="w-5 h-5 text-black" />
                       <div>
-                        <p className="text-sm font-medium text-foreground truncate max-w-[200px] sm:max-w-xs">{u.file.name}</p>
-                        <p className="text-xs text-gray-500">{(u.file.size / (1024 * 1024)).toFixed(2)} MB</p>
+                        <p className="text-sm font-medium text-black truncate max-w-[200px] sm:max-w-xs">{u.file.name}</p>
+                        <p className="text-xs text-black">{(u.file.size / (1024 * 1024)).toFixed(2)} MB</p>
                       </div>
                     </div>
                     
@@ -358,7 +358,7 @@ export default function AIUploadPage() {
                         <button 
                           type="button" 
                           onClick={() => removeFile(idx)}
-                          className="p-1.5 text-gray-400 hover:text-red-400 hover:bg-red-400/10 rounded transition-colors"
+                          className="p-1.5 text-black hover:text-red-400 hover:bg-red-400/10 rounded transition-colors"
                         >
                           <Trash2 className="w-4 h-4" />
                         </button>
@@ -373,7 +373,7 @@ export default function AIUploadPage() {
               <button
                 type="submit"
                 disabled={uploads.length === 0 || isUploading || uploads.some(u => u.status === 'pending' || u.status === 'processing')}
-                className="px-8 py-3 bg-primary hover:bg-[var(--primary-hover)] text-white rounded-lg font-medium shadow-md transition-all flex items-center gap-2 disabled:opacity-50"
+                className="px-8 py-3 bg-primary hover:bg-[var(--primary-hover)] text-black rounded-lg font-medium shadow-md transition-all flex items-center gap-2 disabled:opacity-50"
               >
                 {isUploading || uploads.some(u => u.status === 'pending' || u.status === 'processing') ? (
                   <><Loader2 className="w-5 h-5 animate-spin" /> Processing...</>
