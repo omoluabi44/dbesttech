@@ -11,7 +11,7 @@ import logging
 from django.db import transaction
 from django.utils import timezone
 
-from ..models import Quiz, PastQuestionUpload
+from ..models import Quiz, PastQuestion, PastQuestionUpload
 
 logger = logging.getLogger(__name__)
 
@@ -154,12 +154,11 @@ class PastQuestionExtractor:
             question_text = q_data['question_text']
 
             # Check for duplicates
-            exists = Quiz.objects.filter(
+            exists = PastQuestion.objects.filter(
                 subject=subject,
                 questionText=question_text,
                 year=year,
                 exam_body=exam_body,
-                is_past_question=True,
             ).exists()
 
             if exists:
@@ -174,21 +173,19 @@ class PastQuestionExtractor:
                     correct_label = opt_data['label']
 
             # Create the question
-            quiz = Quiz.objects.create(
+            pq = PastQuestion.objects.create(
                 subject=subject,
                 topic_obj=None,  # Past questions are not topic-assigned by default
                 level=level,
                 difficulty='medium',  # Default; can be updated by admin later
-                is_practice=False,
-                is_past_question=True,
-                questionText=question_text,
-                explanation=q_data.get('explanation', ''),
-                year=year,
                 exam_body=exam_body,
-                is_active=True,
+                year=year,
+                questionText=question_text,
                 questionType='mcq',
                 correct_answer=correct_label,
                 incorrect_answers=options_dict,
+                explanation=q_data.get('explanation', ''),
+                is_active=True,
             )
 
             saved_count += 1
