@@ -27,7 +27,7 @@ export default function PastQuestionSessionPage() {
   } = useQuizStore();
 
   const [submitting, setSubmitting] = useState(false);
-  const [timeSpentSeconds, setTimeSpentSeconds] = useState(0);
+  const [timeLeftSeconds, setTimeLeftSeconds] = useState(-1);
 
   useEffect(() => {
     let timeout: NodeJS.Timeout;
@@ -41,13 +41,26 @@ export default function PastQuestionSessionPage() {
     };
   }, [pastSession, sessionId, router]);
 
+  // Initialize timer
   useEffect(() => {
-    if (submitting) return;
+    if (pastQuestions.length > 0 && timeLeftSeconds === -1) {
+      setTimeLeftSeconds(pastQuestions.length * 60);
+    }
+  }, [pastQuestions.length, timeLeftSeconds]);
+
+  useEffect(() => {
+    if (submitting || timeLeftSeconds <= 0) return;
     const timer = setInterval(() => {
-      setTimeSpentSeconds(prev => prev + 1);
+      setTimeLeftSeconds(prev => {
+        if (prev <= 1) {
+          clearInterval(timer);
+          return 0;
+        }
+        return prev - 1;
+      });
     }, 1000);
     return () => clearInterval(timer);
-  }, [submitting]);
+  }, [submitting, timeLeftSeconds]);
 
   const submitAnswersMutation = useMutation({
     mutationFn: async () => {
@@ -56,7 +69,7 @@ export default function PastQuestionSessionPage() {
         return {
           question_id: q.id,
           selected_answer: selectedOptionId || '',
-          time_spent_seconds: Math.floor(timeSpentSeconds / pastQuestions.length),
+          time_spent_seconds: Math.floor(((pastQuestions.length * 60) - Math.max(0, timeLeftSeconds)) / pastQuestions.length),
         };
       }).filter(a => a.selected_answer !== '');
 
@@ -73,12 +86,20 @@ export default function PastQuestionSessionPage() {
     }
   });
 
-  const handleSubmit = () => {
-    if (confirm('Are you sure you want to submit your exam? You cannot change your answers after submission.')) {
+  const handleSubmit = (autoSubmit = false) => {
+    if (autoSubmit || confirm('Are you sure you want to submit your exam? You cannot change your answers after submission.')) {
       setSubmitting(true);
       submitAnswersMutation.mutate();
     }
   };
+
+  useEffect(() => {
+    if (timeLeftSeconds === 0 && !submitting) {
+      toast.error('Time is up! Submitting your exam...');
+      handleSubmit(true);
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [timeLeftSeconds]);
 
   if (!pastSession || pastQuestions.length === 0) {
     return (
@@ -131,11 +152,25 @@ export default function PastQuestionSessionPage() {
               </p>
             </div>
           </div>
-          <div className="flex items-center gap-6">
-            <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-primary border border-primary">
-              <Clock className="w-4 h-4 text-primary" />
-              <span className="font-mono text-lg font-medium">{formatTime(timeSpentSeconds)}</span>
+          <div className="flex items-center gap-2 md:gap-6">
+            <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-white/20 border border-white/30">
+              <Clock className="w-4 h-4 text-white" />
+              <span className={`font-mono text-sm md:text-lg font-medium text-white ${timeLeftSeconds > 0 && timeLeftSeconds < 300 ? 'animate-pulse text-red-200' : ''}`}>
+                {timeLeftSeconds >= 0 ? formatTime(timeLeftSeconds) : '00:00'}
+              </span>
             </div>
+            
+            <Button 
+              variant="default" 
+              size="sm" 
+              onClick={() => handleSubmit(false)}
+              disabled={submitting}
+              className="bg-white text-primary hover:bg-gray-100 flex px-2 sm:px-3"
+            >
+              {submitting ? <Loader2 className="w-4 h-4 animate-spin sm:mr-1" /> : <Check className="w-4 h-4 sm:mr-1" />}
+              <span className="hidden sm:inline">Submit</span>
+            </Button>
+
             <Button 
               variant="ghost" 
               size="sm" 
@@ -144,9 +179,9 @@ export default function PastQuestionSessionPage() {
                   router.push('/dashboard');
                 }
               }}
-              className="bg-transparent border-primary text-primary hover:bg-primary hover:text-white"
+              className="text-white hover:bg-white/20"
             >
-              Exit Exam
+              Exit
             </Button>
           </div>
         </div>
@@ -242,14 +277,14 @@ export default function PastQuestionSessionPage() {
             
             {isLastQuestion ? (
               <Button
-                onClick={handleSubmit}
+                onClick={() => handleSubmit(false)}
                 disabled={submitting}
-                className="w-40 bg-primary hover:bg-primary text-white rounded-lg font-medium shadow-sm"
+                className="w-32 sm:w-40 bg-primary hover:bg-primary text-white rounded-lg font-medium shadow-sm"
               >
                 {submitting ? (
                   <Loader2 className="w-5 h-5 animate-spin" />
                 ) : (
-                  <>Submit Exam <Check className="w-4 h-4 ml-2" /></>
+                  <>Submit <Check className="w-4 h-4 ml-2 hidden sm:inline" /></>
                 )}
               </Button>
             ) : (
@@ -302,7 +337,7 @@ export default function PastQuestionSessionPage() {
             
             <div className="mt-8 space-y-4">
               <Button
-                onClick={handleSubmit}
+                onClick={() => handleSubmit(false)}
                 disabled={submitting}
                 variant="ghost"
                 className="w-full border border-gray-300 text-gray-700 hover:bg-gray-50 font-medium h-12 rounded-xl flex items-center justify-center transition-colors"
