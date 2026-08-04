@@ -14,8 +14,11 @@ services:
       - .env
     environment:
       - DJANGO_SETTINGS_MODULE=config.settings.production
+      - GOOGLE_APPLICATION_CREDENTIALS=/app/secrets/gcp-key.json
     ports:
       - "8000:8000"
+    volumes:
+      - ./gcp-key.json:/app/secrets/gcp-key.json:ro
     depends_on:
       - redis
     networks:
@@ -29,6 +32,9 @@ services:
       - .env
     environment:
       - DJANGO_SETTINGS_MODULE=config.settings.production
+      - GOOGLE_APPLICATION_CREDENTIALS=/app/secrets/gcp-key.json
+    volumes:
+      - ./gcp-key.json:/app/secrets/gcp-key.json:ro
     depends_on:
       - redis
     command: celery -A config worker --loglevel=info --concurrency=2
