@@ -189,8 +189,8 @@ export default function AIGeneratePage() {
                   <input 
                     type="number"
                     min="1"
-                    max="100"
-                    {...register('num_questions', { required: true, min: 1, max: 100 })}
+                    max="50"
+                    {...register('num_questions', { required: true, min: 1, max: 50 })}
                     className="w-full bg-[var(--background)] border border-[var(--surface-dark)] rounded-lg px-4 py-2.5 text-foreground focus:outline-none focus:border-primary-500"
                   />
                 </div>
