@@ -9,6 +9,7 @@ import { HeroSection } from '@/components/landing/HeroSection';
 import { FeaturesSection } from '@/components/landing/FeaturesSection';
 import { GradeLevelsSection } from '@/components/landing/GradeLevelsSection';
 import { HowItWorksSection } from '@/components/landing/HowItWorksSection';
+import { PricingSection } from '@/components/landing/PricingSection';
 import { TestimonialsSection } from '@/components/landing/TestimonialsSection';
 import { CTASection } from '@/components/landing/CTASection';
 
@@ -42,6 +43,7 @@ export default function LandingPage() {
         <FeaturesSection />
         <GradeLevelsSection />
         <HowItWorksSection />
+        <PricingSection />
         <TestimonialsSection />
         <CTASection />
       </main>

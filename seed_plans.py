@@ -4,103 +4,66 @@ import django
 # We can run this script with `python manage.py shell < seed_plans.py`
 from apps.accounts.models import SubscriptionPlan
 
+PAID_FEATURES = [
+    'Unlimited access to all questions',
+    'Detailed step-by-step explanations',
+    'Full performance analytics',
+    'AI-powered study suggestions',
+    'Priority support'
+]
+
 plans = [
     {
         'name': 'free',
         'display_name': 'Free',
         'price': 0,
-        'duration_days': None,
         'order': 0,
         'features': [
-            'Access to all subjects',
-            'Basic quiz explanations',
-            'Progress tracking',
+            'Access to the first 10 questions of Easy level only'
         ]
     },
     {
         'name': 'monthly',
         'display_name': 'Monthly',
         'price': 1000,
-        'duration_days': 30,
         'order': 1,
-        'features': [
-            'Access to all subjects',
-            'Detailed quiz explanations',
-            'Advanced progress tracking',
-            'Performance analytics',
-            'Priority support',
-        ]
+        'features': PAID_FEATURES
     },
     {
         'name': 'quarterly',
         'display_name': 'Quarterly',
         'price': 3500,
-        'duration_days': 90,
         'order': 2,
-        'features': [
-            'Access to all subjects',
-            'Detailed quiz explanations',
-            'Advanced progress tracking',
-            'Full performance analytics',
-            'AI-powered study suggestions',
-            'Priority support',
-        ]
+        'features': PAID_FEATURES
     },
     {
         'name': 'half-year',
         'display_name': 'Half-Year',
         'price': 6000,
-        'duration_days': 180,
         'order': 3,
-        'features': [
-            'Access to all subjects',
-            'Detailed quiz explanations',
-            'Advanced progress tracking',
-            'Full performance analytics',
-            'AI-powered study suggestions',
-            'Priority support',
-            'Exclusive content',
-        ]
+        'features': PAID_FEATURES
     },
     {
         'name': 'yearly',
         'display_name': 'Yearly',
         'price': 12000,
-        'duration_days': 365,
         'order': 4,
-        'features': [
-            'Access to all subjects',
-            'Detailed quiz explanations',
-            'Advanced progress tracking',
-            'Full performance analytics',
-            'AI-powered study suggestions',
-            'Priority support',
-            'Exclusive content',
-        ]
+        'features': PAID_FEATURES
     },
     {
         'name': 'holiday-package',
         'display_name': 'Holiday Package',
         'price': 2000,
         'is_featured': True,
+        'is_active': False,
         'order': 5,
-        'features': [
-            'Access to all subjects',
-            'Detailed quiz explanations',
-            'Advanced progress tracking',
-            'Full performance analytics',
-            'Holiday specific content',
-        ]
+        'features': PAID_FEATURES
     }
 ]
 
 for p in plans:
-    expiration_date = p.pop('expiration_date', None)
     plan, created = SubscriptionPlan.objects.update_or_create(
         name=p['name'],
         defaults=p
     )
-    if plan.name == 'holiday-package':
-        plan.expiration_date = '2026-10-31T23:59:59Z'
-        plan.save()
     print(f"{'Created' if created else 'Updated'} plan: {plan.name}")

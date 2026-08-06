@@ -16,6 +16,19 @@ from rest_framework import status
 from .models import PaymentTransaction
 
 
+def get_end_date_for_plan(plan_name):
+    """Calculate the expiration date based on the plan's name."""
+    if plan_name == 'monthly':
+        return timezone.now() + timedelta(days=30)
+    elif plan_name == 'quarterly':
+        return timezone.now() + timedelta(days=90)
+    elif plan_name == 'half-year':
+        return timezone.now() + timedelta(days=180)
+    elif plan_name == 'yearly':
+        return timezone.now() + timedelta(days=365)
+    # Holiday package and any others default to 30 days or handle differently if needed
+    return timezone.now() + timedelta(days=30)
+
 class SubscriptionPlansView(APIView):
     permission_classes = [AllowAny]
     
@@ -31,7 +44,6 @@ class SubscriptionPlansView(APIView):
                 'price': p.price,
                 'currency': p.currency,
                 'features': p.features,
-                'duration_days': p.duration_days,
                 'is_featured': p.is_featured,
             })
         return Response(data, status=status.HTTP_200_OK)
@@ -157,16 +169,7 @@ class VerifyPaymentView(APIView):
                     user.subscription_plan = transaction.plan
                     user.subscription_status = 'active'
                     user.subscription_start_date = timezone.now()
-                    try:
-                        plan_obj = SubscriptionPlan.objects.get(name=transaction.plan)
-                        if plan_obj.expiration_date:
-                            user.subscription_end_date = plan_obj.expiration_date
-                        elif plan_obj.duration_days:
-                            user.subscription_end_date = timezone.now() + timedelta(days=plan_obj.duration_days)
-                        else:
-                            user.subscription_end_date = timezone.now() + timedelta(days=30)
-                    except SubscriptionPlan.DoesNotExist:
-                        user.subscription_end_date = timezone.now() + timedelta(days=30)
+                    user.subscription_end_date = get_end_date_for_plan(transaction.plan)
                     user.save()
                     
                     return Response({'message': 'Payment verified successfully'}, status=status.HTTP_200_OK)
@@ -222,16 +225,7 @@ class FlutterwaveWebhookView(APIView):
                         user.subscription_plan = transaction.plan
                         user.subscription_status = 'active'
                         user.subscription_start_date = timezone.now()
-                        try:
-                            plan_obj = SubscriptionPlan.objects.get(name=transaction.plan)
-                            if plan_obj.expiration_date:
-                                user.subscription_end_date = plan_obj.expiration_date
-                            elif plan_obj.duration_days:
-                                user.subscription_end_date = timezone.now() + timedelta(days=plan_obj.duration_days)
-                            else:
-                                user.subscription_end_date = timezone.now() + timedelta(days=30)
-                        except SubscriptionPlan.DoesNotExist:
-                            user.subscription_end_date = timezone.now() + timedelta(days=30)
+                        user.subscription_end_date = get_end_date_for_plan(transaction.plan)
                         user.save()
             except PaymentTransaction.DoesNotExist:
                 pass

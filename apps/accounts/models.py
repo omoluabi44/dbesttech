@@ -63,8 +63,6 @@ class SubscriptionPlan(models.Model):
     price = models.DecimalField(max_digits=10, decimal_places=2)
     currency = models.CharField(max_length=10, default='NGN')
     features = models.JSONField(default=list)
-    duration_days = models.IntegerField(null=True, blank=True)
-    expiration_date = models.DateTimeField(null=True, blank=True)
     is_featured = models.BooleanField(default=False)
     is_active = models.BooleanField(default=True)
     order = models.IntegerField(default=0)

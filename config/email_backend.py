@@ -19,12 +19,26 @@ class CeleryEmailBackend(BaseEmailBackend):
         count = 0
         for message in email_messages:
             try:
-                send_email_task.delay(
-                    subject=message.subject,
-                    body=message.body,
-                    from_email=message.from_email,
-                    recipient_list=list(message.to),
-                    html_message=self._get_html_body(message),
+                # Evaluate lazy strings (like ugettext_lazy) before passing to Celery JSON serializer
+                subject = str(message.subject)
+                body = str(message.body)
+                from_email = str(message.from_email)
+                recipient_list = list(message.to)
+                html_message = self._get_html_body(message)
+                if html_message:
+                    html_message = str(html_message)
+
+                # Ensure task is only queued after the DB transaction commits
+                # to prevent race conditions or missing records in worker
+                from django.db import transaction
+                transaction.on_commit(
+                    lambda s=subject, b=body, f=from_email, r=recipient_list, h=html_message: send_email_task.delay(
+                        subject=s,
+                        body=b,
+                        from_email=f,
+                        recipient_list=r,
+                        html_message=h,
+                    )
                 )
                 count += 1
             except Exception:
