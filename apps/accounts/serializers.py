@@ -5,7 +5,7 @@ from dj_rest_auth.registration.serializers import RegisterSerializer
 from dj_rest_auth.serializers import PasswordResetSerializer
 from allauth.account.forms import ResetPasswordForm
 from django.contrib.sites.models import Site
-from .models import User, StudentProfile, School, PaymentTransaction
+from .models import User, StudentProfile, School, PaymentTransaction, SubscriptionPlan
 from utils.constants import SCHOOL_LEVELS, SCHOOL_CATEGORIES
 
 class SchoolSerializer(serializers.ModelSerializer):
@@ -181,3 +181,9 @@ class PaymentTransactionSerializer(serializers.ModelSerializer):
         model = PaymentTransaction
         fields = ['id', 'tx_ref', 'amount', 'currency', 'plan', 'status', 'payment_type', 'created_at', 'verified_at']
         read_only_fields = fields
+
+class SubscriptionPlanAdminSerializer(serializers.ModelSerializer):
+    """Serializer for managing subscription plans from the frontend admin dashboard."""
+    class Meta:
+        model = SubscriptionPlan
+        fields = '__all__'

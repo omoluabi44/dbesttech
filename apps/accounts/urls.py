@@ -10,6 +10,7 @@ router = DefaultRouter()
 router.register(r'schools', admin_views.SchoolViewSet, basename='school')
 router.register(r'admin-dashboard', admin_views.SchoolAdminDashboardViewSet, basename='admin-dashboard')
 router.register(r'admin-students', admin_views.SchoolAdminStudentViewSet, basename='admin-students')
+router.register(r'admin-subscriptions', admin_views.SubscriptionPlanAdminViewSet, basename='admin-subscriptions')
 
 app_name = 'accounts'
 

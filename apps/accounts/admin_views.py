@@ -4,8 +4,8 @@ from rest_framework.decorators import action
 from django.contrib.auth import get_user_model
 from django.db.models import Count
 
-from .models import School, SchoolAdminProfile, StudentProfile
-from .serializers import SchoolSerializer, UserSerializer, StudentProfileSerializer, UserRegistrationSerializer
+from .models import School, SchoolAdminProfile, StudentProfile, SubscriptionPlan
+from .serializers import SchoolSerializer, UserSerializer, StudentProfileSerializer, UserRegistrationSerializer, SubscriptionPlanAdminSerializer
 from utils.permissions import IsRootAdmin, IsSchoolAdmin
 
 User = get_user_model()
@@ -150,3 +150,12 @@ class SchoolAdminStudentViewSet(viewsets.ModelViewSet):
             email_obj.verified = True
             email_obj.save()
         return Response({'status': 'Email marked as verified.'})
+
+
+class SubscriptionPlanAdminViewSet(viewsets.ModelViewSet):
+    """
+    ViewSet for Root Admins to manage subscription plans from the frontend UI.
+    """
+    permission_classes = [permissions.IsAuthenticated, IsRootAdmin]
+    serializer_class = SubscriptionPlanAdminSerializer
+    queryset = SubscriptionPlan.objects.all().order_by('order')

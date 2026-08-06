@@ -4,7 +4,7 @@ import { useAuthStore } from '@/lib/stores/authStore';
 import { useRouter, usePathname } from 'next/navigation';
 import { useEffect } from 'react';
 import Link from 'next/link';
-import { LayoutDashboard, Users, LogOut, FileText, BarChart, GraduationCap, BrainCircuit, UploadCloud, ArrowLeft } from 'lucide-react';
+import { LayoutDashboard, Users, LogOut, FileText, BarChart, GraduationCap, BrainCircuit, UploadCloud, ArrowLeft, CreditCard } from 'lucide-react';
 import { Footer } from '@/components/layout/Footer';
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
@@ -35,6 +35,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           { name: 'AI Quiz Gen', href: '/admin/ai-generate', icon: BrainCircuit },
           { name: 'Upload PQ', href: '/admin/ai-upload', icon: UploadCloud },
           { name: 'User Management', href: '/admin/users', icon: Users },
+          { name: 'Subscriptions', href: '/admin/subscriptions', icon: CreditCard },
         ]
       : []),
     { name: 'Question Bank', href: '/admin/questions', icon: FileText },
