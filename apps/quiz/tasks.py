@@ -3,6 +3,7 @@ from celery import shared_task
 from django.utils import timezone
 from .models import PastQuestionUpload
 from .ai.extractor import PastQuestionExtractor
+from .ai.gemini_client import GeminiQuizClient
 
 logger = logging.getLogger(__name__)
 
@@ -44,3 +45,22 @@ def extract_past_questions_task(self, upload_id: int):
         except Exception:
             pass
         raise self.retry(exc=e, countdown=60 * 2)  # Retry after 2 minutes
+
+@shared_task(bind=True, max_retries=2)
+def generate_questions_task(self, subject_name: str, topic_name: str, level: str, difficulty: str, num_questions: int):
+    """
+    Background task to generate questions using Gemini API.
+    """
+    try:
+        client = GeminiQuizClient()
+        questions = client.generate_questions(
+            subject_name=subject_name,
+            topic_name=topic_name,
+            level=level,
+            difficulty=difficulty,
+            num_questions=num_questions
+        )
+        return questions
+    except Exception as e:
+        logger.exception(f"Failed to generate questions: {e}")
+        raise e

@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
-import { getSubjects, getTopics, generateQuizWithAI, bulkSaveAIQuiz } from '@/lib/api/quiz';
+import { getSubjects, getTopics, generateQuizWithAI, bulkSaveAIQuiz, checkAIGenerationStatus } from '@/lib/api/quiz';
 import { Subject, Topic } from '@/lib/types/quiz';
 import { SCHOOL_LEVELS } from '@/lib/utils/constants';
 import { BrainCircuit, Loader2, Save, Trash2, Edit2, CheckCircle2 } from 'lucide-react';
@@ -59,15 +59,43 @@ export default function AIGeneratePage() {
     try {
       setIsGenerating(true);
       const res = await generateQuizWithAI(data);
-      if (Array.isArray(res)) {
+      
+      if (res.task_id) {
+        // Start polling
+        const taskId = res.task_id;
+        
+        const pollInterval = setInterval(async () => {
+          try {
+            const statusRes = await checkAIGenerationStatus(taskId);
+            
+            if (statusRes.status === 'completed') {
+              clearInterval(pollInterval);
+              setGeneratedQuestions(statusRes.questions);
+              toast.success(`Generated ${statusRes.questions.length} questions successfully!`);
+              setIsGenerating(false);
+            } else if (statusRes.status === 'failed') {
+              clearInterval(pollInterval);
+              toast.error(statusRes.error || 'Failed to generate questions. Please try again.');
+              setIsGenerating(false);
+            }
+            // If pending/processing, do nothing and wait for next poll
+          } catch (err: any) {
+            clearInterval(pollInterval);
+            toast.error('Lost connection while generating questions.');
+            setIsGenerating(false);
+          }
+        }, 3000); // poll every 3 seconds
+      } else if (Array.isArray(res)) {
+        // Fallback if backend is still synchronous
         setGeneratedQuestions(res);
         toast.success(`Generated ${res.length} questions successfully!`);
+        setIsGenerating(false);
       } else {
         toast.error('Failed to generate questions. Please try again.');
+        setIsGenerating(false);
       }
     } catch (error: any) {
-      toast.error(error.response?.data?.error || 'Failed to generate questions');
-    } finally {
+      toast.error(error.response?.data?.error || 'Failed to initiate question generation');
       setIsGenerating(false);
     }
   };

@@ -6,8 +6,9 @@ from django.db import transaction
 
 from .models import PastQuestionUpload, Subject, Topic, Quiz
 from .serializers import PastQuestionUploadSerializer, QuizSerializer
-from .tasks import extract_past_questions_task
+from .tasks import extract_past_questions_task, generate_questions_task
 from .ai.gemini_client import GeminiQuizClient
+from celery.result import AsyncResult
 import logging
 
 logger = logging.getLogger(__name__)
@@ -76,8 +77,8 @@ class AIGenerateQuizView(views.APIView):
             
             topic_name = topic.name if topic else prompt_text
             
-            client = GeminiQuizClient()
-            questions = client.generate_questions(
+            client = GeminiQuizClient() # Keep this just to ensure it can be imported or if used for small things, but we use task now
+            task = generate_questions_task.delay(
                 subject_name=subject.name,
                 topic_name=topic_name,
                 level=level,
@@ -85,11 +86,42 @@ class AIGenerateQuizView(views.APIView):
                 num_questions=num_questions
             )
             
-            return Response(questions, status=status.HTTP_200_OK)
+            return Response({"task_id": task.id}, status=status.HTTP_202_ACCEPTED)
         except Subject.DoesNotExist:
             return Response({"error": "Subject not found."}, status=status.HTTP_404_NOT_FOUND)
         except Exception as e:
-            logger.error(f"Error generating quiz: {e}")
+            logger.error(f"Error starting generate quiz task: {e}")
+            return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+class AIGenerateStatusView(views.APIView):
+    """
+    Checks the status of a background AI generation task.
+    """
+    permission_classes = [IsAdminUser]
+
+    def get(self, request, task_id):
+        try:
+            task_result = AsyncResult(task_id)
+            
+            if task_result.state == 'PENDING':
+                return Response({'status': 'pending'})
+            elif task_result.state == 'STARTED' or task_result.state == 'RETRY':
+                return Response({'status': 'processing'})
+            elif task_result.state == 'SUCCESS':
+                return Response({
+                    'status': 'completed',
+                    'questions': task_result.result
+                })
+            elif task_result.state == 'FAILURE':
+                return Response({
+                    'status': 'failed',
+                    'error': str(task_result.result)
+                })
+            else:
+                return Response({'status': task_result.state.lower()})
+                
+        except Exception as e:
+            logger.error(f"Error checking AI generation status: {e}")
             return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 

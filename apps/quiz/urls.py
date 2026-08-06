@@ -26,6 +26,7 @@ urlpatterns = [
     path('admin/ai/upload/', admin_views.AIUploadPastQuestionView.as_view(), name='ai-upload-past-question'),
     path('admin/ai/upload/<int:pk>/status/', admin_views.AIUploadStatusView.as_view(), name='ai-upload-status'),
     path('admin/ai/generate/', admin_views.AIGenerateQuizView.as_view(), name='ai-generate-quiz'),
+    path('admin/ai/generate/<str:task_id>/status/', admin_views.AIGenerateStatusView.as_view(), name='ai-generate-status'),
     path('admin/ai/bulk-save/', admin_views.AIBulkSaveQuizView.as_view(), name='ai-bulk-save-quiz'),
     
     # Admin Question Bank Data Grid

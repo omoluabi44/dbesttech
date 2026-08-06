@@ -107,6 +107,11 @@ export const generateQuizWithAI = async (data: {
   return res.data;
 };
 
+export const checkAIGenerationStatus = async (taskId: string) => {
+  const res = await client.get(`/quiz/admin/ai/generate/${taskId}/status/`);
+  return res.data;
+};
+
 export const bulkSaveAIQuiz = async (data: {
   questions: any[];
   subject_id: number;
