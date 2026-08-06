@@ -48,11 +48,11 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           <div className="p-6 flex flex-col gap-3">
             <div className="flex items-center gap-3">
               <img src="/logo.jpg" alt="DBestQuiz Logo" className="w-8 h-8 object-contain rounded-lg shadow-sm" />
-              <h2 className="text-xl font-bold text-black">
+              <h2 className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-primary-400 to-secondary-400">
                 Admin Panel
               </h2>
             </div>
-            <p className="text-sm text-black mt-1">
+            <p className="text-sm text-gray-400 mt-1">
               {['admin', 'root_admin'].includes(user.role) ? 'Root Administrator' : 'Administrator'}
             </p>
           </div>
@@ -66,8 +66,8 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                   href={item.href}
                   className={`flex items-center space-x-3 px-4 py-3 rounded-lg transition-colors ${
                     isActive
-                      ? 'bg-primary-500/10 text-black border border-primary-500/20'
-                      : 'text-black hover:bg-primary-500/10'
+                      ? 'bg-primary-500/10 text-primary-400 border border-primary-500/20'
+                      : 'text-gray-500 hover:text-primary-500 hover:bg-primary-500/10'
                   }`}
                 >
                   <Icon className="w-5 h-5" />
@@ -79,14 +79,14 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           <div className="p-4 border-t border-[var(--surface-dark)] space-y-2">
             <button
               onClick={() => router.push('/dashboard')}
-              className="flex items-center space-x-3 px-4 py-3 rounded-lg w-full text-black hover:bg-primary-500/10 transition-colors"
+              className="flex items-center space-x-3 px-4 py-3 rounded-lg w-full text-gray-400 hover:text-primary-400 hover:bg-primary-500/10 transition-colors"
             >
               <ArrowLeft className="w-5 h-5" />
               <span>Back to App</span>
             </button>
             <button
               onClick={() => { clearAuth(); router.push('/login'); }}
-              className="flex items-center space-x-3 px-4 py-3 rounded-lg w-full text-black hover:bg-red-500/10 transition-colors"
+              className="flex items-center space-x-3 px-4 py-3 rounded-lg w-full text-gray-400 hover:text-red-400 hover:bg-red-500/10 transition-colors"
             >
               <LogOut className="w-5 h-5" />
               <span>Sign Out</span>

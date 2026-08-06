@@ -133,7 +133,7 @@ export default function UsersPage() {
         <div className="flex items-center gap-4">
           <select 
             aria-label="Filter by role"
-            className="bg-[var(--surface-light)] border border-[var(--surface-dark)] text-black text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 p-2.5"
+            className="bg-[var(--surface-light)] border border-[var(--surface-dark)] text-foreground text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 p-2.5"
             value={roleFilter}
             onChange={(e) => { setRoleFilter(e.target.value); setPage(1); }}
           >
@@ -153,23 +153,23 @@ export default function UsersPage() {
           <table className="w-full text-left border-collapse" aria-label="Users Table">
             <thead>
               <tr className="bg-[var(--surface-light)] border-b border-[var(--surface-dark)]">
-                <th scope="col" className="p-4 font-medium text-black">Name</th>
-                <th scope="col" className="p-4 font-medium text-black">Email</th>
-                <th scope="col" className="p-4 font-medium text-black">Role/Level</th>
-                <th scope="col" className="p-4 font-medium text-black text-center">Verified</th>
-                <th scope="col" className="p-4 font-medium text-black text-right">Actions</th>
+                <th scope="col" className="p-4 font-medium text-gray-400">Name</th>
+                <th scope="col" className="p-4 font-medium text-gray-400">Email</th>
+                <th scope="col" className="p-4 font-medium text-gray-400">Role/Level</th>
+                <th scope="col" className="p-4 font-medium text-gray-400 text-center">Verified</th>
+                <th scope="col" className="p-4 font-medium text-gray-400 text-right">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-[var(--surface-dark)]">
               {loading ? (
                 <tr>
-                  <td colSpan={5} className="p-8 text-center text-black">
+                  <td colSpan={5} className="p-8 text-center text-gray-500">
                     Loading users...
                   </td>
                 </tr>
               ) : users.length === 0 ? (
                 <tr>
-                  <td colSpan={5} className="p-8 text-center text-black">
+                  <td colSpan={5} className="p-8 text-center text-gray-500">
                     No users found.
                   </td>
                 </tr>
@@ -182,8 +182,8 @@ export default function UsersPage() {
                           {user.first_name?.[0] || user.username[0].toUpperCase()}
                         </div>
                         <div>
-                          <p className="text-black font-medium">{user.first_name} {user.last_name}</p>
-                          <p className="text-sm text-black">@{user.username}</p>
+                          <p className="text-foreground font-medium">{user.first_name} {user.last_name}</p>
+                          <p className="text-sm text-gray-500">@{user.username}</p>
                         </div>
                       </div>
                     </td>
@@ -204,15 +204,15 @@ export default function UsersPage() {
                     </td>
                     <td className="p-4 text-right">
                       <div className="flex justify-end gap-2">
-                        <button onClick={() => setViewUser(user)} className="p-2 text-black hover:text-black transition-colors focus:outline-none focus:ring-2 focus:ring-primary-500 rounded" aria-label={`View details for ${user.username}`} title="View Details">
+                        <button onClick={() => setViewUser(user)} className="p-2 text-gray-400 hover:text-white transition-colors focus:outline-none focus:ring-2 focus:ring-primary-500 rounded" aria-label={`View details for ${user.username}`} title="View Details">
                           <Eye size={18} aria-hidden="true" />
                         </button>
                         {!user.email_verified && (
-                          <button onClick={() => handleVerify(user.id)} className="p-2 text-black hover:text-green-400 transition-colors focus:outline-none focus:ring-2 focus:ring-green-500 rounded" aria-label={`Verify email for ${user.username}`} title="Verify Email">
+                          <button onClick={() => handleVerify(user.id)} className="p-2 text-gray-400 hover:text-green-400 transition-colors focus:outline-none focus:ring-2 focus:ring-green-500 rounded" aria-label={`Verify email for ${user.username}`} title="Verify Email">
                             <CheckCircle size={18} aria-hidden="true" />
                           </button>
                         )}
-                        <button onClick={() => handleDelete(user.id)} className="p-2 text-black hover:text-red-400 transition-colors focus:outline-none focus:ring-2 focus:ring-red-500 rounded" aria-label={`Delete user ${user.username}`} title="Delete User">
+                        <button onClick={() => handleDelete(user.id)} className="p-2 text-gray-400 hover:text-red-400 transition-colors focus:outline-none focus:ring-2 focus:ring-red-500 rounded" aria-label={`Delete user ${user.username}`} title="Delete User">
                           <Trash2 size={18} aria-hidden="true" />
                         </button>
                       </div>
@@ -227,7 +227,7 @@ export default function UsersPage() {
         {/* Pagination */}
         {!loading && totalPages > 1 && (
           <div className="p-4 border-t border-[var(--surface-dark)] flex items-center justify-between">
-            <span className="text-sm text-black" aria-live="polite">Page {page} of {totalPages}</span>
+            <span className="text-sm text-gray-400" aria-live="polite">Page {page} of {totalPages}</span>
             <div className="flex items-center gap-2">
               <button 
                 onClick={() => setPage(p => Math.max(1, p - 1))}
@@ -255,8 +255,8 @@ export default function UsersPage() {
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm" role="dialog" aria-modal="true" aria-labelledby="add-user-title">
           <div className="bg-[var(--surface)] border border-[var(--surface-dark)] w-full max-w-md rounded-2xl shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-200">
             <div className="flex justify-between items-center p-6 border-b border-[var(--surface-dark)]">
-              <h2 id="add-user-title" className="text-xl font-bold text-black">Add New User</h2>
-              <button onClick={() => setIsAddModalOpen(false)} className="text-black hover:text-black transition-colors focus:outline-none focus:ring-2 focus:ring-primary-500 rounded" aria-label="Close modal">
+              <h2 id="add-user-title" className="text-xl font-bold text-foreground">Add New User</h2>
+              <button onClick={() => setIsAddModalOpen(false)} className="text-gray-400 hover:text-white transition-colors focus:outline-none focus:ring-2 focus:ring-primary-500 rounded" aria-label="Close modal">
                 <X size={20} aria-hidden="true" />
               </button>
             </div>
@@ -275,7 +275,7 @@ export default function UsersPage() {
                   <select
                     id="role-select"
                     required
-                    className="w-full bg-[var(--surface-light)] border border-[var(--surface-dark)] text-black text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block p-2.5"
+                    className="w-full bg-[var(--surface-light)] border border-[var(--surface-dark)] text-foreground text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block p-2.5"
                     value={formData.role}
                     onChange={e => setFormData({...formData, role: e.target.value})}
                   >
@@ -289,7 +289,7 @@ export default function UsersPage() {
                     <select
                       id="level-select"
                       required
-                      className="w-full bg-[var(--surface-light)] border border-[var(--surface-dark)] text-black text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block p-2.5"
+                      className="w-full bg-[var(--surface-light)] border border-[var(--surface-dark)] text-foreground text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block p-2.5"
                       value={formData.level}
                       onChange={e => setFormData({...formData, level: e.target.value})}
                     >
@@ -323,8 +323,8 @@ export default function UsersPage() {
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm" role="dialog" aria-modal="true" aria-labelledby="view-user-title">
           <div className="bg-[var(--surface)] border border-[var(--surface-dark)] w-full max-w-md rounded-2xl shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-200">
             <div className="flex justify-between items-center p-6 border-b border-[var(--surface-dark)]">
-              <h2 id="view-user-title" className="text-xl font-bold text-black">User Details</h2>
-              <button onClick={() => setViewUser(null)} className="text-black hover:text-black transition-colors focus:outline-none focus:ring-2 focus:ring-primary-500 rounded" aria-label="Close modal">
+              <h2 id="view-user-title" className="text-xl font-bold text-foreground">User Details</h2>
+              <button onClick={() => setViewUser(null)} className="text-gray-400 hover:text-white transition-colors focus:outline-none focus:ring-2 focus:ring-primary-500 rounded" aria-label="Close modal">
                 <X size={20} aria-hidden="true" />
               </button>
             </div>
@@ -334,31 +334,31 @@ export default function UsersPage() {
                   {viewUser.first_name?.[0] || viewUser.username[0].toUpperCase()}
                 </div>
                 <div>
-                  <h3 className="text-xl font-bold text-black">{viewUser.first_name} {viewUser.last_name}</h3>
-                  <p className="text-black">@{viewUser.username}</p>
+                  <h3 className="text-xl font-bold text-foreground">{viewUser.first_name} {viewUser.last_name}</h3>
+                  <p className="text-gray-400">@{viewUser.username}</p>
                 </div>
               </div>
               
               <div className="grid grid-cols-2 gap-4">
                 <div className="bg-[var(--surface-light)] p-4 rounded-xl border border-[var(--surface-dark)]">
-                  <p className="text-xs text-black mb-1 uppercase tracking-wider">Email</p>
+                  <p className="text-xs text-gray-500 mb-1 uppercase tracking-wider">Email</p>
                   <p className="text-sm text-gray-700 dark:text-gray-200 flex items-center gap-2">
-                    <Mail size={14} className="text-black" aria-hidden="true" />
+                    <Mail size={14} className="text-gray-400" aria-hidden="true" />
                     {viewUser.email}
                   </p>
                 </div>
                 <div className="bg-[var(--surface-light)] p-4 rounded-xl border border-[var(--surface-dark)]">
-                  <p className="text-xs text-black mb-1 uppercase tracking-wider">Role</p>
+                  <p className="text-xs text-gray-500 mb-1 uppercase tracking-wider">Role</p>
                   <p className="text-sm text-gray-700 dark:text-gray-200 capitalize">{viewUser.role.replace('_', ' ')}</p>
                 </div>
                 {viewUser.role === 'student' && (
                   <div className="bg-[var(--surface-light)] p-4 rounded-xl border border-[var(--surface-dark)]">
-                    <p className="text-xs text-black mb-1 uppercase tracking-wider">Class Level</p>
+                    <p className="text-xs text-gray-500 mb-1 uppercase tracking-wider">Class Level</p>
                     <p className="text-sm text-gray-700 dark:text-gray-200">{viewUser.student_profile?.level_display || 'N/A'}</p>
                   </div>
                 )}
                 <div className="bg-[var(--surface-light)] p-4 rounded-xl border border-[var(--surface-dark)]">
-                  <p className="text-xs text-black mb-1 uppercase tracking-wider">Status</p>
+                  <p className="text-xs text-gray-500 mb-1 uppercase tracking-wider">Status</p>
                   <p className="text-sm flex items-center gap-1">
                     {viewUser.email_verified ? (
                       <span className="text-green-400"><CheckCircle size={14} className="inline mr-1" aria-hidden="true" /> Verified</span>
