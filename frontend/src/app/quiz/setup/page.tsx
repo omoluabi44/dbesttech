@@ -101,8 +101,8 @@ export default function QuizSetupPage() {
       });
       startStorePractice(res.session, res.questions);
       router.push(`/quiz/session/${res.session.id}`);
-    } catch (error) {
-      toast.error('Failed to start adventure');
+    } catch (error: any) {
+      toast.error(error.response?.data?.error || 'Failed to start adventure');
       setStarting(false);
       setFoxMood('happy');
     }

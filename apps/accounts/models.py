@@ -18,7 +18,6 @@ class School(models.Model):
         return self.name
 from utils.constants import ROLE_CHOICES, SCHOOL_CATEGORIES, SCHOOL_LEVELS, GRADUATING_LEVELS, LEVEL_TO_CATEGORY
 
-
 class User(AbstractUser):
     """Extended user model with role field."""
     email = models.EmailField(unique=True)
