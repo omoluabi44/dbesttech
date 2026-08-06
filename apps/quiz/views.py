@@ -40,10 +40,11 @@ class PracticeStartView(views.APIView):
         
         subject = get_object_or_404(Subject, id=subject_id)
         
-        # Get 50 random questions
-        questions = list(Quiz.objects.filter(subject=subject, level=level, difficulty=difficulty, is_practice=True, is_active=True))
-        if len(questions) > 50:
-            questions = random.sample(questions, 50)
+        # Get 100 random questions
+        queryset = Quiz.objects.filter(subject=subject, level=level, difficulty=difficulty, is_practice=True, is_active=True)
+        questions = list(queryset)
+        if len(questions) > 100:
+            questions = random.sample(questions, 100)
         
         if not questions:
             return Response({'error': f'No {difficulty} questions available for this subject.'}, status=status.HTTP_400_BAD_REQUEST)
