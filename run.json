@@ -1,0 +1,31 @@
+{
+  "DocumentName": "AWS-RunShellScript",
+  "Targets": [
+    {
+      "Key": "tag:Name",
+      "Values": [
+        "django-nextjs-app-backend"
+      ]
+    }
+  ],
+  "Parameters": {
+    "commands": [
+      "cat <<'EOF' > /tmp/make_admin.py",
+      "from django.contrib.auth import get_user_model",
+      "User = get_user_model()",
+      "email = 'dbesttech44@gmail.com'",
+      "try:",
+      "    user = User.objects.get(email=email)",
+      "    user.role = 'root_admin'",
+      "    user.is_superuser = True",
+      "    user.is_staff = True",
+      "    user.save()",
+      "    print('User updated successfully')",
+      "except User.DoesNotExist:",
+      "    user = User.objects.create_user(username='prod_admin', email=email, password='Password123!', role='root_admin', is_superuser=True, is_staff=True)",
+      "    print('User created successfully')",
+      "EOF",
+      "docker exec -i django_backend python manage.py shell < /tmp/make_admin.py"
+    ]
+  }
+}
