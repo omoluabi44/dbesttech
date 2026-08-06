@@ -49,19 +49,33 @@ class User(AbstractUser):
     def is_school_admin(self):
         return self.role == 'school_admin'
 
-    SUBSCRIPTION_CHOICES = [('free', 'Free'), ('basic', 'Basic'), ('premium', 'Premium')]
-    subscription_plan = models.CharField(max_length=10, choices=SUBSCRIPTION_CHOICES, default='free')
+    subscription_plan = models.CharField(max_length=50, default='free')
     
     SUBSCRIPTION_STATUS_CHOICES = [('active', 'Active'), ('expired', 'Expired'), ('cancelled', 'Cancelled')]
     subscription_status = models.CharField(max_length=20, choices=SUBSCRIPTION_STATUS_CHOICES, default='active')
     subscription_start_date = models.DateTimeField(null=True, blank=True)
     subscription_end_date = models.DateTimeField(null=True, blank=True)
-    quizzes_taken_today = models.IntegerField(default=0)
-    last_quiz_date = models.DateField(null=True, blank=True)
 
-    @property
-    def daily_quiz_limit(self):
-        return {'free': 5, 'basic': 20, 'premium': 999}.get(self.subscription_plan, 5)
+
+class SubscriptionPlan(models.Model):
+    name = models.CharField(max_length=50, unique=True)
+    display_name = models.CharField(max_length=100)
+    price = models.DecimalField(max_digits=10, decimal_places=2)
+    currency = models.CharField(max_length=10, default='NGN')
+    features = models.JSONField(default=list)
+    duration_days = models.IntegerField(null=True, blank=True)
+    expiration_date = models.DateTimeField(null=True, blank=True)
+    is_featured = models.BooleanField(default=False)
+    is_active = models.BooleanField(default=True)
+    order = models.IntegerField(default=0)
+
+    class Meta:
+        verbose_name = 'Subscription Plan'
+        verbose_name_plural = 'Subscription Plans'
+        ordering = ['order']
+
+    def __str__(self):
+        return self.display_name
 
 
 class SchoolAdminProfile(models.Model):

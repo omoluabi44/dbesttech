@@ -4,7 +4,8 @@ export interface SubscriptionPlan {
   price: number;
   currency: string;
   features: string[];
-  quiz_limit: number;
+  is_featured: boolean;
+  duration_days?: number;
 }
 
 export interface CurrentSubscription {

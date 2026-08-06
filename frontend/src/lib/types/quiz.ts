@@ -54,6 +54,7 @@ export interface PracticeStageSubmitResponse {
   session: PracticeSession;
   stage_score: number;
   next_questions?: QuizQuestion[];
+  requires_upgrade?: boolean;
 }
 
 export interface PastQuestionSession {

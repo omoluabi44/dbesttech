@@ -74,7 +74,11 @@ export default function QuizSetupPage() {
     setFoxMood('happy');
   };
 
-  const handleDifficultySelect = (diff: typeof selectedDifficulty, isLocked: boolean) => {
+  const handleDifficultySelect = (diff: typeof selectedDifficulty, isLocked: boolean, requiresUpgrade: boolean = false) => {
+    if (requiresUpgrade) {
+      toast.error('Upgrade your plan to unlock medium and hard difficulties!');
+      return;
+    }
     if (isLocked) {
       toast.error('Complete the lower level first to unlock this difficulty!');
       return;
@@ -207,7 +211,9 @@ export default function QuizSetupPage() {
                     
                     <div className="flex flex-col gap-3">
                       {DIFFICULTIES.map((diff) => {
-                        const isUnlocked = !currentSubject?.unlocked_difficulties || currentSubject.unlocked_difficulties.includes(diff.id);
+                        const isFree = !user?.subscription_plan || user.subscription_plan === 'free';
+                        const requiresUpgrade = isFree && (diff.id === 'medium' || diff.id === 'hard');
+                        const isUnlocked = (!currentSubject?.unlocked_difficulties || currentSubject.unlocked_difficulties.includes(diff.id)) && !requiresUpgrade;
                         const isSelected = selectedDifficulty === diff.id;
                         
                         return (
@@ -215,7 +221,7 @@ export default function QuizSetupPage() {
                             key={diff.id}
                             whileHover={isUnlocked ? { scale: 1.02 } : {}}
                             whileTap={isUnlocked ? { scale: 0.98 } : {}}
-                            onClick={() => handleDifficultySelect(diff.id, !isUnlocked)}
+                            onClick={() => handleDifficultySelect(diff.id, !isUnlocked, requiresUpgrade)}
                             className={`relative overflow-hidden rounded-xl border-4 p-4 flex items-center justify-between transition-all ${
                               isSelected
                                 ? `${diff.border} ${diff.bg} shadow-md`
@@ -232,7 +238,7 @@ export default function QuizSetupPage() {
                             </div>
                             
                             {!isUnlocked && (
-                              <div className="absolute right-4 text-gray-400" title="Complete lower level first!">
+                              <div className="absolute right-4 text-gray-400" title={requiresUpgrade ? "Upgrade your plan to unlock!" : "Complete lower level first!"}>
                                 <Lock className="w-6 h-6" />
                               </div>
                             )}

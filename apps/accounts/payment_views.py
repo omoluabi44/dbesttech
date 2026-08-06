@@ -16,62 +16,25 @@ from rest_framework import status
 from .models import PaymentTransaction
 
 
-SUBSCRIPTION_PLANS = [
-    {
-        'id': 'free',
-        'name': 'free',
-        'display_name': 'Free',
-        'price': 0,
-        'currency': 'NGN',
-        'daily_quiz_limit': 5,
-        'quiz_limit': 5,
-        'features': [
-            'Access to all subjects',
-            'Basic quiz explanations',
-            'Progress tracking',
-        ]
-    },
-    {
-        'id': 'basic',
-        'name': 'basic',
-        'display_name': 'Basic',
-        'price': 1500,
-        'currency': 'NGN',
-        'daily_quiz_limit': 20,
-        'quiz_limit': 20,
-        'features': [
-            'Access to all subjects',
-            'Detailed quiz explanations',
-            'Advanced progress tracking',
-            'Performance analytics',
-            'Priority support',
-        ]
-    },
-    {
-        'id': 'premium',
-        'name': 'premium',
-        'display_name': 'Premium',
-        'price': 3500,
-        'currency': 'NGN',
-        'daily_quiz_limit': 999,
-        'quiz_limit': 99999,
-        'features': [
-            'Access to all subjects',
-            'Detailed quiz explanations',
-            'Advanced progress tracking',
-            'Full performance analytics',
-            'AI-powered study suggestions',
-            'Priority support',
-            'Exclusive content',
-        ]
-    }
-]
-
 class SubscriptionPlansView(APIView):
     permission_classes = [AllowAny]
     
     def get(self, request):
-        return Response(SUBSCRIPTION_PLANS, status=status.HTTP_200_OK)
+        from .models import SubscriptionPlan
+        plans = SubscriptionPlan.objects.filter(is_active=True).order_by('order')
+        data = []
+        for p in plans:
+            data.append({
+                'id': p.name,
+                'name': p.name,
+                'display_name': p.display_name,
+                'price': p.price,
+                'currency': p.currency,
+                'features': p.features,
+                'duration_days': p.duration_days,
+                'is_featured': p.is_featured,
+            })
+        return Response(data, status=status.HTTP_200_OK)
 
 
 class CurrentSubscriptionView(APIView):
@@ -90,10 +53,7 @@ class CurrentSubscriptionView(APIView):
             'subscription_plan': user.subscription_plan,
             'subscription_status': user.subscription_status,
             'subscription_start_date': user.subscription_start_date,
-            'subscription_end_date': user.subscription_end_date,
-            'quizzes_taken_today': user.quizzes_taken_today,
-            'daily_quiz_limit': user.daily_quiz_limit,
-            'last_quiz_date': user.last_quiz_date
+            'subscription_end_date': user.subscription_end_date
         }, status=status.HTTP_200_OK)
 
 
@@ -109,9 +69,10 @@ class InitializePaymentView(APIView):
         if plan == 'free':
             return Response({'error': 'Cannot initialize payment for free plan'}, status=status.HTTP_400_BAD_REQUEST)
             
-        plan_details = next((p for p in SUBSCRIPTION_PLANS if p['id'] == plan), None)
-        
-        if not plan_details:
+        from .models import SubscriptionPlan
+        try:
+            plan_details = SubscriptionPlan.objects.get(name=plan)
+        except SubscriptionPlan.DoesNotExist:
             return Response({'error': 'Invalid plan'}, status=status.HTTP_400_BAD_REQUEST)
             
         tx_ref = f"dbestquiz_{request.user.id}_{plan}_{uuid4().hex[:8]}"
@@ -126,7 +87,7 @@ class InitializePaymentView(APIView):
         PaymentTransaction.objects.create(
             user=request.user,
             tx_ref=tx_ref,
-            amount=plan_details['price'],
+            amount=plan_details.price,
             currency='NGN',
             plan=plan,
             status='pending',
@@ -135,7 +96,7 @@ class InitializePaymentView(APIView):
         
         return Response({
             'tx_ref': tx_ref,
-            'amount': plan_details['price'],
+            'amount': plan_details.price,
             'currency': 'NGN',
             'public_key': getattr(settings, 'FLUTTERWAVE_PUBLIC_KEY', '')
         }, status=status.HTTP_200_OK)
@@ -191,11 +152,21 @@ class VerifyPaymentView(APIView):
                     transaction.save()
                     
                     # Update User Subscription
+                    from .models import SubscriptionPlan
                     user = request.user
                     user.subscription_plan = transaction.plan
                     user.subscription_status = 'active'
                     user.subscription_start_date = timezone.now()
-                    user.subscription_end_date = timezone.now() + timedelta(days=30)
+                    try:
+                        plan_obj = SubscriptionPlan.objects.get(name=transaction.plan)
+                        if plan_obj.expiration_date:
+                            user.subscription_end_date = plan_obj.expiration_date
+                        elif plan_obj.duration_days:
+                            user.subscription_end_date = timezone.now() + timedelta(days=plan_obj.duration_days)
+                        else:
+                            user.subscription_end_date = timezone.now() + timedelta(days=30)
+                    except SubscriptionPlan.DoesNotExist:
+                        user.subscription_end_date = timezone.now() + timedelta(days=30)
                     user.save()
                     
                     return Response({'message': 'Payment verified successfully'}, status=status.HTTP_200_OK)
@@ -246,11 +217,21 @@ class FlutterwaveWebhookView(APIView):
                         transaction.flw_response = event_data
                         transaction.save()
                         
+                        from .models import SubscriptionPlan
                         user = transaction.user
                         user.subscription_plan = transaction.plan
                         user.subscription_status = 'active'
                         user.subscription_start_date = timezone.now()
-                        user.subscription_end_date = timezone.now() + timedelta(days=30)
+                        try:
+                            plan_obj = SubscriptionPlan.objects.get(name=transaction.plan)
+                            if plan_obj.expiration_date:
+                                user.subscription_end_date = plan_obj.expiration_date
+                            elif plan_obj.duration_days:
+                                user.subscription_end_date = timezone.now() + timedelta(days=plan_obj.duration_days)
+                            else:
+                                user.subscription_end_date = timezone.now() + timedelta(days=30)
+                        except SubscriptionPlan.DoesNotExist:
+                            user.subscription_end_date = timezone.now() + timedelta(days=30)
                         user.save()
             except PaymentTransaction.DoesNotExist:
                 pass

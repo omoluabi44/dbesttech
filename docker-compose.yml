@@ -27,7 +27,7 @@ services:
       - ./secrets:/app/secrets:ro
     depends_on:
       - redis
-    command: gunicorn --bind 0.0.0.0:8000 config.wsgi:application
+    command: gunicorn --bind 0.0.0.0:8000 --timeout 180 config.wsgi:application
     networks:
       - app-network
 

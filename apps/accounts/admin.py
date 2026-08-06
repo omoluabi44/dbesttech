@@ -1,6 +1,6 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
-from .models import User, StudentProfile, School, SchoolAdminProfile
+from .models import User, StudentProfile, School, SchoolAdminProfile, SubscriptionPlan
 
 
 class StudentProfileInline(admin.StackedInline):
@@ -44,3 +44,8 @@ class SchoolAdminProfileAdmin(admin.ModelAdmin):
     list_display = ('user', 'school', 'created_at')
     list_filter = ('school',)
     search_fields = ('user__email', 'school__name')
+
+@admin.register(SubscriptionPlan)
+class SubscriptionPlanAdmin(admin.ModelAdmin):
+    list_display = ('name', 'price', 'is_active', 'is_featured')
+

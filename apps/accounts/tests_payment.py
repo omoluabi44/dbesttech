@@ -49,25 +49,15 @@ class UserSubscriptionFieldsTest(TestCase):
         )
         self.assertEqual(user.subscription_plan, 'free')
         self.assertEqual(user.subscription_status, 'active')
-        self.assertEqual(user.quizzes_taken_today, 0)
-        
-    def test_daily_quiz_limit(self):
-        user = User.objects.create_user(
-            email='test3@example.com',
-            username='testuser3',
-            password='password123'
-        )
-        # Default is free
-        self.assertEqual(user.daily_quiz_limit, 5)
-        
-        user.subscription_plan = 'basic'
-        self.assertEqual(user.daily_quiz_limit, 20)
-        
-        user.subscription_plan = 'premium'
-        self.assertEqual(user.daily_quiz_limit, 999)
 
 
 class SubscriptionPlansAPITest(APITestCase):
+    def setUp(self):
+        from .models import SubscriptionPlan
+        SubscriptionPlan.objects.create(name='free', display_name='Free', price=0, order=0)
+        SubscriptionPlan.objects.create(name='basic', display_name='Basic', price=1500, order=1)
+        SubscriptionPlan.objects.create(name='premium', display_name='Premium', price=3500, order=2)
+
     def test_get_subscription_plans(self):
         url = reverse('accounts:subscription-plans')
         response = self.client.get(url)
@@ -112,6 +102,9 @@ class CurrentSubscriptionAPITest(APITestCase):
 @override_settings(FLUTTERWAVE_PUBLIC_KEY='test-pub-key')
 class InitializePaymentAPITest(APITestCase):
     def setUp(self):
+        from .models import SubscriptionPlan
+        SubscriptionPlan.objects.create(name='free', display_name='Free', price=0, order=0)
+        SubscriptionPlan.objects.create(name='basic', display_name='Basic', price=1500, order=1)
         self.user = User.objects.create_user(
             email='test@example.com',
             username='testuser',
@@ -154,6 +147,9 @@ class InitializePaymentAPITest(APITestCase):
 @override_settings(FLUTTERWAVE_SECRET_KEY='test-secret')
 class VerifyPaymentAPITest(APITestCase):
     def setUp(self):
+        from .models import SubscriptionPlan
+        SubscriptionPlan.objects.create(name='free', display_name='Free', price=0, order=0)
+        SubscriptionPlan.objects.create(name='basic', display_name='Basic', price=1500, order=1, duration_days=30)
         self.user = User.objects.create_user(
             email='test@example.com',
             username='testuser',
@@ -265,6 +261,9 @@ class VerifyPaymentAPITest(APITestCase):
 @override_settings(FLUTTERWAVE_WEBHOOK_SECRET='test-webhook-hash')
 class WebhookAPITest(APITestCase):
     def setUp(self):
+        from .models import SubscriptionPlan
+        SubscriptionPlan.objects.create(name='free', display_name='Free', price=0, order=0)
+        SubscriptionPlan.objects.create(name='basic', display_name='Basic', price=1500, order=1, duration_days=30)
         self.user = User.objects.create_user(
             email='test@example.com',
             username='testuser',

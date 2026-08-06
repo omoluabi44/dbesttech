@@ -33,11 +33,9 @@ class UserSerializer(serializers.ModelSerializer):
     """Read-only user serializer."""
     student_profile = StudentProfileSerializer(read_only=True)
     email_verified = serializers.SerializerMethodField()
-    daily_quiz_limit = serializers.ReadOnlyField()
-
     class Meta:
         model = User
-        fields = ['id', 'email', 'username', 'first_name', 'last_name', 'role', 'student_profile', 'email_verified', 'subscription_plan', 'subscription_status', 'quizzes_taken_today', 'daily_quiz_limit']
+        fields = ['id', 'email', 'username', 'first_name', 'last_name', 'role', 'student_profile', 'email_verified', 'subscription_plan', 'subscription_status']
         read_only_fields = ['id', 'email', 'role']
 
     def get_email_verified(self, obj):

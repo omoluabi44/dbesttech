@@ -38,6 +38,7 @@ export default function PracticeSessionPage() {
   const [currentStage, setCurrentStage] = useState(1);
   const [submitting, setSubmitting] = useState(false);
   const [showInterstitial, setShowInterstitial] = useState(false);
+  const [showUpgradePrompt, setShowUpgradePrompt] = useState(false);
   const [stageResult, setStageResult] = useState<PracticeStageSubmitResponse | null>(null);
   const [timeLeft, setTimeLeft] = useState(120); // 2 minutes per question
   const [totalScore, setTotalScore] = useState(0);
@@ -142,6 +143,11 @@ export default function PracticeSessionPage() {
 
   const handleContinue = () => {
     playButtonClick();
+    if (stageResult?.requires_upgrade) {
+      setShowInterstitial(false);
+      setShowUpgradePrompt(true);
+      return;
+    }
     if (currentStage >= 5 || !stageResult?.next_questions) {
       router.push(`/quiz/results/${sessionId}`);
     } else {
@@ -454,6 +460,39 @@ export default function PracticeSessionPage() {
               {currentStage >= 5 ? 'See Your Trophy!' : `Next Level`}
             </Button>
           </motion.div>
+        </div>
+      </Modal>
+
+      {/* Upgrade Prompt Modal */}
+      <Modal isOpen={showUpgradePrompt} onClose={() => router.push('/dashboard')} title="Upgrade to Continue!">
+        <div className="text-center p-6 relative overflow-hidden">
+          <motion.div
+            initial={{ scale: 0, rotate: -10 }}
+            animate={{ scale: 1, rotate: 0 }}
+            className="mx-auto w-32 h-32 mb-6"
+          >
+            <CartoonFox mood="thinking" size="lg" />
+          </motion.div>
+          <h3 className="text-2xl font-bold text-slate-800 mb-4">You've reached the limit for the Free plan!</h3>
+          <p className="text-slate-600 mb-8 font-medium">
+            Upgrade your plan to unlock more stages and continue your learning adventure.
+          </p>
+          <div className="flex flex-col gap-4">
+            <Button
+              variant="gameAction"
+              className="w-full py-4 text-xl"
+              onClick={() => router.push('/subscription')}
+            >
+              View Subscription Plans
+            </Button>
+            <Button
+              variant="cartoon"
+              className="w-full py-4 bg-slate-200 text-slate-600 border-slate-300 hover:bg-slate-300"
+              onClick={() => router.push('/dashboard')}
+            >
+              Back to Dashboard
+            </Button>
+          </div>
         </div>
       </Modal>
     </div>

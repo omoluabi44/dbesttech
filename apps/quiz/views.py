@@ -40,6 +40,11 @@ class PracticeStartView(views.APIView):
         
         subject = get_object_or_404(Subject, id=subject_id)
         
+        if request.user.subscription_plan == 'free':
+            if difficulty != 'easy':
+                return Response({'error': 'Free plan users can only access easy questions. Upgrade for medium and hard difficulty.'}, status=status.HTTP_403_FORBIDDEN)
+            difficulty = 'easy'
+        
         # Get 50 random questions
         questions = list(Quiz.objects.filter(subject=subject, level=level, difficulty=difficulty, is_practice=True, is_active=True))
         if len(questions) > 50:
@@ -115,10 +120,16 @@ class PracticeSubmitStageView(views.APIView):
         setattr(session, f'stage_{stage}_score', stage_correct)
         session.correct_answers += stage_correct
         
+        requires_upgrade = False
         if stage == 5 or end_idx >= len(all_session_answers):
             session.status = 'completed'
             session.completed_at = timezone.now()
             session.score_percentage = (session.correct_answers / max(1, session.total_questions)) * 100
+        elif stage == 1 and request.user.subscription_plan == 'free':
+            session.status = 'completed'
+            session.completed_at = timezone.now()
+            session.score_percentage = (session.correct_answers / max(1, session.total_questions)) * 100
+            requires_upgrade = True
         else:
             session.current_stage += 1
             
@@ -128,6 +139,9 @@ class PracticeSubmitStageView(views.APIView):
             'session': PracticeSessionSerializer(session).data,
             'stage_score': stage_correct
         }
+        
+        if requires_upgrade:
+            response_data['requires_upgrade'] = True
         
         if session.status != 'completed':
             next_start = (session.current_stage - 1) * 10

@@ -18,15 +18,7 @@ export const SubscriptionGuard: React.FC<SubscriptionGuardProps> = ({
 }) => {
   const { user } = useAuthStore();
   const currentPlan = user?.subscription_plan || 'free';
-
-  // Define plan hierarchy
-  const planLevel = {
-    free: 0,
-    basic: 1,
-    premium: 2,
-  };
-
-  const hasAccess = planLevel[currentPlan as keyof typeof planLevel] >= planLevel[requiredPlan];
+  const hasAccess = currentPlan !== 'free';
 
   if (hasAccess) {
     return <>{children}</>;
