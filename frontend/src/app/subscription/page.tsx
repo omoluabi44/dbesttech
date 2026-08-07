@@ -132,7 +132,7 @@ export default function SubscriptionPage() {
           }
           setProcessingPlan(null);
         },
-        onClose: () => {
+        onclose: () => {
           setProcessingPlan(null);
         },
       };
