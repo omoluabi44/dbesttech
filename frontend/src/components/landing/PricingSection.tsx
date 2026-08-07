@@ -52,7 +52,7 @@ export const PricingSection: React.FC = () => {
     const fetchPlans = async () => {
       try {
         const res = await api.get('/auth/subscription/plans/');
-        if (res.data && Array.isArray(res.data)) {
+        if (res.data && Array.isArray(res.data) && res.data.length > 0) {
           setPlans(res.data);
         } else {
           setPlans(FALLBACK_PLANS);
@@ -68,7 +68,7 @@ export const PricingSection: React.FC = () => {
   }, []);
 
   return (
-    <section id="pricing" className="py-24 bg-surface relative overflow-hidden">
+    <section id="pricing" className="py-24 bg-slate-50 relative overflow-hidden">
       {/* Background accents */}
       <div className="absolute top-0 right-0 -mr-40 -mt-40 w-96 h-96 rounded-full bg-primary/5 blur-3xl" />
       <div className="absolute bottom-0 left-0 -ml-40 -mb-40 w-96 h-96 rounded-full bg-secondary/5 blur-3xl" />
@@ -130,7 +130,7 @@ export const PricingSection: React.FC = () => {
                     </ul>
                     
                     <Button 
-                      variant={plan.is_featured ? 'primary' : 'outline'} 
+                      variant={plan.is_featured ? 'primary' : 'secondary'} 
                       className="w-full"
                       onClick={() => router.push('/register')}
                     >

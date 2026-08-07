@@ -38,7 +38,34 @@ export default function SubscriptionPage() {
           getPlans(),
           getCurrentSubscription().catch(() => ({ plan: 'free', status: 'active' as const, start_date: null, end_date: null })),
         ]);
-        setPlans(plansData);
+        const finalPlans = plansData && plansData.length > 0 ? plansData : [
+          {
+            id: 'free',
+            name: 'free',
+            display_name: 'Free',
+            price: 0,
+            currency: 'NGN',
+            features: ['Access to the first 10 questions of Easy level only'],
+            is_featured: false
+          },
+          {
+            id: 'monthly',
+            name: 'monthly',
+            display_name: 'Monthly',
+            price: 1000,
+            currency: 'NGN',
+            features: [
+              'Unlimited access to all questions',
+              'Detailed step-by-step explanations',
+              'Full performance analytics',
+              'AI-powered study suggestions',
+              'Priority support'
+            ],
+            is_featured: true
+          }
+        ];
+        
+        setPlans(finalPlans as any);
         setCurrentPlan((currentSub as any).subscription_plan || (currentSub as any).plan || 'free');
       } catch (error) {
         console.error('Error fetching subscription data:', error);
