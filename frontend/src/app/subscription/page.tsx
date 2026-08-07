@@ -10,7 +10,6 @@ import { getPlans, getCurrentSubscription, initializePayment, verifyPayment } fr
 import { getProfile } from '@/lib/api/auth';
 import { SubscriptionPlan } from '@/lib/types/subscription';
 import { PlanCard } from '@/components/subscription/PlanCard';
-import { closePaymentModal } from 'flutterwave-react-v3';
 
 export default function SubscriptionPage() {
   const router = useRouter();
@@ -124,7 +123,14 @@ export default function SubscriptionPage() {
             console.error('Payment verification failed:', error);
             toast.error('Payment verification failed. Please contact support.');
           }
-          closePaymentModal();
+          
+          // Manually close the Flutterwave inline modal
+          const iframe = document.getElementsByName('checkout')[0];
+          if (iframe) {
+            iframe.setAttribute('style', 'position:fixed;top:0;left:0;z-index:-1;border:none;opacity:0;pointer-events:none;width:100%;height:100%;');
+            document.body.style.overflow = '';
+          }
+          setProcessingPlan(null);
         },
         onClose: () => {
           setProcessingPlan(null);
