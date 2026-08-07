@@ -83,6 +83,14 @@ class UserRegistrationSerializer(RegisterSerializer):
             profile, created = StudentProfile.objects.get_or_create(user=user)
             profile.level = self.validated_data.get('level', '')
             profile.save()
+
+            # Fix for dj-rest-auth and allauth >= 0.55+ where setup_user_email no longer sends the confirmation email
+            from django.conf import settings
+            if getattr(settings, 'ACCOUNT_EMAIL_VERIFICATION', 'optional') == 'mandatory':
+                from allauth.account.models import EmailAddress
+                email_obj = EmailAddress.objects.filter(user=user, primary=True).first()
+                if email_obj and not email_obj.verified:
+                    email_obj.send_confirmation(request, signup=True)
             
             return user
         except Exception as e:
