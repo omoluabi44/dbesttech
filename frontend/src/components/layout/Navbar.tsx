@@ -18,11 +18,12 @@ export const Navbar: React.FC = () => {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  const navLinks = [
-    { label: 'Features', href: '#features' },
-    { label: 'How it Works', href: '#how-it-works' },
-    { label: 'Testimonials', href: '#testimonials' },
-  ];
+    const navLinks = [
+      { label: 'Features', href: '#features' },
+      { label: 'How it Works', href: '#how-it-works' },
+      { label: 'Pricing', href: '#pricing' },
+      { label: 'Testimonials', href: '#testimonials' },
+    ];
 
   return (
     <header 
