@@ -47,7 +47,7 @@ def reverse_seed(apps, schema_editor):
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('accounts', '0005_merge_20260731_1333'),
+        ('accounts', '0005_remove_subscriptionplan_duration_days_and_more'),
     ]
 
     operations = [

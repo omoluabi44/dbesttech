@@ -131,7 +131,7 @@ class PaymentTransaction(models.Model):
     flw_transaction_id = models.CharField(max_length=100, blank=True, default='')
     amount = models.DecimalField(max_digits=10, decimal_places=2)
     currency = models.CharField(max_length=10, default='NGN')
-    plan = models.CharField(max_length=10)
+    plan = models.CharField(max_length=50)
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
     payment_type = models.CharField(max_length=50, blank=True, default='')
     verified_at = models.DateTimeField(null=True, blank=True)
