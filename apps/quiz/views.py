@@ -107,8 +107,18 @@ class PracticeSubmitStageView(views.APIView):
                 p_ans.selected_answer = sel_ans
                 
                 is_correct = False
-                if sel_ans and p_ans.question.correct_answer and sel_ans.strip().lower() == p_ans.question.correct_answer.strip().lower():
-                    is_correct = True
+                if sel_ans and p_ans.question.correct_answer:
+                    correct_answer_text = p_ans.question.correct_answer
+                    
+                    # If incorrect_answers is a dict (AI-generated questions),
+                    # correct_answer is a label like "A" and the dict maps labels to texts.
+                    # Resolve the label to the actual text for comparison.
+                    inc = p_ans.question.incorrect_answers
+                    if isinstance(inc, dict) and correct_answer_text in inc:
+                        correct_answer_text = inc[correct_answer_text]
+                    
+                    if sel_ans.strip().lower() == correct_answer_text.strip().lower():
+                        is_correct = True
                     
                 p_ans.is_correct = is_correct
                 p_ans.stage_submitted = stage
@@ -303,20 +313,36 @@ class PastQuestionSubmitView(views.APIView):
             time_spent = ans_data.get('time_spent_seconds', 0)
             
             question = PastQuestion.objects.filter(id=q_id).first()
-            if question:
+            quiz_question = None
+            if not question:
+                # AI-uploaded past questions are stored in the Quiz table
+                quiz_question = Quiz.objects.filter(id=q_id, is_past_question=True).first()
+            
+            source_question = question or quiz_question
+            if source_question:
                 is_correct = False
-                if sel_ans and question.correct_answer and sel_ans.strip().lower() == question.correct_answer.strip().lower():
-                    is_correct = True
+                if sel_ans and source_question.correct_answer:
+                    correct_answer_text = source_question.correct_answer
                     
-                PastQuestionAnswer.objects.update_or_create(
-                    session=session,
-                    question=question,
-                    defaults={
-                        'selected_answer': sel_ans,
-                        'is_correct': is_correct,
-                        'time_spent_seconds': time_spent
-                    }
-                )
+                    # If incorrect_answers is a dict (AI-generated questions),
+                    # correct_answer is a label like "A" and the dict maps labels to texts.
+                    inc = source_question.incorrect_answers
+                    if isinstance(inc, dict) and correct_answer_text in inc:
+                        correct_answer_text = inc[correct_answer_text]
+                    
+                    if sel_ans.strip().lower() == correct_answer_text.strip().lower():
+                        is_correct = True
+                
+                if question:
+                    PastQuestionAnswer.objects.update_or_create(
+                        session=session,
+                        question=question,
+                        defaults={
+                            'selected_answer': sel_ans,
+                            'is_correct': is_correct,
+                            'time_spent_seconds': time_spent
+                        }
+                    )
         
         return Response({'status': 'success'})
 
