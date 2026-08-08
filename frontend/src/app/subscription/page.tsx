@@ -33,7 +33,7 @@ export default function SubscriptionPage() {
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const status = params.get('status');
-    const isRedirect = status === 'successful' && params.get('tx_ref') && params.get('transaction_id');
+    const isRedirect = status === 'successful' && params.get('tx_ref') && (params.get('transaction_id') || params.get('id'));
 
     const fetchData = async () => {
       try {
@@ -88,7 +88,7 @@ export default function SubscriptionPage() {
     const params = new URLSearchParams(window.location.search);
     const status = params.get('status');
     const tx_ref = params.get('tx_ref');
-    const transaction_id = params.get('transaction_id');
+    const transaction_id = params.get('transaction_id') || params.get('id');
 
     if (status === 'successful' && tx_ref && transaction_id) {
       setProcessingPlan('verifying');
