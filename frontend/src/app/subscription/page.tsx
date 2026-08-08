@@ -409,6 +409,7 @@ export default function SubscriptionPage() {
                   isCurrentPlan={currentPlan === plan.name}
                   onSelect={handlePayment}
                   isProcessing={processingPlan === plan.name}
+                  hasActiveSubscription={currentPlan !== 'free'}
                 />
               </motion.div>
             ))}

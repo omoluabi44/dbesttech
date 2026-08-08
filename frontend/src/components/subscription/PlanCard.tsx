@@ -8,6 +8,7 @@ interface PlanCardProps {
   isCurrentPlan: boolean;
   onSelect: (planName: string) => void;
   isProcessing: boolean;
+  hasActiveSubscription?: boolean;
 }
 
 export const PlanCard: React.FC<PlanCardProps> = ({
@@ -15,6 +16,7 @@ export const PlanCard: React.FC<PlanCardProps> = ({
   isCurrentPlan,
   onSelect,
   isProcessing,
+  hasActiveSubscription = false,
 }) => {
   const isFree = plan.price === 0;
   
@@ -77,8 +79,8 @@ export const PlanCard: React.FC<PlanCardProps> = ({
       </div>
 
       <button
-        onClick={() => !isCurrentPlan && !isFree && !isExpired && onSelect(plan.name)}
-        disabled={isCurrentPlan || isFree || isProcessing || isExpired}
+        onClick={() => !isCurrentPlan && !isFree && !isExpired && !hasActiveSubscription && onSelect(plan.name)}
+        disabled={isCurrentPlan || isFree || isProcessing || isExpired || hasActiveSubscription}
         className={`w-full py-4 rounded-2xl font-bold text-lg flex justify-center items-center gap-2 transition-all duration-200 ${
           isCurrentPlan
             ? plan.is_featured
@@ -88,6 +90,8 @@ export const PlanCard: React.FC<PlanCardProps> = ({
             ? 'bg-red-50 text-red-500 cursor-not-allowed border-2 border-red-200'
             : isFree
             ? 'bg-[var(--surface-dark)] text-slate-500 cursor-not-allowed'
+            : hasActiveSubscription
+            ? 'bg-slate-200 text-slate-500 cursor-not-allowed border border-slate-300'
             : buttonStyle
         }`}
       >
@@ -105,6 +109,8 @@ export const PlanCard: React.FC<PlanCardProps> = ({
           'Plan Expired'
         ) : isFree ? (
           'Free Plan'
+        ) : hasActiveSubscription ? (
+          'Wait Until Expiry'
         ) : (
           'Upgrade Now'
         )}
