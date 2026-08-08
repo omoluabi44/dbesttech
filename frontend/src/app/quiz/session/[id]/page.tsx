@@ -469,9 +469,9 @@ export default function PracticeSessionPage() {
           <motion.div
             initial={{ scale: 0, rotate: -10 }}
             animate={{ scale: 1, rotate: 0 }}
-            className="mx-auto w-32 h-32 mb-6"
+            className="mx-auto mb-6 flex justify-center"
           >
-            <CartoonFox mood="thinking" size="lg" />
+            <CartoonFox mood="thinking" size="md" />
           </motion.div>
           <h3 className="text-2xl font-bold text-slate-800 mb-4">You've reached the limit for the Free plan!</h3>
           <p className="text-slate-600 mb-8 font-medium">
@@ -486,8 +486,8 @@ export default function PracticeSessionPage() {
               View Subscription Plans
             </Button>
             <Button
-              variant="cartoon"
-              className="w-full py-4 bg-slate-200 text-slate-600 border-slate-300 hover:bg-slate-300"
+              variant="secondary"
+              className="w-full py-4 font-bold text-lg"
               onClick={() => router.push('/dashboard')}
             >
               Back to Dashboard
