@@ -23,7 +23,7 @@ export const PlanCard: React.FC<PlanCardProps> = ({
 
   const cardStyle = plan.is_featured
     ? 'bg-gradient-to-br from-indigo-600 to-purple-700 text-white shadow-2xl border-0 ring-4 ring-indigo-500/30'
-    : 'bg-[var(--surface)] text-[var(--foreground)] border-2 border-[var(--surface-dark)] shadow-lg hover:border-indigo-400/50';
+    : 'bg-[var(--surface)] text-black border-2 border-[var(--surface-dark)] shadow-lg hover:border-indigo-400/50';
 
   const buttonStyle = plan.is_featured
     ? 'bg-white text-indigo-700 hover:bg-slate-100 shadow-md'
@@ -68,7 +68,7 @@ export const PlanCard: React.FC<PlanCardProps> = ({
               <div className={`mt-0.5 rounded-full p-1.5 ${plan.is_featured ? 'bg-white/20' : 'bg-indigo-100'}`}>
                 <Check size={14} className={plan.is_featured ? 'text-white' : 'text-indigo-600'} />
               </div>
-              <span className={`text-sm font-medium leading-snug ${plan.is_featured ? 'opacity-95' : 'text-slate-600 dark:text-slate-300'}`}>
+              <span className={`text-sm font-medium leading-snug ${plan.is_featured ? 'opacity-95' : 'text-black'}`}>
                 {feature}
               </span>
             </li>
