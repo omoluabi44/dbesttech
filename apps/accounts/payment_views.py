@@ -165,31 +165,37 @@ class VerifyPaymentView(APIView):
         verify_url = f"https://api.flutterwave.com/v3/transactions/{transaction_id}/verify"
         
         try:
-            response = requests.get(verify_url, headers=headers)
-            
+            response = requests.get(verify_url, headers=headers, timeout=10)
             try:
                 response_data = response.json()
             except ValueError:
-                # Catch JSONDecodeError if Flutterwave returns an HTML error page (e.g., 502/504)
-                return Response({'error': 'Invalid response from payment provider'}, status=status.HTTP_502_BAD_GATEWAY)
+                # Fallback if Flutterwave returns non-JSON (e.g. 502 HTML page)
+                return Response({
+                    'error': 'Invalid response from payment provider',
+                    'debug': {
+                        'flw_status_code': response.status_code,
+                        'flw_body_preview': response.text[:500],
+                    }
+                }, status=status.HTTP_502_BAD_GATEWAY)
             
             if response.status_code == 200 and response_data.get('status') == 'success':
                 # .get('data') might return None if "data": null, so we use `or {}`
                 flw_data = response_data.get('data') or {}
                 
-                # Safely extract amount, defaulting to 0 if missing or null
-                flw_amount = flw_data.get('amount')
-                flw_amount = float(flw_amount) if flw_amount is not None else 0.0
-                
                 # Cross-validate
+                flw_amount = flw_data.get('amount')
+                if flw_amount is None:
+                    flw_amount = 0
+                    
                 if (
-                    flw_amount >= float(transaction.amount) and
+                    float(flw_amount) >= float(transaction.amount) and
                     flw_data.get('currency') == transaction.currency and
                     flw_data.get('status') == 'successful'
                 ):
                     transaction.status = 'successful'
-                    transaction.flw_transaction_id = str(transaction_id)
-                    transaction.payment_type = flw_data.get('payment_type', '')
+                    transaction.flw_transaction_id = str(transaction_id)[:100]
+                    payment_type = flw_data.get('payment_type') or ''
+                    transaction.payment_type = str(payment_type)[:50]
                     transaction.verified_at = timezone.now()
                     transaction.flw_response = response_data
                     transaction.save()
@@ -212,17 +218,43 @@ class VerifyPaymentView(APIView):
                 else:
                     transaction.status = 'failed'
                     transaction.save()
-                    return Response({'error': 'Payment validation failed'}, status=status.HTTP_400_BAD_REQUEST)
+                    return Response({
+                        'error': 'Payment validation failed',
+                        'debug': {
+                            'flw_amount': flw_amount,
+                            'expected_amount': float(transaction.amount),
+                            'amount_ok': float(flw_amount) >= float(transaction.amount),
+                            'flw_currency': flw_data.get('currency'),
+                            'expected_currency': transaction.currency,
+                            'currency_ok': flw_data.get('currency') == transaction.currency,
+                            'flw_status': flw_data.get('status'),
+                            'status_ok': flw_data.get('status') == 'successful',
+                        }
+                    }, status=status.HTTP_400_BAD_REQUEST)
             else:
                 transaction.status = 'failed'
                 transaction.save()
-                return Response({'error': 'Payment verification failed'}, status=status.HTTP_400_BAD_REQUEST)
+                return Response({
+                    'error': 'Payment verification failed',
+                    'debug': {
+                        'flw_status_code': response.status_code,
+                        'flw_response_status': response_data.get('status'),
+                        'flw_message': response_data.get('message'),
+                        'secret_key_prefix': secret_key[:15] + '...' if secret_key else 'MISSING',
+                    }
+                }, status=status.HTTP_400_BAD_REQUEST)
                 
-        except requests.RequestException:
-            return Response({'error': 'Error connecting to payment provider'}, status=status.HTTP_503_SERVICE_UNAVAILABLE)
+        except requests.RequestException as e:
+            return Response({
+                'error': 'Error connecting to payment provider',
+                'debug': {'exception': str(e)}
+            }, status=status.HTTP_503_SERVICE_UNAVAILABLE)
         except Exception as e:
             # Catch-all to prevent 500 errors and return a clean 400 instead
-            return Response({'error': f'An unexpected error occurred during verification'}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({
+                'error': 'An unexpected error occurred during verification',
+                'debug': {'exception': str(e), 'type': type(e).__name__}
+            }, status=status.HTTP_400_BAD_REQUEST)
 
 
 @method_decorator(csrf_exempt, name='dispatch')
@@ -249,15 +281,17 @@ class FlutterwaveWebhookView(APIView):
                 
                 if transaction.status != 'successful' and data.get('status') == 'successful':
                     flw_amount = data.get('amount')
-                    flw_amount = float(flw_amount) if flw_amount is not None else 0.0
-                    
+                    if flw_amount is None:
+                        flw_amount = 0
+                        
                     if (
-                        flw_amount >= float(transaction.amount) and
+                        float(flw_amount) >= float(transaction.amount) and
                         data.get('currency') == transaction.currency
                     ):
                         transaction.status = 'successful'
-                        transaction.flw_transaction_id = str(data.get('id', ''))
-                        transaction.payment_type = data.get('payment_type', '')
+                        transaction.flw_transaction_id = str(data.get('id', ''))[:100]
+                        payment_type = data.get('payment_type') or ''
+                        transaction.payment_type = str(payment_type)[:50]
                         transaction.verified_at = timezone.now()
                         transaction.flw_response = event_data
                         transaction.save()
