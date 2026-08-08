@@ -12,7 +12,7 @@ export const getPlans = async (): Promise<SubscriptionPlan[]> => {
 };
 
 export const getCurrentSubscription = async (): Promise<CurrentSubscription> => {
-  const res = await client.get('/auth/subscription/current/');
+  const res = await client.get(`/auth/subscription/current/?t=${new Date().getTime()}`);
   return res.data;
 };
 

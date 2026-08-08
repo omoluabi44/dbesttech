@@ -141,10 +141,11 @@ export default function SubscriptionPage() {
           logo: '',
         },
         redirect_url: window.location.origin + '/subscription',
-        callback: async (response: { transaction_id: number; tx_ref: string }) => {
+        callback: async (response: any) => {
           try {
+            const txId = response.transaction_id || response.id;
             await verifyPayment(
-              String(response.transaction_id),
+              String(txId),
               response.tx_ref
             );
             toast.success('🎉 Subscription activated! Enjoy your new plan!');
