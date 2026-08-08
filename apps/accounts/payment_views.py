@@ -193,7 +193,12 @@ class VerifyPaymentView(APIView):
                     user.subscription_end_date = get_end_date_for_plan(transaction.plan)
                     user.save()
                     
-                    return Response({'message': 'Payment verified successfully'}, status=status.HTTP_200_OK)
+                    return Response({
+                        'message': 'Payment verified successfully',
+                        'plan': transaction.plan,
+                        'status': 'active',
+                        'end_date': user.subscription_end_date.isoformat() if user.subscription_end_date else None,
+                    }, status=status.HTTP_200_OK)
                 else:
                     transaction.status = 'failed'
                     transaction.save()

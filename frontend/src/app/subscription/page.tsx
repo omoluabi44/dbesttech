@@ -1,10 +1,10 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'sonner';
-import { ArrowLeft, Sparkles } from 'lucide-react';
+import { ArrowLeft, Sparkles, CheckCircle2, PartyPopper } from 'lucide-react';
 import { useAuthStore } from '@/lib/stores/authStore';
 import { getPlans, getCurrentSubscription, initializePayment, verifyPayment } from '@/lib/api/subscription';
 import { getProfile } from '@/lib/api/auth';
@@ -18,6 +18,78 @@ export default function SubscriptionPage() {
   const [currentPlan, setCurrentPlan] = useState<string>('free');
   const [isLoading, setIsLoading] = useState(true);
   const [processingPlan, setProcessingPlan] = useState<string | null>(null);
+  const [successInfo, setSuccessInfo] = useState<{
+    planName: string;
+    endDate: string | null;
+  } | null>(null);
+
+  // Robustly close the Flutterwave modal and restore page interactivity
+  const closeFlutterwaveModal = useCallback(() => {
+    // Strategy 1: Hide the checkout iframe
+    const iframes = document.querySelectorAll('iframe');
+    iframes.forEach((iframe) => {
+      if (
+        iframe.getAttribute('name') === 'checkout' ||
+        iframe.src?.includes('flutterwave') ||
+        iframe.src?.includes('checkout')
+      ) {
+        iframe.style.position = 'fixed';
+        iframe.style.top = '0';
+        iframe.style.left = '0';
+        iframe.style.zIndex = '-1';
+        iframe.style.border = 'none';
+        iframe.style.opacity = '0';
+        iframe.style.pointerEvents = 'none';
+        iframe.style.width = '0';
+        iframe.style.height = '0';
+        // Remove it from the DOM after a short delay
+        setTimeout(() => {
+          try { iframe.remove(); } catch (e) { /* ignore */ }
+        }, 100);
+      }
+    });
+
+    // Strategy 2: Remove any Flutterwave overlay/backdrop divs
+    const allDivs = document.querySelectorAll('div');
+    allDivs.forEach((div) => {
+      const style = window.getComputedStyle(div);
+      if (
+        style.position === 'fixed' &&
+        style.zIndex &&
+        parseInt(style.zIndex) > 9999 &&
+        div.id !== '__next'
+      ) {
+        div.style.display = 'none';
+        setTimeout(() => {
+          try { div.remove(); } catch (e) { /* ignore */ }
+        }, 100);
+      }
+    });
+
+    // Strategy 3: Reset body overflow so the page is scrollable again
+    document.body.style.overflow = '';
+    document.body.style.position = '';
+    document.body.style.width = '';
+    document.body.style.height = '';
+    document.documentElement.style.overflow = '';
+  }, []);
+
+  // Refresh the current plan from the backend
+  const refreshSubscriptionState = useCallback(async () => {
+    try {
+      const subRes = await getCurrentSubscription();
+      const plan = (subRes as any).subscription_plan || (subRes as any).plan || 'free';
+      setCurrentPlan(plan);
+    } catch (e) {
+      console.error('Error refreshing subscription:', e);
+    }
+    try {
+      const profileRes = await getProfile();
+      updateUser(profileRes);
+    } catch (e) {
+      console.error('Error refreshing profile:', e);
+    }
+  }, [updateUser]);
 
   useEffect(() => {
     // Load Flutterwave inline script
@@ -26,7 +98,7 @@ export default function SubscriptionPage() {
     script.async = true;
     document.body.appendChild(script);
     return () => {
-      document.body.removeChild(script);
+      try { document.body.removeChild(script); } catch (e) { /* ignore */ }
     };
   }, []);
 
@@ -84,7 +156,7 @@ export default function SubscriptionPage() {
   }, []);
 
   useEffect(() => {
-    // Check for redirect from Flutterwave
+    // Check for redirect from Flutterwave (e.g. bank transfer, USSD, or mobile redirect)
     const params = new URLSearchParams(window.location.search);
     const status = params.get('status');
     const tx_ref = params.get('tx_ref');
@@ -93,17 +165,24 @@ export default function SubscriptionPage() {
     if (status === 'successful' && tx_ref && transaction_id) {
       setProcessingPlan('verifying');
       verifyPayment(transaction_id, tx_ref)
-        .then(() => {
+        .then((verifyRes) => {
+          // Use the verify response directly to update plan state
+          const verifiedPlan = (verifyRes as any).plan;
+          const verifiedEndDate = (verifyRes as any).end_date;
+
+          if (verifiedPlan) {
+            setCurrentPlan(verifiedPlan);
+            setSuccessInfo({
+              planName: verifiedPlan,
+              endDate: verifiedEndDate || null,
+            });
+          }
+
           toast.success('🎉 Subscription activated! Enjoy your new plan!');
           // Clean up URL
           window.history.replaceState({}, document.title, window.location.pathname);
-          // Refresh profile
-          return getProfile().then(profileRes => {
-            updateUser(profileRes);
-            return getCurrentSubscription();
-          }).then(subRes => {
-            setCurrentPlan((subRes as any).subscription_plan || (subRes as any).plan || 'free');
-          });
+          // Also refresh profile in background
+          return refreshSubscriptionState();
         })
         .catch((error) => {
           console.error('Payment verification failed:', error);
@@ -113,7 +192,7 @@ export default function SubscriptionPage() {
           setProcessingPlan(null);
         });
     }
-  }, []);
+  }, [refreshSubscriptionState]);
 
   const handlePayment = async (planName: string) => {
     if (!user) {
@@ -140,40 +219,45 @@ export default function SubscriptionPage() {
           description: `Upgrade to ${planName} plan`,
           logo: '',
         },
-        redirect_url: window.location.origin + '/subscription',
         callback: async (response: any) => {
+          // Immediately close the Flutterwave modal so the user can see our UI
+          closeFlutterwaveModal();
+          setProcessingPlan('verifying');
+
           try {
             const txId = response.transaction_id || response.id;
-            await verifyPayment(
+            const verifyRes = await verifyPayment(
               String(txId),
               response.tx_ref
             );
+
+            // Use verify response directly to update plan — no race condition
+            const verifiedPlan = (verifyRes as any).plan || planName;
+            const verifiedEndDate = (verifyRes as any).end_date || null;
+
+            setCurrentPlan(verifiedPlan);
+            setSuccessInfo({
+              planName: verifiedPlan,
+              endDate: verifiedEndDate,
+            });
             toast.success('🎉 Subscription activated! Enjoy your new plan!');
-            // Refresh data
-            const subRes = await getCurrentSubscription();
-            setCurrentPlan((subRes as any).subscription_plan || (subRes as any).plan || 'free');
-            // Update user in store
-            try {
-              const profileRes = await getProfile();
-              updateUser(profileRes);
-            } catch (e) {
-              console.error('Error refreshing profile:', e);
-            }
+
+            // Refresh profile in the background
+            refreshSubscriptionState();
           } catch (error) {
             console.error('Payment verification failed:', error);
             toast.error('Payment verification failed. Please contact support.');
+          } finally {
+            setProcessingPlan(null);
           }
-          
-          // Manually close the Flutterwave inline modal
-          const iframe = document.getElementsByName('checkout')[0];
-          if (iframe) {
-            iframe.setAttribute('style', 'position:fixed;top:0;left:0;z-index:-1;border:none;opacity:0;pointer-events:none;width:100%;height:100%;');
-            document.body.style.overflow = '';
-          }
-          setProcessingPlan(null);
         },
         onclose: () => {
-          setProcessingPlan(null);
+          // If user closes the modal manually (cancelled)
+          if (!successInfo) {
+            setProcessingPlan(null);
+          }
+          // Clean up any residual modal elements
+          closeFlutterwaveModal();
         },
       };
 
@@ -199,6 +283,61 @@ export default function SubscriptionPage() {
           Back
         </button>
 
+        {/* Success Banner */}
+        <AnimatePresence>
+          {successInfo && (
+            <motion.div
+              initial={{ opacity: 0, y: -20, scale: 0.95 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: -20, scale: 0.95 }}
+              transition={{ type: 'spring', stiffness: 300, damping: 25 }}
+              className="mb-10"
+            >
+              <div className="relative bg-gradient-to-r from-emerald-500 via-green-500 to-teal-500 rounded-3xl p-8 text-white shadow-2xl overflow-hidden">
+                {/* Decorative background elements */}
+                <div className="absolute top-0 right-0 w-40 h-40 bg-white/10 rounded-full -translate-y-1/2 translate-x-1/2" />
+                <div className="absolute bottom-0 left-0 w-32 h-32 bg-white/10 rounded-full translate-y-1/2 -translate-x-1/2" />
+                
+                <div className="relative flex flex-col sm:flex-row items-center gap-6">
+                  <div className="flex-shrink-0 bg-white/20 backdrop-blur-sm rounded-2xl p-4">
+                    <motion.div
+                      initial={{ rotate: 0 }}
+                      animate={{ rotate: [0, -10, 10, -10, 0] }}
+                      transition={{ delay: 0.3, duration: 0.5 }}
+                    >
+                      <PartyPopper size={40} />
+                    </motion.div>
+                  </div>
+
+                  <div className="text-center sm:text-left flex-grow">
+                    <h2 className="text-2xl font-extrabold mb-1 flex items-center justify-center sm:justify-start gap-2">
+                      <CheckCircle2 size={24} />
+                      Subscription Activated!
+                    </h2>
+                    <p className="text-emerald-100 font-medium text-lg">
+                      You are now on the <span className="font-bold text-white capitalize">{successInfo.planName}</span> plan.
+                      {successInfo.endDate && (
+                        <span className="block text-sm mt-1 text-emerald-200">
+                          Valid until {new Date(successInfo.endDate).toLocaleDateString('en-US', { 
+                            month: 'long', day: 'numeric', year: 'numeric' 
+                          })}
+                        </span>
+                      )}
+                    </p>
+                  </div>
+
+                  <button
+                    onClick={() => router.push('/dashboard')}
+                    className="flex-shrink-0 bg-white text-emerald-700 font-bold px-6 py-3 rounded-xl hover:bg-emerald-50 transition-colors shadow-lg"
+                  >
+                    Go to Dashboard
+                  </button>
+                </div>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -215,6 +354,29 @@ export default function SubscriptionPage() {
             Join thousands of students getting better grades. Upgrade to unlock more quizzes, detailed analytics, and premium features!
           </p>
         </motion.div>
+
+        {/* Processing overlay for verification */}
+        <AnimatePresence>
+          {processingPlan === 'verifying' && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-center justify-center"
+            >
+              <motion.div
+                initial={{ scale: 0.9, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                exit={{ scale: 0.9, opacity: 0 }}
+                className="bg-white rounded-3xl p-8 shadow-2xl text-center max-w-sm mx-4"
+              >
+                <div className="w-16 h-16 border-4 border-indigo-200 border-t-indigo-600 rounded-full animate-spin mx-auto mb-4" />
+                <h3 className="text-xl font-bold text-slate-800 mb-2">Verifying Payment...</h3>
+                <p className="text-slate-500 font-medium">Please wait while we confirm your subscription.</p>
+              </motion.div>
+            </motion.div>
+          )}
+        </AnimatePresence>
 
         {isLoading ? (
           <div className="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto">
