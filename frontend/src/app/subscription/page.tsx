@@ -77,6 +77,38 @@ export default function SubscriptionPage() {
     fetchData();
   }, []);
 
+  useEffect(() => {
+    // Check for redirect from Flutterwave
+    const params = new URLSearchParams(window.location.search);
+    const status = params.get('status');
+    const tx_ref = params.get('tx_ref');
+    const transaction_id = params.get('transaction_id');
+
+    if (status === 'successful' && tx_ref && transaction_id) {
+      setProcessingPlan('verifying');
+      verifyPayment(transaction_id, tx_ref)
+        .then(() => {
+          toast.success('🎉 Subscription activated! Enjoy your new plan!');
+          // Clean up URL
+          window.history.replaceState({}, document.title, window.location.pathname);
+          // Refresh profile
+          return getProfile().then(profileRes => {
+            updateUser(profileRes);
+            return getCurrentSubscription();
+          }).then(subRes => {
+            setCurrentPlan((subRes as any).subscription_plan || (subRes as any).plan || 'free');
+          });
+        })
+        .catch((error) => {
+          console.error('Payment verification failed:', error);
+          toast.error('Payment verification failed. Please contact support.');
+        })
+        .finally(() => {
+          setProcessingPlan(null);
+        });
+    }
+  }, []);
+
   const handlePayment = async (planName: string) => {
     if (!user) {
       toast.error('Please login to continue');
@@ -102,6 +134,7 @@ export default function SubscriptionPage() {
           description: `Upgrade to ${planName} plan`,
           logo: '',
         },
+        redirect_url: window.location.origin + '/subscription',
         callback: async (response: { transaction_id: number; tx_ref: string }) => {
           try {
             await verifyPayment(

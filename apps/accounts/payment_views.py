@@ -165,7 +165,7 @@ class VerifyPaymentView(APIView):
                 
                 # Cross-validate
                 if (
-                    float(flw_data.get('amount', 0)) == float(transaction.amount) and
+                    float(flw_data.get('amount', 0)) >= float(transaction.amount) and
                     flw_data.get('currency') == transaction.currency and
                     flw_data.get('status') == 'successful'
                 ):
