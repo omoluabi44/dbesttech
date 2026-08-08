@@ -2,13 +2,17 @@
 
 import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { useMutation } from '@tanstack/react-query';
 import { useQuizStore } from '@/lib/stores/quizStore';
+import { useAuthStore } from '@/lib/stores/authStore';
 import { submitPastQuestionAnswers, completePastQuestion } from '@/lib/api/quiz';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
-import { CheckCircle2, ChevronRight, ChevronLeft, Flag, Loader2, Clock, Check } from 'lucide-react';
+import { CheckCircle2, ChevronRight, ChevronLeft, Flag, Loader2, Clock, Check, Lock, Crown, Sparkles } from 'lucide-react';
 import { toast } from 'sonner';
+
+const FREE_QUESTION_LIMIT = 10;
 
 export default function PastQuestionSessionPage() {
   const params = useParams();
@@ -26,8 +30,12 @@ export default function PastQuestionSessionPage() {
     setPastCurrentIndex
   } = useQuizStore();
 
+  const user = useAuthStore(state => state.user);
+  const isFreeUser = !user?.subscription_plan || user.subscription_plan === 'free' || user.subscription_status !== 'active';
+
   const [submitting, setSubmitting] = useState(false);
   const [timeLeftSeconds, setTimeLeftSeconds] = useState(-1);
+  const [isPaywallActive, setIsPaywallActive] = useState(false);
 
   useEffect(() => {
     let timeout: NodeJS.Timeout;
@@ -49,7 +57,7 @@ export default function PastQuestionSessionPage() {
   }, [pastQuestions.length, timeLeftSeconds]);
 
   useEffect(() => {
-    if (submitting || timeLeftSeconds <= 0) return;
+    if (submitting || timeLeftSeconds <= 0 || isPaywallActive) return;
     const timer = setInterval(() => {
       setTimeLeftSeconds(prev => {
         if (prev <= 1) {
@@ -60,7 +68,14 @@ export default function PastQuestionSessionPage() {
       });
     }, 1000);
     return () => clearInterval(timer);
-  }, [submitting, timeLeftSeconds]);
+  }, [submitting, timeLeftSeconds, isPaywallActive]);
+
+  // Dismiss paywall if user comes back with active subscription
+  useEffect(() => {
+    if (isPaywallActive && !isFreeUser) {
+      setIsPaywallActive(false);
+    }
+  }, [isFreeUser, isPaywallActive]);
 
   const submitAnswersMutation = useMutation({
     mutationFn: async () => {
@@ -122,11 +137,24 @@ export default function PastQuestionSessionPage() {
   };
 
   const handleNext = () => {
+    // If free user is on question 10 (index 9) trying to go to 11, show paywall
+    if (isFreeUser && pastCurrentIndex >= FREE_QUESTION_LIMIT - 1) {
+      setIsPaywallActive(true);
+      return;
+    }
     nextQuestion();
   };
 
   const handlePrev = () => {
     prevQuestion();
+  };
+
+  const handleQuestionGridClick = (idx: number) => {
+    if (isFreeUser && idx >= FREE_QUESTION_LIMIT) {
+      setIsPaywallActive(true);
+      return;
+    }
+    setPastCurrentIndex(idx);
   };
 
   const formatTime = (seconds: number) => {
@@ -320,16 +348,18 @@ export default function PastQuestionSessionPage() {
                 return (
                   <button
                     key={q.id}
-                    onClick={() => setPastCurrentIndex(idx)}
+                    onClick={() => handleQuestionGridClick(idx)}
                     className={`h-9 w-full flex items-center justify-center rounded-md text-xs font-medium border transition-colors
                       ${isCurrent ? 'ring-2 ring-primary ring-offset-1' : ''}
-                      ${isAnswered 
-                        ? 'bg-primary border-primary text-primary' 
-                        : 'bg-white border-gray-200 text-gray-600 hover:bg-gray-50'
+                      ${isFreeUser && idx >= FREE_QUESTION_LIMIT
+                        ? 'bg-gray-100 border-gray-200 text-gray-300 cursor-not-allowed'
+                        : isAnswered 
+                          ? 'bg-primary border-primary text-primary' 
+                          : 'bg-white border-gray-200 text-gray-600 hover:bg-gray-50'
                       }
                     `}
                   >
-                    {idx + 1}
+                    {isFreeUser && idx >= FREE_QUESTION_LIMIT ? <Lock className="w-3 h-3" /> : idx + 1}
                   </button>
                 );
               })}
@@ -350,6 +380,57 @@ export default function PastQuestionSessionPage() {
         </div>
 
       </main>
+
+      {/* Paywall Overlay */}
+      {isPaywallActive && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-8 text-center relative overflow-hidden">
+            {/* Decorative gradient top bar */}
+            <div className="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-yellow-400 via-orange-500 to-pink-500" />
+            
+            <div className="mx-auto w-16 h-16 rounded-full bg-gradient-to-br from-yellow-400 to-orange-500 flex items-center justify-center mb-5 shadow-lg">
+              <Crown className="w-8 h-8 text-white" />
+            </div>
+            
+            <h2 className="text-2xl font-bold text-gray-900 mb-2">Upgrade to Continue</h2>
+            <p className="text-gray-500 mb-6 leading-relaxed">
+              You&apos;ve completed your <span className="font-semibold text-gray-800">{FREE_QUESTION_LIMIT} free questions</span>. 
+              Subscribe to unlock all remaining questions and finish your exam.
+            </p>
+            
+            {/* Paused timer display */}
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-blue-50 border border-blue-100 text-blue-700 text-sm font-medium mb-6">
+              <Clock className="w-4 h-4" />
+              Timer paused at {formatTime(timeLeftSeconds)}
+            </div>
+            
+            <div className="space-y-3">
+              <Link href="/subscription">
+                <Button className="w-full py-4 rounded-xl bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600 text-white font-bold text-lg shadow-md transition-all">
+                  <Sparkles className="w-5 h-5 mr-2" />
+                  Upgrade Now
+                </Button>
+              </Link>
+              
+              <Button 
+                variant="ghost"
+                onClick={() => {
+                  setIsPaywallActive(false);
+                  // Go back to last free question
+                  setPastCurrentIndex(FREE_QUESTION_LIMIT - 1);
+                }}
+                className="w-full py-3 text-gray-500 hover:text-gray-700 text-sm"
+              >
+                Go back to question {FREE_QUESTION_LIMIT}
+              </Button>
+            </div>
+            
+            <p className="text-xs text-gray-400 mt-5">
+              Your progress is saved. After subscribing, come back to continue from where you left off.
+            </p>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
