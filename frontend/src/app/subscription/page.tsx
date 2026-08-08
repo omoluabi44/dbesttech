@@ -132,7 +132,7 @@ export default function SubscriptionPage() {
         customizations: {
           title: 'DBestQuiz Subscription',
           description: `Upgrade to ${planName} plan`,
-          logo: 'https://dbestquiz.com/logo.jpg',
+          logo: '',
         },
         redirect_url: window.location.origin + '/subscription',
         callback: async (response: { transaction_id: number; tx_ref: string }) => {
