@@ -1,6 +1,7 @@
 import os
 import hmac
 import hashlib
+import datetime
 import requests
 from datetime import timedelta
 from uuid import uuid4
@@ -22,8 +23,6 @@ def get_end_date_for_plan(plan_name):
     try:
         plan = SubscriptionPlan.objects.get(name=plan_name)
         if plan.end_date:
-            from django.utils import timezone
-            import datetime
             # Convert date to datetime at midnight of that date
             return timezone.make_aware(datetime.datetime.combine(plan.end_date, datetime.time.max))
     except SubscriptionPlan.DoesNotExist:
@@ -102,8 +101,6 @@ class InitializePaymentView(APIView):
             
         # Prevent purchasing an expired plan
         if plan_details.end_date:
-            import datetime
-            from django.utils import timezone
             plan_expiration = timezone.make_aware(datetime.datetime.combine(plan_details.end_date, datetime.time.max))
             if plan_expiration < timezone.now():
                 return Response({'error': 'This plan has already expired and cannot be purchased'}, status=status.HTTP_400_BAD_REQUEST)
