@@ -31,12 +31,13 @@ export default function SubscriptionPage() {
   }, []);
 
   useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const status = params.get('status');
+    const isRedirect = status === 'successful' && params.get('tx_ref') && params.get('transaction_id');
+
     const fetchData = async () => {
       try {
-        const [plansData, currentSub] = await Promise.all([
-          getPlans(),
-          getCurrentSubscription().catch(() => ({ plan: 'free', status: 'active' as const, start_date: null, end_date: null })),
-        ]);
+        const plansData = await getPlans();
         const finalPlans = plansData && plansData.length > 0 ? plansData : [
           {
             id: 'free',
@@ -65,7 +66,12 @@ export default function SubscriptionPage() {
         ];
         
         setPlans(finalPlans as any);
-        setCurrentPlan((currentSub as any).subscription_plan || (currentSub as any).plan || 'free');
+        
+        // Skip setting current plan if we're verifying a payment redirect to prevent race conditions
+        if (!isRedirect) {
+          const currentSub = await getCurrentSubscription().catch(() => ({ plan: 'free', status: 'active', start_date: null, end_date: null }));
+          setCurrentPlan((currentSub as any).subscription_plan || (currentSub as any).plan || 'free');
+        }
       } catch (error) {
         console.error('Error fetching subscription data:', error);
         toast.error('Failed to load subscription plans.');
