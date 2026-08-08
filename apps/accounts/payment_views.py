@@ -166,14 +166,24 @@ class VerifyPaymentView(APIView):
         
         try:
             response = requests.get(verify_url, headers=headers)
-            response_data = response.json()
+            
+            try:
+                response_data = response.json()
+            except ValueError:
+                # Catch JSONDecodeError if Flutterwave returns an HTML error page (e.g., 502/504)
+                return Response({'error': 'Invalid response from payment provider'}, status=status.HTTP_502_BAD_GATEWAY)
             
             if response.status_code == 200 and response_data.get('status') == 'success':
-                flw_data = response_data.get('data', {})
+                # .get('data') might return None if "data": null, so we use `or {}`
+                flw_data = response_data.get('data') or {}
+                
+                # Safely extract amount, defaulting to 0 if missing or null
+                flw_amount = flw_data.get('amount')
+                flw_amount = float(flw_amount) if flw_amount is not None else 0.0
                 
                 # Cross-validate
                 if (
-                    float(flw_data.get('amount', 0)) >= float(transaction.amount) and
+                    flw_amount >= float(transaction.amount) and
                     flw_data.get('currency') == transaction.currency and
                     flw_data.get('status') == 'successful'
                 ):
@@ -210,6 +220,9 @@ class VerifyPaymentView(APIView):
                 
         except requests.RequestException:
             return Response({'error': 'Error connecting to payment provider'}, status=status.HTTP_503_SERVICE_UNAVAILABLE)
+        except Exception as e:
+            # Catch-all to prevent 500 errors and return a clean 400 instead
+            return Response({'error': f'An unexpected error occurred during verification'}, status=status.HTTP_400_BAD_REQUEST)
 
 
 @method_decorator(csrf_exempt, name='dispatch')
@@ -235,8 +248,11 @@ class FlutterwaveWebhookView(APIView):
                 transaction = PaymentTransaction.objects.get(tx_ref=tx_ref)
                 
                 if transaction.status != 'successful' and data.get('status') == 'successful':
+                    flw_amount = data.get('amount')
+                    flw_amount = float(flw_amount) if flw_amount is not None else 0.0
+                    
                     if (
-                        float(data.get('amount', 0)) >= float(transaction.amount) and
+                        flw_amount >= float(transaction.amount) and
                         data.get('currency') == transaction.currency
                     ):
                         transaction.status = 'successful'
@@ -254,6 +270,9 @@ class FlutterwaveWebhookView(APIView):
                         user.subscription_end_date = get_end_date_for_plan(transaction.plan)
                         user.save()
             except PaymentTransaction.DoesNotExist:
+                pass
+            except Exception as e:
+                # Catch any unexpected exceptions to avoid webhook retry loops on 500
                 pass
                 
         return Response(status=status.HTTP_200_OK)
