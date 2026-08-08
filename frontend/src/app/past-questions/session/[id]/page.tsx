@@ -11,6 +11,7 @@ import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { CheckCircle2, ChevronRight, ChevronLeft, Flag, Loader2, Clock, Check, Lock, Crown, Sparkles } from 'lucide-react';
 import { toast } from 'sonner';
+import { SubscriptionModal } from '@/components/subscription/SubscriptionModal';
 
 const FREE_QUESTION_LIMIT = 10;
 
@@ -384,56 +385,19 @@ export default function PastQuestionSessionPage() {
 
       </main>
 
-      {/* Paywall Overlay */}
-      {isPaywallActive && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
-          <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-8 text-center relative overflow-hidden">
-            {/* Decorative gradient top bar */}
-            <div className="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-yellow-400 via-orange-500 to-pink-500" />
-            
-            <div className="mx-auto w-16 h-16 rounded-full bg-gradient-to-br from-yellow-400 to-orange-500 flex items-center justify-center mb-5 shadow-lg">
-              <Crown className="w-8 h-8 text-white" />
-            </div>
-            
-            <h2 className="text-2xl font-bold text-gray-900 mb-2">Upgrade to Continue</h2>
-            <p className="text-gray-500 mb-6 leading-relaxed">
-              You&apos;ve completed your <span className="font-semibold text-gray-800">{FREE_QUESTION_LIMIT} free questions</span>. 
-              Subscribe to unlock all remaining questions and finish your exam.
-            </p>
-            
-            {/* Paused timer display */}
-            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-blue-50 border border-blue-100 text-blue-700 text-sm font-medium mb-6">
-              <Clock className="w-4 h-4" />
-              Timer paused at {formatTime(timeLeftSeconds)}
-            </div>
-            
-            <div className="space-y-3">
-              <Link href="/subscription">
-                <Button className="w-full py-4 rounded-xl bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600 text-white font-bold text-lg shadow-md transition-all">
-                  <Sparkles className="w-5 h-5 mr-2" />
-                  Upgrade Now
-                </Button>
-              </Link>
-              
-              <Button 
-                variant="ghost"
-                onClick={() => {
-                  setIsPaywallActive(false);
-                  // Go back to last free question
-                  setPastCurrentIndex(FREE_QUESTION_LIMIT - 1);
-                }}
-                className="w-full py-3 text-gray-500 hover:text-gray-700 text-sm"
-              >
-                Go back to question {FREE_QUESTION_LIMIT}
-              </Button>
-            </div>
-            
-            <p className="text-xs text-gray-400 mt-5">
-              Your progress is saved. After subscribing, come back to continue from where you left off.
-            </p>
-          </div>
-        </div>
-      )}
+      {/* Unified Subscription Modal */}
+      <SubscriptionModal 
+        isOpen={isPaywallActive}
+        onClose={() => {
+          setIsPaywallActive(false);
+          // Go back to last free question
+          setPastCurrentIndex(FREE_QUESTION_LIMIT - 1);
+        }}
+        onSuccess={(planName) => {
+          setIsPaywallActive(false);
+          // They stay exactly where they are, allowing them to answer the paywalled question
+        }}
+      />
     </div>
   );
 }

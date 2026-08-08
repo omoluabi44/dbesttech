@@ -18,6 +18,7 @@ import { FloatingClouds, FloatingSparkles } from '@/components/cartoon/FloatingE
 import { StarBurst, StarCounter, StarRating } from '@/components/cartoon/CartoonStars';
 import { SpeechBubble } from '@/components/cartoon/SpeechBubble';
 import { useSoundEffects } from '@/lib/hooks/useSoundEffects';
+import { SubscriptionModal } from '@/components/subscription/SubscriptionModal';
 
 export default function PracticeSessionPage() {
   const params = useParams();
@@ -465,38 +466,20 @@ export default function PracticeSessionPage() {
         </div>
       </Modal>
 
-      {/* Upgrade Prompt Modal */}
-      <Modal isOpen={showUpgradePrompt} onClose={() => router.push('/dashboard')} title="Upgrade to Continue!">
-        <div className="text-center p-6 relative overflow-hidden">
-          <motion.div
-            initial={{ scale: 0, rotate: -10 }}
-            animate={{ scale: 1, rotate: 0 }}
-            className="mx-auto mb-6 flex justify-center"
-          >
-            <CartoonFox mood="thinking" size="md" />
-          </motion.div>
-          <h3 className="text-2xl font-bold text-slate-800 mb-4">You've reached the limit for the Free plan!</h3>
-          <p className="text-slate-600 mb-8 font-medium">
-            Upgrade your plan to unlock more stages and continue your learning adventure.
-          </p>
-          <div className="flex flex-col gap-4">
-            <Button
-              variant="gameAction"
-              className="w-full py-4 text-xl"
-              onClick={() => router.push('/subscription')}
-            >
-              View Subscription Plans
-            </Button>
-            <Button
-              variant="secondary"
-              className="w-full py-4 font-bold text-lg"
-              onClick={() => router.push('/dashboard')}
-            >
-              Back to Dashboard
-            </Button>
-          </div>
-        </div>
-      </Modal>
+      {/* Unified Subscription Modal */}
+      <SubscriptionModal 
+        isOpen={showUpgradePrompt}
+        onClose={() => router.push('/dashboard')}
+        onSuccess={(planName) => {
+          setShowUpgradePrompt(false);
+          // Resume quiz exactly where they left off by bypassing the paywall
+          // We clear the requires_upgrade flag on the stageResult so they can hit "Next Level"
+          if (stageResult) {
+            setStageResult({ ...stageResult, requires_upgrade: false });
+            setShowInterstitial(true); // Bring them back to the stage complete interstitial
+          }
+        }}
+      />
     </div>
   );
 }
