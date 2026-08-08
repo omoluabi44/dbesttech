@@ -21,22 +21,23 @@ def _get_difficulty_description(difficulty: str) -> str:
     """Map difficulty to a description the AI can use to calibrate questions."""
     descriptions = {
         'easy': (
-            "Questions should be straightforward and test basic recall or simple application "
-            "of concepts. Use simple language. Most students at this level should be able to "
-            "answer correctly with basic preparation."
-        ),
-        'medium': (
             "Questions should require understanding and some analytical thinking. Include "
             "problems that test application of concepts, not just memorization. About 60-70% "
-            "of well-prepared students should answer correctly."
+            "of well-prepared students should answer correctly. (Note: These 'easy' questions should feel like standard 'medium' level questions)."
         ),
-        'hard': (
+        'medium': (
             "Questions should be challenging and require deeper analysis, multi-step reasoning, "
             "or creative problem solving. Include tricky distractors that test common "
-            "misconceptions. Only about 30-40% of students should answer correctly."
+            "misconceptions. Only about 30-40% of students should answer correctly. (Note: These 'medium' questions should feel like standard 'hard' level questions)."
+        ),
+        'hard': (
+            "Questions should be extremely difficult, highly complex, and require profound analytical thinking, "
+            "advanced multi-step reasoning, or exceptional problem-solving skills. The distractors must be incredibly tricky and plausible. "
+            "Only the top 5-10% of brilliant students should be able to answer correctly. (Note: These 'hard' questions should feel like 'expert' or 'very hard' level)."
         ),
     }
     return descriptions.get(difficulty, descriptions['medium'])
+
 
 
 def _get_curriculum_context(level_code: str) -> str:
