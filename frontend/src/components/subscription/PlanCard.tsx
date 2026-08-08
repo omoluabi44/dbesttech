@@ -19,55 +19,53 @@ export const PlanCard: React.FC<PlanCardProps> = ({
   const isFree = plan.price === 0;
 
   const cardStyle = plan.is_featured
-    ? 'bg-gradient-to-br from-indigo-500 to-purple-600 text-white shadow-xl'
-    : 'bg-white border-2 border-slate-100 text-slate-800 shadow-sm';
+    ? 'bg-gradient-to-br from-indigo-600 to-purple-700 text-white shadow-2xl border-0 ring-4 ring-indigo-500/30'
+    : 'bg-[var(--surface)] text-[var(--foreground)] border-2 border-[var(--surface-dark)] shadow-lg hover:border-indigo-400/50';
 
   const buttonStyle = plan.is_featured
-    ? 'bg-white text-indigo-600 hover:bg-slate-50'
-    : 'bg-blue-500 text-white hover:bg-blue-600';
+    ? 'bg-white text-indigo-700 hover:bg-slate-100 shadow-md'
+    : 'bg-indigo-600 text-white hover:bg-indigo-700 shadow-md';
 
   return (
     <motion.div
       whileHover={{ y: -8 }}
-      className={`relative p-8 rounded-3xl flex flex-col h-full ${cardStyle}`}
+      className={`relative p-8 rounded-3xl flex flex-col h-full transition-all duration-300 ${cardStyle}`}
     >
       {plan.is_featured && (
         <div className="absolute top-0 right-8 transform -translate-y-1/2">
-          <div className="bg-gradient-to-r from-amber-400 to-orange-500 text-white text-xs font-bold px-3 py-1 rounded-full flex items-center gap-1 shadow-md">
+          <div className="bg-gradient-to-r from-amber-400 to-orange-500 text-white text-xs font-black px-4 py-1.5 rounded-full flex items-center gap-1.5 shadow-lg uppercase tracking-wider">
             <Crown size={14} />
             MOST POPULAR
           </div>
         </div>
       )}
 
-      {plan.start_date && plan.end_date && (
-        <div className="absolute top-0 right-8 transform -translate-y-1/2">
-          <div className="bg-emerald-500 text-white text-xs font-bold px-3 py-1 rounded-full shadow-md mt-6">
-            Valid: {new Date(plan.start_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} - {new Date(plan.end_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
-          </div>
-        </div>
-      )}
-
       <div className="mb-6">
-        <h3 className="text-2xl font-bold mb-2 capitalize">{plan.display_name}</h3>
-        <div className="flex items-baseline gap-1">
+        <h3 className="text-2xl font-bold mb-2 capitalize tracking-tight">{plan.display_name}</h3>
+        <div className="flex items-baseline gap-1 mb-3">
           <span className="text-4xl font-extrabold">
             {plan.price > 0
               ? `₦${plan.price.toLocaleString()}`
               : 'Free'}
           </span>
-          {plan.price > 0 && <span className="opacity-80 font-medium">/month</span>}
+          {plan.price > 0 && <span className="opacity-80 font-medium text-sm">/month</span>}
         </div>
+        
+        {plan.start_date && plan.end_date && (
+          <div className={`inline-block text-xs font-bold px-3 py-1.5 rounded-lg shadow-sm border ${plan.is_featured ? 'bg-indigo-900/40 border-indigo-400/30 text-indigo-100' : 'bg-emerald-50 border-emerald-200 text-emerald-700'}`}>
+            📅 Valid: {new Date(plan.start_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} - {new Date(plan.end_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+          </div>
+        )}
       </div>
 
       <div className="flex-grow">
         <ul className="space-y-4 mb-8">
           {plan.features.map((feature, i) => (
             <li key={i} className="flex items-start gap-3">
-              <div className={`mt-0.5 rounded-full p-1 ${plan.is_featured ? 'bg-indigo-400/30' : 'bg-green-100'}`}>
-                <Check size={16} className={plan.is_featured ? 'text-white' : 'text-green-600'} />
+              <div className={`mt-0.5 rounded-full p-1.5 ${plan.is_featured ? 'bg-white/20' : 'bg-indigo-100'}`}>
+                <Check size={14} className={plan.is_featured ? 'text-white' : 'text-indigo-600'} />
               </div>
-              <span className={`text-sm font-medium ${plan.is_featured ? 'opacity-90' : 'text-slate-600'}`}>
+              <span className={`text-sm font-medium leading-snug ${plan.is_featured ? 'opacity-95' : 'text-slate-600 dark:text-slate-300'}`}>
                 {feature}
               </span>
             </li>
@@ -78,11 +76,13 @@ export const PlanCard: React.FC<PlanCardProps> = ({
       <button
         onClick={() => !isCurrentPlan && !isFree && onSelect(plan.name)}
         disabled={isCurrentPlan || isFree || isProcessing}
-        className={`w-full py-4 rounded-2xl font-bold text-lg flex justify-center items-center gap-2 transition-colors ${
+        className={`w-full py-4 rounded-2xl font-bold text-lg flex justify-center items-center gap-2 transition-all duration-200 ${
           isCurrentPlan
             ? plan.is_featured
-              ? 'bg-white/20 text-white cursor-default'
-              : 'bg-slate-200 text-slate-500 cursor-default'
+              ? 'bg-indigo-900/50 text-indigo-100 cursor-not-allowed border border-indigo-400/30'
+              : 'bg-emerald-50 text-emerald-600 cursor-not-allowed border-2 border-emerald-200'
+            : isFree
+            ? 'bg-[var(--surface-dark)] text-slate-500 cursor-not-allowed'
             : buttonStyle
         }`}
       >
@@ -92,7 +92,10 @@ export const PlanCard: React.FC<PlanCardProps> = ({
             Processing...
           </>
         ) : isCurrentPlan ? (
-          'Current Plan'
+          <>
+            <Check size={20} />
+            Current Plan
+          </>
         ) : isFree ? (
           'Free Plan'
         ) : (
