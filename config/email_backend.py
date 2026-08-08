@@ -28,17 +28,12 @@ class CeleryEmailBackend(BaseEmailBackend):
                 if html_message:
                     html_message = str(html_message)
 
-                # Ensure task is only queued after the DB transaction commits
-                # to prevent race conditions or missing records in worker
-                from django.db import transaction
-                transaction.on_commit(
-                    lambda s=subject, b=body, f=from_email, r=recipient_list, h=html_message: send_email_task.delay(
-                        subject=s,
-                        body=b,
-                        from_email=f,
-                        recipient_list=r,
-                        html_message=h,
-                    )
+                send_email_task.delay(
+                    subject=subject,
+                    body=body,
+                    from_email=from_email,
+                    recipient_list=recipient_list,
+                    html_message=html_message,
                 )
                 count += 1
             except Exception:

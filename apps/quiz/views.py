@@ -126,9 +126,8 @@ class PracticeSubmitStageView(views.APIView):
             session.completed_at = timezone.now()
             session.score_percentage = (session.correct_answers / max(1, session.total_questions)) * 100
         elif stage == 1 and request.user.subscription_plan == 'free':
-            session.status = 'completed'
-            session.completed_at = timezone.now()
-            session.score_percentage = (session.correct_answers / max(1, session.total_questions)) * 100
+            # Do not complete the session and do not increment current_stage.
+            # This allows the user to resume and submit this stage again after upgrading.
             requires_upgrade = True
         else:
             session.current_stage += 1
