@@ -179,8 +179,14 @@ export default function SubscriptionPage() {
           }
 
           toast.success('🎉 Subscription activated! Enjoy your new plan!');
-          // Clean up URL
-          window.history.replaceState({}, document.title, window.location.pathname);
+          // Redirect to returnUrl if provided
+          const returnUrl = params.get('returnUrl');
+          if (returnUrl) {
+            router.push(returnUrl);
+          } else {
+            // Clean up URL
+            window.history.replaceState({}, document.title, window.location.pathname);
+          }
           // Also refresh profile in background
           return refreshSubscriptionState();
         })
@@ -241,6 +247,13 @@ export default function SubscriptionPage() {
               endDate: verifiedEndDate,
             });
             toast.success('🎉 Subscription activated! Enjoy your new plan!');
+
+            // Redirect to returnUrl if provided
+            const params = new URLSearchParams(window.location.search);
+            const returnUrl = params.get('returnUrl');
+            if (returnUrl) {
+              router.push(returnUrl);
+            }
 
             // Refresh profile in the background
             refreshSubscriptionState();
@@ -327,10 +340,14 @@ export default function SubscriptionPage() {
                   </div>
 
                   <button
-                    onClick={() => router.push('/dashboard')}
+                    onClick={() => {
+                      const params = new URLSearchParams(window.location.search);
+                      const returnUrl = params.get('returnUrl');
+                      router.push(returnUrl || '/dashboard');
+                    }}
                     className="flex-shrink-0 bg-white text-emerald-700 font-bold px-6 py-3 rounded-xl hover:bg-emerald-50 transition-colors shadow-lg"
                   >
-                    Go to Dashboard
+                    Continue Learning
                   </button>
                 </div>
               </div>
