@@ -40,6 +40,14 @@ export const PlanCard: React.FC<PlanCardProps> = ({
         </div>
       )}
 
+      {plan.start_date && plan.end_date && (
+        <div className="absolute top-0 right-8 transform -translate-y-1/2">
+          <div className="bg-emerald-500 text-white text-xs font-bold px-3 py-1 rounded-full shadow-md mt-6">
+            Valid: {new Date(plan.start_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} - {new Date(plan.end_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+          </div>
+        </div>
+      )}
+
       <div className="mb-6">
         <h3 className="text-2xl font-bold mb-2 capitalize">{plan.display_name}</h3>
         <div className="flex items-baseline gap-1">

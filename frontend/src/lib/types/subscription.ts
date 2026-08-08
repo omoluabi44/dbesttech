@@ -5,7 +5,8 @@ export interface SubscriptionPlan {
   currency: string;
   features: string[];
   is_featured: boolean;
-  duration_days?: number;
+  start_date?: string;
+  end_date?: string;
 }
 
 export interface CurrentSubscription {

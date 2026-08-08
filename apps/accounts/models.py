@@ -66,6 +66,8 @@ class SubscriptionPlan(models.Model):
     is_featured = models.BooleanField(default=False)
     is_active = models.BooleanField(default=True)
     order = models.IntegerField(default=0)
+    start_date = models.DateField(null=True, blank=True)
+    end_date = models.DateField(null=True, blank=True)
 
     class Meta:
         verbose_name = 'Subscription Plan'

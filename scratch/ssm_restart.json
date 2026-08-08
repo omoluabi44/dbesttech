@@ -1,0 +1,5 @@
+{
+  "commands": [
+    "cd /app && sudo docker-compose -f docker-compose.backend.yml restart backend"
+  ]
+}

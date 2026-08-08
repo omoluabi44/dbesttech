@@ -17,6 +17,8 @@ interface SubscriptionPlan {
   is_featured: boolean;
   is_active: boolean;
   order: number;
+  start_date?: string;
+  end_date?: string;
 }
 
 export default function SubscriptionsAdminPage() {
@@ -37,6 +39,8 @@ export default function SubscriptionsAdminPage() {
     is_active: true,
     order: 0,
     features: '', // We'll manage features as a newline separated string in the UI
+    start_date: '',
+    end_date: '',
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -76,6 +80,8 @@ export default function SubscriptionsAdminPage() {
       is_active: plan.is_active,
       order: plan.order,
       features: (plan.features || []).join('\n'),
+      start_date: plan.start_date || '',
+      end_date: plan.end_date || '',
     });
     setIsModalOpen(true);
   };
@@ -206,6 +212,13 @@ export default function SubscriptionsAdminPage() {
                   <Input label="Price (NGN)" type="number" step="0.01" value={formData.price} onChange={e => setFormData({...formData, price: e.target.value})} required />
                   <Input label="Display Order (0 is first)" type="number" value={formData.order} onChange={e => setFormData({...formData, order: parseInt(e.target.value) || 0})} required />
                 </div>
+                
+                {formData.name === 'holiday-package' && (
+                  <div className="grid grid-cols-2 gap-4">
+                    <Input label="Start Date (Optional)" type="date" value={formData.start_date} onChange={e => setFormData({...formData, start_date: e.target.value})} />
+                    <Input label="End Date (Optional)" type="date" value={formData.end_date} onChange={e => setFormData({...formData, end_date: e.target.value})} />
+                  </div>
+                )}
                 
                 <div className="flex gap-6 pt-2">
                   {formData.name === 'holiday-package' && (

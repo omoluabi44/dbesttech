@@ -18,6 +18,17 @@ from .models import PaymentTransaction
 
 def get_end_date_for_plan(plan_name):
     """Calculate the expiration date based on the plan's name."""
+    from .models import SubscriptionPlan
+    try:
+        plan = SubscriptionPlan.objects.get(name=plan_name)
+        if plan.end_date:
+            from django.utils import timezone
+            import datetime
+            # Convert date to datetime at midnight of that date
+            return timezone.make_aware(datetime.datetime.combine(plan.end_date, datetime.time.max))
+    except SubscriptionPlan.DoesNotExist:
+        pass
+        
     if plan_name == 'monthly':
         return timezone.now() + timedelta(days=30)
     elif plan_name == 'quarterly':
@@ -26,7 +37,7 @@ def get_end_date_for_plan(plan_name):
         return timezone.now() + timedelta(days=180)
     elif plan_name == 'yearly':
         return timezone.now() + timedelta(days=365)
-    # Holiday package and any others default to 30 days or handle differently if needed
+    # Default to 30 days
     return timezone.now() + timedelta(days=30)
 
 class SubscriptionPlansView(APIView):
@@ -45,6 +56,8 @@ class SubscriptionPlansView(APIView):
                 'currency': p.currency,
                 'features': p.features,
                 'is_featured': p.is_featured,
+                'start_date': p.start_date.isoformat() if p.start_date else None,
+                'end_date': p.end_date.isoformat() if p.end_date else None,
             })
         return Response(data, status=status.HTTP_200_OK)
 
