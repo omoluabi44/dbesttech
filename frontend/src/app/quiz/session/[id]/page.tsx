@@ -97,11 +97,13 @@ export default function PracticeSessionPage() {
   const handleNext = () => {
     playWhoosh();
     nextQuestion();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   const handlePrev = () => {
     playWhoosh();
     prevQuestion();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   const handleSubmitStage = async (isAutoSubmit = false) => {
@@ -368,7 +370,7 @@ export default function PracticeSessionPage() {
         </AnimatePresence>
 
         {/* Navigation Controls */}
-        <div className="flex flex-col sm:flex-row justify-between items-center mt-10 gap-4 sm:gap-0">
+        <div className="sticky bottom-4 z-20 flex flex-col sm:flex-row justify-between items-center mt-10 gap-4 sm:gap-0 bg-white/95 backdrop-blur-sm p-4 rounded-3xl border-4 border-sky-200 shadow-xl">
           <Button
             variant="cartoon"
             onClick={handlePrev}

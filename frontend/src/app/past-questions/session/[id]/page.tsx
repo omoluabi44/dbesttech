@@ -143,10 +143,12 @@ export default function PastQuestionSessionPage() {
       return;
     }
     nextQuestion();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   const handlePrev = () => {
     prevQuestion();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   const handleQuestionGridClick = (idx: number) => {
@@ -155,6 +157,7 @@ export default function PastQuestionSessionPage() {
       return;
     }
     setPastCurrentIndex(idx);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   const formatTime = (seconds: number) => {
@@ -293,7 +296,7 @@ export default function PastQuestionSessionPage() {
           </Card>
 
           {/* Navigation Controls */}
-          <div className="flex justify-between items-center mt-6">
+          <div className="sticky bottom-4 z-20 flex justify-between items-center mt-6 bg-white/95 backdrop-blur-sm p-4 rounded-xl border border-gray-200 shadow-[0_-4px_20px_-10px_rgba(0,0,0,0.1)]">
             <Button
               variant="ghost"
               onClick={handlePrev}
