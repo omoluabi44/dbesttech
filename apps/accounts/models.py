@@ -148,3 +148,30 @@ class PaymentTransaction(models.Model):
     
     def __str__(self):
         return f"{self.tx_ref} - {self.status} - ₦{self.amount}"
+
+
+class WebhookLog(models.Model):
+    """Log of every webhook payload received from the payment gateway."""
+    STATUS_CHOICES = [
+        ('processed', 'Processed'),
+        ('ignored', 'Ignored'),
+        ('error', 'Error'),
+    ]
+    
+    event = models.CharField(max_length=100)
+    payload = models.JSONField()
+    tx_ref = models.CharField(max_length=100, blank=True, default='')
+    flw_transaction_id = models.CharField(max_length=100, blank=True, default='')
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='processed')
+    discrepancy = models.BooleanField(default=False)
+    discrepancy_detail = models.TextField(blank=True, default='')
+    ip_address = models.GenericIPAddressField(null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    
+    class Meta:
+        verbose_name = 'Webhook Log'
+        verbose_name_plural = 'Webhook Logs'
+        ordering = ['-created_at']
+    
+    def __str__(self):
+        return f"{self.event} - {self.tx_ref} - {self.created_at}"

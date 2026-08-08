@@ -5,6 +5,7 @@ from dj_rest_auth.views import PasswordResetView, PasswordResetConfirmView
 from . import views
 from . import admin_views
 from . import payment_views
+from . import admin_payment_views
 
 router = DefaultRouter()
 router.register(r'schools', admin_views.SchoolViewSet, basename='school')
@@ -32,6 +33,13 @@ urlpatterns = [
     path('subscription/initialize/', payment_views.InitializePaymentView.as_view(), name='initialize-payment'),
     path('subscription/verify/', payment_views.VerifyPaymentView.as_view(), name='verify-payment'),
     path('subscription/webhook/', payment_views.FlutterwaveWebhookView.as_view(), name='payment-webhook'),
+    
+    # Admin Payment Dashboard
+    path('admin-payments/metrics/', admin_payment_views.PaymentMetricsView.as_view(), name='admin-payment-metrics'),
+    path('admin-payments/transactions/', admin_payment_views.PaymentTransactionListView.as_view(), name='admin-payment-transactions'),
+    path('admin-payments/transactions/<str:tx_ref>/requery/', admin_payment_views.PaymentRequeryView.as_view(), name='admin-payment-requery'),
+    path('admin-payments/transactions/<str:tx_ref>/refund/', admin_payment_views.PaymentRefundView.as_view(), name='admin-payment-refund'),
+    path('admin-payments/webhooks/', admin_payment_views.WebhookLogListView.as_view(), name='admin-webhook-logs'),
     
     path('', include(router.urls)),
 ]

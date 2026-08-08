@@ -14,7 +14,7 @@ from rest_framework.response import Response
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework import status
 
-from .models import PaymentTransaction
+from .models import PaymentTransaction, WebhookLog
 
 
 def get_end_date_for_plan(plan_name):
@@ -264,19 +264,36 @@ class FlutterwaveWebhookView(APIView):
         
         if not signature or signature != secret_hash:
             return Response({'error': 'Invalid signature'}, status=status.HTTP_401_UNAUTHORIZED)
-            
+        
         event_data = request.data
-        event_type = event_data.get('event')
+        event_type = event_data.get('event', '')
+        data = event_data.get('data', {})
+        tx_ref = data.get('tx_ref', '')
+        flw_id = str(data.get('id', ''))
+        
+        # Get client IP for logging
+        x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
+        ip = x_forwarded_for.split(',')[0] if x_forwarded_for else request.META.get('REMOTE_ADDR')
+        
+        # Defaults for webhook log
+        log_status = 'processed'
+        discrepancy = False
+        discrepancy_detail = ''
         
         if event_type == 'charge.completed':
-            data = event_data.get('data', {})
-            tx_ref = data.get('tx_ref')
-            flw_ref = data.get('flw_ref')
-            
             try:
                 transaction = PaymentTransaction.objects.get(tx_ref=tx_ref)
                 
-                if transaction.status != 'successful' and data.get('status') == 'successful':
+                gateway_status = data.get('status', '')
+                
+                # Discrepancy detection: gateway says successful but our record is not pending
+                if gateway_status == 'successful' and transaction.status == 'successful':
+                    log_status = 'ignored'
+                elif gateway_status == 'successful' and transaction.status == 'failed':
+                    discrepancy = True
+                    discrepancy_detail = f'Gateway reports successful but app status is failed for {tx_ref}'
+                
+                if transaction.status != 'successful' and gateway_status == 'successful':
                     flw_amount = data.get('amount')
                     if flw_amount is None:
                         flw_amount = 0
@@ -300,10 +317,30 @@ class FlutterwaveWebhookView(APIView):
                         user.subscription_start_date = timezone.now()
                         user.subscription_end_date = get_end_date_for_plan(transaction.plan)
                         user.save()
+                    else:
+                        discrepancy = True
+                        discrepancy_detail = f'Amount/currency mismatch: gateway={flw_amount} {data.get("currency")}, app={transaction.amount} {transaction.currency}'
+                        
             except PaymentTransaction.DoesNotExist:
-                pass
+                log_status = 'error'
+                discrepancy = True
+                discrepancy_detail = f'No matching transaction found for tx_ref: {tx_ref}'
             except Exception as e:
-                # Catch any unexpected exceptions to avoid webhook retry loops on 500
-                pass
-                
+                log_status = 'error'
+                discrepancy_detail = str(e)
+        else:
+            log_status = 'ignored'
+        
+        # Always log the webhook
+        WebhookLog.objects.create(
+            event=event_type,
+            payload=event_data,
+            tx_ref=tx_ref,
+            flw_transaction_id=flw_id,
+            status=log_status,
+            discrepancy=discrepancy,
+            discrepancy_detail=discrepancy_detail,
+            ip_address=ip,
+        )
+        
         return Response(status=status.HTTP_200_OK)
