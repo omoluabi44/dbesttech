@@ -124,15 +124,15 @@ export default function SubscriptionsAdminPage() {
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse" aria-label="Plans Table">
             <thead>
-              <tr className="bg-slate-50 border-b border-slate-200">
-                <th scope="col" className="p-4 font-semibold text-slate-700">Plan Name</th>
-                <th scope="col" className="p-4 font-semibold text-slate-700">Price</th>
-                <th scope="col" className="p-4 font-semibold text-slate-700 text-center">Active</th>
-                <th scope="col" className="p-4 font-semibold text-slate-700 text-center">Featured</th>
-                <th scope="col" className="p-4 font-semibold text-slate-700 text-right">Actions</th>
+              <tr className="bg-[var(--surface-light)] border-b border-[var(--surface-dark)]">
+                <th scope="col" className="p-4 font-medium text-gray-400">Plan Name</th>
+                <th scope="col" className="p-4 font-medium text-gray-400">Price</th>
+                <th scope="col" className="p-4 font-medium text-gray-400 text-center">Active</th>
+                <th scope="col" className="p-4 font-medium text-gray-400 text-center">Featured</th>
+                <th scope="col" className="p-4 font-medium text-gray-400 text-right">Actions</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-100">
+            <tbody className="divide-y divide-[var(--surface-dark)]">
               {loading ? (
                 <tr>
                   <td colSpan={6} className="p-8 text-center text-gray-500">
@@ -179,7 +179,7 @@ export default function SubscriptionsAdminPage() {
                     </td>
                     <td className="p-4 text-right">
                       <div className="flex justify-end gap-2">
-                        <button onClick={() => openEditModal(plan)} className="p-2 text-slate-400 hover:text-slate-700 transition-colors">
+                        <button onClick={() => openEditModal(plan)} className="p-2 text-gray-400 hover:text-white transition-colors">
                           <Edit2 size={18} />
                         </button>
                       </div>
@@ -197,8 +197,8 @@ export default function SubscriptionsAdminPage() {
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 overflow-y-auto">
           <div className="bg-[var(--surface)] border border-[var(--surface-dark)] w-full max-w-2xl rounded-2xl shadow-2xl overflow-hidden my-8">
             <div className="flex justify-between items-center p-6 border-b border-[var(--surface-dark)]">
-              <h2 className="text-xl font-bold text-slate-800">Edit Plan</h2>
-              <button onClick={() => setIsModalOpen(false)} className="text-slate-400 hover:text-slate-600 transition-colors">
+              <h2 className="text-xl font-bold text-foreground">Edit Plan</h2>
+              <button onClick={() => setIsModalOpen(false)} className="text-gray-400 hover:text-white transition-colors">
                 <X size={20} />
               </button>
             </div>
@@ -223,21 +223,21 @@ export default function SubscriptionsAdminPage() {
                 <div className="flex gap-6 pt-2">
                   {formData.name === 'holiday-package' && (
                     <label className="flex items-center gap-2 cursor-pointer">
-                      <input type="checkbox" checked={formData.is_active} onChange={e => setFormData({...formData, is_active: e.target.checked})} className="rounded bg-slate-50 border-slate-300 text-primary-500 focus:ring-primary-500" />
-                      <span className="text-sm font-medium text-slate-700">Active (Visible to users)</span>
+                      <input type="checkbox" checked={formData.is_active} onChange={e => setFormData({...formData, is_active: e.target.checked})} className="rounded bg-[var(--surface-dark)] border-[var(--surface-dark)] text-primary-500 focus:ring-primary-500" />
+                      <span className="text-sm text-foreground">Active (Visible to users)</span>
                     </label>
                   )}
                   <label className="flex items-center gap-2 cursor-pointer">
-                    <input type="checkbox" checked={formData.is_featured} onChange={e => setFormData({...formData, is_featured: e.target.checked})} className="rounded bg-slate-50 border-slate-300 text-primary-500 focus:ring-primary-500" />
-                    <span className="text-sm font-medium text-slate-700">Featured (Highlight on frontend)</span>
+                    <input type="checkbox" checked={formData.is_featured} onChange={e => setFormData({...formData, is_featured: e.target.checked})} className="rounded bg-[var(--surface-dark)] border-[var(--surface-dark)] text-primary-500 focus:ring-primary-500" />
+                    <span className="text-sm text-foreground">Featured (Highlight on frontend)</span>
                   </label>
                 </div>
 
                 <div>
-                  <label className="text-sm font-medium text-slate-700 block mb-1.5">Features (One per line)</label>
+                  <label className="text-sm font-medium text-slate-300 block mb-1.5">Features (One per line)</label>
                   <textarea
                     required
-                    className="w-full bg-slate-50 border border-slate-200 text-slate-800 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block p-2.5 min-h-[100px]"
+                    className="w-full bg-[var(--surface-light)] border border-[var(--surface-dark)] text-foreground text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block p-2.5 min-h-[100px]"
                     value={formData.features}
                     onChange={e => setFormData({...formData, features: e.target.value})}
                     placeholder="Access to all subjects\nDetailed explanations\nPriority support"
