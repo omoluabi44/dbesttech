@@ -100,6 +100,14 @@ class InitializePaymentView(APIView):
         except SubscriptionPlan.DoesNotExist:
             return Response({'error': 'Invalid plan'}, status=status.HTTP_400_BAD_REQUEST)
             
+        # Prevent purchasing an expired plan
+        if plan_details.end_date:
+            import datetime
+            from django.utils import timezone
+            plan_expiration = timezone.make_aware(datetime.datetime.combine(plan_details.end_date, datetime.time.max))
+            if plan_expiration < timezone.now():
+                return Response({'error': 'This plan has already expired and cannot be purchased'}, status=status.HTTP_400_BAD_REQUEST)
+            
         tx_ref = f"dbestquiz_{request.user.id}_{plan}_{uuid4().hex[:8]}"
         
         # Get client IP
