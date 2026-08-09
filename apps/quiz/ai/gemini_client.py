@@ -173,6 +173,11 @@ class GeminiQuizClient:
                 return []
 
             validated = self._validate_questions(raw_questions)
+            
+            # Enforce the requested limit strictly (LLMs sometimes over-generate)
+            if len(validated) > num_questions:
+                validated = validated[:num_questions]
+                
             logger.info(
                 f"Generated {len(validated)}/{len(raw_questions)} valid questions "
                 f"(requested {num_questions})"
