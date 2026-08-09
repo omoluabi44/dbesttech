@@ -1,21 +1,11 @@
-output "backend_instance_id" {
-  description = "The instance ID of the backend EC2"
+output "server_instance_id" {
+  description = "The instance ID of the EC2 server"
   value       = aws_instance.backend.id
 }
 
-output "frontend_instance_id" {
-  description = "The instance ID of the frontend EC2"
-  value       = aws_instance.frontend.id
-}
-
-output "backend_public_ip" {
-  description = "The public IP of the backend EC2 (Elastic IP)"
+output "server_public_ip" {
+  description = "The public IP of the EC2 server (Elastic IP)"
   value       = aws_eip.backend_eip.public_ip
-}
-
-output "frontend_public_ip" {
-  description = "The public IP of the frontend EC2 (Elastic IP)"
-  value       = aws_eip.frontend_eip.public_ip
 }
 
 output "rds_endpoint" {

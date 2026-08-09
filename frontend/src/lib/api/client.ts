@@ -1,15 +1,11 @@
 import axios from 'axios';
 
 const getBaseUrl = () => {
-  if (process.env.NEXT_PUBLIC_API_URL) {
-    return process.env.NEXT_PUBLIC_API_URL;
-  }
   if (typeof window === 'undefined') {
-    // Server-side rendering (Node.js) requires absolute URLs. 
-    // It can talk directly to the backend container over the internal Docker network.
-    return 'http://backend:8000/api';
+    // SSR: talk to backend container directly via Docker internal network
+    return 'http://django_backend:8000/api';
   }
-  // Client-side rendering (Browser) can use relative URLs since Nginx proxies /api to the backend.
+  // CSR: relative URL, Nginx proxies /api/ to backend
   return '/api';
 };
 

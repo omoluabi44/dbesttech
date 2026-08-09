@@ -34,73 +34,39 @@ jobs:
           file: ./frontend/Dockerfile
           push: true
           tags: omoluabi44/primary-secondary-frontend:latest
-          build-args: |
-            NEXT_PUBLIC_API_URL=https://api.dbestquiz.com/api
 
-  deploy-backend:
-    name: Deploy Backend to EC2
+  deploy:
+    name: Deploy to Single EC2
     needs: build-and-push
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Code
         uses: actions/checkout@v3
 
-      - name: Copy docker-compose to Backend
+      - name: Copy docker-compose and nginx config to EC2
         uses: appleboy/scp-action@v0.1.7
         with:
           host: ${{ secrets.BACKEND_EC2_IP }}
           username: ec2-user
           key: ${{ secrets.EC2_SSH_KEY }}
-          source: "docker-compose.backend.yml"
-          target: "/home/ec2-user"
+          source: "docker-compose.prod.yml,nginx/"
+          target: "/home/ec2-user/project"
 
-      - name: SSH and Deploy Backend
+      - name: SSH and Deploy
         uses: appleboy/ssh-action@v1.0.0
         with:
           host: ${{ secrets.BACKEND_EC2_IP }}
           username: ec2-user
           key: ${{ secrets.EC2_SSH_KEY }}
           script: |
-            sudo cp /home/ec2-user/docker-compose.backend.yml /app/
-            cd /app
+            cd /home/ec2-user/project
             sudo echo "${{ secrets.BACKEND_ENV_FILE }}" > .env
-            sudo docker-compose -f docker-compose.backend.yml down
+            sudo docker-compose -f docker-compose.prod.yml down
             sudo docker system prune -af --volumes
-            sudo docker-compose -f docker-compose.backend.yml pull
-            sudo docker-compose -f docker-compose.backend.yml up -d
+            sudo docker-compose -f docker-compose.prod.yml pull
+            sudo docker-compose -f docker-compose.prod.yml up -d
             
-            echo "Waiting for backend to start..."
+            echo "Waiting for services to start..."
             sleep 10
-            sudo docker-compose -f docker-compose.backend.yml exec -T backend python manage.py collectstatic --noinput || true
-            sudo docker-compose -f docker-compose.backend.yml exec -T backend python manage.py migrate --noinput || true
-
-  deploy-frontend:
-    name: Deploy Frontend to EC2
-    needs: build-and-push
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout Code
-        uses: actions/checkout@v3
-
-      - name: Copy docker-compose to Frontend
-        uses: appleboy/scp-action@v0.1.7
-        with:
-          host: ${{ secrets.FRONTEND_EC2_IP }}
-          username: ec2-user
-          key: ${{ secrets.EC2_SSH_KEY }}
-          source: "docker-compose.frontend.yml"
-          target: "/home/ec2-user"
-
-      - name: SSH and Deploy Frontend
-        uses: appleboy/ssh-action@v1.0.0
-        with:
-          host: ${{ secrets.FRONTEND_EC2_IP }}
-          username: ec2-user
-          key: ${{ secrets.EC2_SSH_KEY }}
-          script: |
-            sudo cp /home/ec2-user/docker-compose.frontend.yml /app/
-            cd /app
-            sudo docker-compose -f docker-compose.frontend.yml down
-            sudo docker system prune -af --volumes
-            sudo docker-compose -f docker-compose.frontend.yml pull
-            sudo docker-compose -f docker-compose.frontend.yml up -d
+            sudo docker-compose -f docker-compose.prod.yml exec -T backend python manage.py collectstatic --noinput || true
+            sudo docker-compose -f docker-compose.prod.yml exec -T backend python manage.py migrate --noinput || true

@@ -13,6 +13,14 @@ resource "aws_security_group" "ec2" {
   }
 
   ingress {
+    description = "HTTPS from anywhere"
+    from_port   = 443
+    to_port     = 443
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  ingress {
     description = "SSH from anywhere"
     from_port   = 22
     to_port     = 22
@@ -117,7 +125,7 @@ data "aws_ami" "amazon_linux_2023" {
 # --- Backend EC2 Instance ---
 resource "aws_instance" "backend" {
   ami                         = data.aws_ami.amazon_linux_2023.id
-  instance_type               = "t3.micro"
+  instance_type               = "t3.small"
   subnet_id                   = aws_subnet.public[0].id
   vpc_security_group_ids      = [aws_security_group.ec2.id]
   iam_instance_profile        = aws_iam_instance_profile.ec2_profile.name
@@ -128,11 +136,11 @@ resource "aws_instance" "backend" {
     #!/bin/bash
     set -e
 
-    # Install Docker and Nginx
+    # Install Docker and Git
     dnf update -y
-    dnf install -y docker nginx
-    systemctl start docker nginx
-    systemctl enable docker nginx
+    dnf install -y docker git
+    systemctl start docker
+    systemctl enable docker
     usermod -a -G docker ec2-user
 
     # Install Docker Compose
@@ -141,45 +149,8 @@ resource "aws_instance" "backend" {
     ln -sf /usr/local/bin/docker-compose /usr/bin/docker-compose
 
     # Create app directory
-    mkdir -p /app
-
-    # Write Nginx config
-    cat <<'INNER_EOF' > /etc/nginx/nginx.conf
-user nginx;
-worker_processes auto;
-error_log /var/log/nginx/error.log notice;
-pid /run/nginx.pid;
-
-events {
-    worker_connections 1024;
-}
-
-http {
-    include /etc/nginx/mime.types;
-    default_type application/octet-stream;
-    
-    server {
-        listen 80;
-        server_name _;
-        client_max_body_size 10M;
-
-        location / {
-            proxy_pass http://localhost:8000;
-            proxy_set_header Host $host;
-            proxy_set_header X-Real-IP $remote_addr;
-            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-            proxy_set_header X-Forwarded-Proto $scheme;
-        }
-
-        location /static/ {
-            proxy_pass http://localhost:8000;
-            proxy_set_header Host $host;
-        }
-    }
-}
-INNER_EOF
-
-    systemctl reload nginx
+    mkdir -p /home/ec2-user/project
+    chown -R ec2-user:ec2-user /home/ec2-user/project
   EOF
   )
 
@@ -193,75 +164,3 @@ resource "aws_eip" "backend_eip" {
   domain   = "vpc"
 }
 
-# --- Frontend EC2 Instance ---
-resource "aws_instance" "frontend" {
-  ami                         = data.aws_ami.amazon_linux_2023.id
-  instance_type               = "t3.micro"
-  subnet_id                   = aws_subnet.public[1].id
-  vpc_security_group_ids      = [aws_security_group.ec2.id]
-  iam_instance_profile        = aws_iam_instance_profile.ec2_profile.name
-  associate_public_ip_address = true
-  key_name                    = aws_key_pair.ssh_key.key_name
-
-  user_data = base64encode(<<-EOF
-    #!/bin/bash
-    set -e
-
-    # Install Docker and Nginx
-    dnf update -y
-    dnf install -y docker nginx
-    systemctl start docker nginx
-    systemctl enable docker nginx
-    usermod -a -G docker ec2-user
-
-    # Install Docker Compose
-    curl -L "https://github.com/docker/compose/releases/latest/download/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
-    chmod +x /usr/local/bin/docker-compose
-    ln -sf /usr/local/bin/docker-compose /usr/bin/docker-compose
-
-    # Create app directory
-    mkdir -p /app
-
-    # Write Nginx config
-    cat <<'INNER_EOF' > /etc/nginx/nginx.conf
-user nginx;
-worker_processes auto;
-error_log /var/log/nginx/error.log notice;
-pid /run/nginx.pid;
-
-events {
-    worker_connections 1024;
-}
-
-http {
-    include /etc/nginx/mime.types;
-    default_type application/octet-stream;
-    
-    server {
-        listen 80;
-        server_name _;
-
-        location / {
-            proxy_pass http://localhost:3000;
-            proxy_set_header Host $host;
-            proxy_set_header X-Real-IP $remote_addr;
-            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-            proxy_set_header X-Forwarded-Proto $scheme;
-        }
-    }
-}
-INNER_EOF
-
-    systemctl reload nginx
-  EOF
-  )
-
-  tags = {
-    Name = "${var.project_name}-frontend"
-  }
-}
-
-resource "aws_eip" "frontend_eip" {
-  instance = aws_instance.frontend.id
-  domain   = "vpc"
-}

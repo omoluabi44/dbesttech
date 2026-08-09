@@ -1,0 +1,87 @@
+services:
+  redis:
+    image: redis:7-alpine
+    container_name: redis
+    restart: always
+    networks:
+      - app-network
+
+  backend:
+    image: omoluabi44/primary-secondary-backend:latest
+    container_name: django_backend
+    restart: always
+    env_file:
+      - .env
+    environment:
+      - DJANGO_SETTINGS_MODULE=config.settings.production
+      - GOOGLE_APPLICATION_CREDENTIALS=/app/secrets/gcp-key.json
+    volumes:
+      - ./gcp-key.json:/app/secrets/gcp-key.json:ro
+      - media_volume:/app/media
+    depends_on:
+      - redis
+    networks:
+      - app-network
+
+  celery_worker:
+    image: omoluabi44/primary-secondary-backend:latest
+    container_name: celery_worker
+    restart: always
+    env_file:
+      - .env
+    environment:
+      - DJANGO_SETTINGS_MODULE=config.settings.production
+      - GOOGLE_APPLICATION_CREDENTIALS=/app/secrets/gcp-key.json
+    volumes:
+      - ./gcp-key.json:/app/secrets/gcp-key.json:ro
+      - media_volume:/app/media
+    depends_on:
+      - redis
+    command: celery -A config worker --loglevel=info --concurrency=2
+    networks:
+      - app-network
+
+  frontend:
+    image: omoluabi44/primary-secondary-frontend:latest
+    container_name: nextjs_frontend
+    restart: always
+    environment:
+      - NODE_ENV=production
+    depends_on:
+      - backend
+    networks:
+      - app-network
+
+  nginx:
+    image: nginx:alpine
+    container_name: nginx_proxy
+    restart: always
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/default.conf:/etc/nginx/conf.d/default.conf:ro
+      - certbot_conf:/etc/letsencrypt
+      - certbot_www:/var/www/certbot
+    depends_on:
+      - frontend
+      - backend
+    networks:
+      - app-network
+
+  certbot:
+    image: certbot/certbot
+    container_name: certbot
+    volumes:
+      - certbot_conf:/etc/letsencrypt
+      - certbot_www:/var/www/certbot
+    entrypoint: "/bin/sh -c 'trap exit TERM; while :; do certbot renew; sleep 12h & wait $${!}; done;'"
+
+networks:
+  app-network:
+    driver: bridge
+
+volumes:
+  media_volume:
+  certbot_conf:
+  certbot_www:
