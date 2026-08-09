@@ -154,7 +154,7 @@ class PracticeSession(models.Model):
     status = models.CharField(max_length=15, choices=QUIZ_STATUS_CHOICES, default='in_progress')
     
     current_stage = models.IntegerField(default=1)
-    total_questions = models.PositiveIntegerField(default=50)
+    total_questions = models.PositiveIntegerField(default=100)
     correct_answers = models.PositiveIntegerField(default=0)
     score_percentage = models.DecimalField(max_digits=5, decimal_places=2, default=0)
     
@@ -163,6 +163,11 @@ class PracticeSession(models.Model):
     stage_3_score = models.IntegerField(null=True, blank=True)
     stage_4_score = models.IntegerField(null=True, blank=True)
     stage_5_score = models.IntegerField(null=True, blank=True)
+    stage_6_score = models.IntegerField(null=True, blank=True)
+    stage_7_score = models.IntegerField(null=True, blank=True)
+    stage_8_score = models.IntegerField(null=True, blank=True)
+    stage_9_score = models.IntegerField(null=True, blank=True)
+    stage_10_score = models.IntegerField(null=True, blank=True)
     
     started_at = models.DateTimeField(auto_now_add=True)
     completed_at = models.DateTimeField(null=True, blank=True)

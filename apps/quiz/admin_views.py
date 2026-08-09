@@ -57,7 +57,7 @@ class AIGenerateQuizView(views.APIView):
         if not all([subject_id, level]):
             return Response({"error": "subject_id and level are required."}, status=status.HTTP_400_BAD_REQUEST)
 
-        # Enforce maximum 50 questions limit per subject, level, and difficulty
+        # Enforce maximum 100 questions limit per subject, level, and difficulty
         existing_count = Quiz.objects.filter(
             subject_id=subject_id, 
             level=level, 
@@ -65,10 +65,10 @@ class AIGenerateQuizView(views.APIView):
             is_practice=True
         ).count()
         
-        if existing_count + num_questions > 50:
-            excess = (existing_count + num_questions) - 50
+        if existing_count + num_questions > 100:
+            excess = (existing_count + num_questions) - 100
             return Response({
-                "error": f"Maximum limit of 50 questions. You currently have {existing_count} questions for this configuration. Please delete at least {excess} questions before generating {num_questions} new ones."
+                "error": f"Maximum limit of 100 questions. You currently have {existing_count} questions for this configuration. Please delete at least {excess} questions before generating {num_questions} new ones."
             }, status=status.HTTP_400_BAD_REQUEST)
 
         try:
@@ -142,7 +142,7 @@ class AIBulkSaveQuizView(views.APIView):
         if not questions_data or not subject_id or not level:
             return Response({"error": "questions, subject_id, and level are required."}, status=status.HTTP_400_BAD_REQUEST)
 
-        # Enforce maximum 50 questions limit per subject, level, and difficulty
+        # Enforce maximum 100 questions limit per subject, level, and difficulty
         existing_count = Quiz.objects.filter(
             subject_id=subject_id, 
             level=level, 
@@ -151,10 +151,10 @@ class AIBulkSaveQuizView(views.APIView):
         ).count()
         num_questions = len(questions_data)
         
-        if existing_count + num_questions > 50:
-            excess = (existing_count + num_questions) - 50
+        if existing_count + num_questions > 100:
+            excess = (existing_count + num_questions) - 100
             return Response({
-                "error": f"Maximum limit of 50 questions. You currently have {existing_count} questions for this configuration. Cannot save {num_questions} new ones."
+                "error": f"Maximum limit of 100 questions. You currently have {existing_count} questions for this configuration. Cannot save {num_questions} new ones."
             }, status=status.HTTP_400_BAD_REQUEST)
 
         try:
