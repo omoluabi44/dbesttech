@@ -60,7 +60,6 @@ jobs:
           key: ${{ secrets.EC2_SSH_KEY }}
           script: |
             cd /home/ec2-user/project
-            sudo echo "${{ secrets.BACKEND_ENV_FILE }}" > .env
             sudo docker-compose -f docker-compose.prod.yml down
             sudo docker system prune -af --volumes
             sudo docker-compose -f docker-compose.prod.yml pull
