@@ -92,7 +92,8 @@ export default function PastQuestionSessionPage() {
       await submitPastQuestionAnswers(sessionId, answersData as any);
       return await completePastQuestion(sessionId);
     },
-    onSuccess: () => {
+    onSuccess: (completedSession) => {
+      useQuizStore.setState({ pastSession: completedSession });
       toast.success('Exam submitted successfully!');
       router.push(`/past-questions/results/${sessionId}`);
     },

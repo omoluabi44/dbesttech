@@ -9,8 +9,10 @@ from apps.performance.models import PerformanceSummary, WeeklyProgress, Strength
 
 @receiver(post_save, sender=PracticeSession)
 def handle_practice_session_completion(sender, instance, created, **kwargs):
-    if instance.status == 'completed' and instance.completed_at:
-        _update_performance_metrics(instance)
+    if instance.status in ['completed', 'abandoned'] and instance.completed_at:
+        # Only process if they actually submitted answers
+        if instance.answers.filter(stage_submitted__gt=0).exists():
+            _update_performance_metrics(instance)
 
 @receiver(post_save, sender=PastQuestionSession)
 def handle_past_question_session_completion(sender, instance, created, **kwargs):

@@ -170,7 +170,16 @@ class PracticeResultsView(views.APIView):
         if session.status == 'in_progress':
             session.status = 'abandoned'
             session.completed_at = timezone.now()
-            session.score_percentage = (session.correct_answers / max(1, session.total_questions)) * 100
+            
+            # For abandoned sessions (like free users hitting paywall), 
+            # only count the questions they actually submitted for the score.
+            attempted = session.answers.filter(stage_submitted__gt=0).count()
+            if attempted > 0:
+                session.total_questions = attempted
+                session.score_percentage = (session.correct_answers / attempted) * 100
+            else:
+                session.score_percentage = 0
+            
             session.save()
             
         # Get user's answers and correct answers for review
