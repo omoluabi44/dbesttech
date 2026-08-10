@@ -135,7 +135,6 @@ AUTHENTICATION_BACKENDS = [
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
         'rest_framework.authentication.TokenAuthentication',
-        'rest_framework.authentication.SessionAuthentication',
     ],
     'DEFAULT_PERMISSION_CLASSES': [
         'rest_framework.permissions.IsAuthenticated',
@@ -180,7 +179,7 @@ SOCIALACCOUNT_PROVIDERS = {
 # dj-rest-auth settings
 REST_AUTH = {
     'USE_JWT': False,
-    'SESSION_LOGIN': True,
+    'SESSION_LOGIN': False,
     'REGISTER_SERIALIZER': 'apps.accounts.serializers.UserRegistrationSerializer',
     'PASSWORD_RESET_SERIALIZER': 'apps.accounts.serializers.CustomPasswordResetSerializer',
     'PASSWORD_RESET_USE_SITES_DOMAIN': False,
