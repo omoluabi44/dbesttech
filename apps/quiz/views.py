@@ -45,10 +45,10 @@ class PracticeStartView(views.APIView):
                 return Response({'error': 'Free plan users can only access easy questions. Upgrade for medium and hard difficulty.'}, status=status.HTTP_403_FORBIDDEN)
             difficulty = 'easy'
         
-        # Get 100 random questions
+        # Get 50 random questions
         questions = list(Quiz.objects.filter(subject=subject, level=level, difficulty=difficulty, is_practice=True, is_active=True))
-        if len(questions) > 100:
-            questions = random.sample(questions, 100)
+        if len(questions) > 50:
+            questions = random.sample(questions, 50)
         
         if not questions:
             return Response({'error': f'No {difficulty} questions available for this subject.'}, status=status.HTTP_400_BAD_REQUEST)
@@ -131,7 +131,7 @@ class PracticeSubmitStageView(views.APIView):
         session.correct_answers += stage_correct
         
         requires_upgrade = False
-        if stage == 10 or end_idx >= len(all_session_answers):
+        if stage == 5 or end_idx >= len(all_session_answers):
             session.status = 'completed'
             session.completed_at = timezone.now()
             session.score_percentage = (session.correct_answers / max(1, session.total_questions)) * 100

@@ -154,7 +154,7 @@ class PracticeSession(models.Model):
     status = models.CharField(max_length=15, choices=QUIZ_STATUS_CHOICES, default='in_progress')
     
     current_stage = models.IntegerField(default=1)
-    total_questions = models.PositiveIntegerField(default=100)
+    total_questions = models.PositiveIntegerField(default=50)
     correct_answers = models.PositiveIntegerField(default=0)
     score_percentage = models.DecimalField(max_digits=5, decimal_places=2, default=0)
     
