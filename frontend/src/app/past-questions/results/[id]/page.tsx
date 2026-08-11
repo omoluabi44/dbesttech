@@ -182,7 +182,7 @@ export default function PastQuestionResultsPage() {
               <div className="space-y-6">
                 {reviewData.map((review: any, index: number) => {
                   const correctAnsLetter = review.question.correct_answer;
-                  const correctText = review.question.incorrect_answers && typeof review.question.incorrect_answers === 'object'
+                  const correctText = review.question.incorrect_answers && typeof review.question.incorrect_answers === 'object' && !Array.isArray(review.question.incorrect_answers)
                     ? review.question.incorrect_answers[correctAnsLetter] || correctAnsLetter
                     : correctAnsLetter;
                     
