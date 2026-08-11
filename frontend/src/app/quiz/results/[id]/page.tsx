@@ -505,7 +505,13 @@ export default function PracticeResultsPage() {
                 </div>
               ) : reviewData && reviewData.length > 0 ? (
                 <div className="space-y-6">
-                  {reviewData.map((review: any, index: number) => (
+                  {reviewData.map((review: any, index: number) => {
+                    const correctAnsLetter = review.question.correct_answer;
+                    const correctText = review.question.incorrect_answers && typeof review.question.incorrect_answers === 'object'
+                      ? review.question.incorrect_answers[correctAnsLetter] || correctAnsLetter
+                      : correctAnsLetter;
+                      
+                    return (
                     <Card key={review.id} className="p-6 rounded-xl border border-gray-200 shadow-sm bg-white overflow-hidden">
                       <div className="flex items-start mb-6">
                         <div className={`flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center mr-4 mt-1 border ${
@@ -547,7 +553,7 @@ export default function PracticeResultsPage() {
                             <span className="text-xs font-semibold text-primary-600 uppercase tracking-wider block mb-2">Correct Answer</span>
                             <div 
                               className="text-base text-primary-700 font-semibold prose max-w-none"
-                              dangerouslySetInnerHTML={{ __html: review.question.correct_answer }}
+                              dangerouslySetInnerHTML={{ __html: correctText }}
                             />
                           </div>
                         )}
@@ -566,7 +572,7 @@ export default function PracticeResultsPage() {
                         </div>
                       )}
                     </Card>
-                  ))}
+                  )})}
                 </div>
               ) : (
                 <div className="text-center py-12 bg-gray-50 rounded-xl border border-gray-200">
