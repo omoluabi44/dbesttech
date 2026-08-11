@@ -3,13 +3,15 @@
 import { useEffect, useState, useRef } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
+import { useQuery } from '@tanstack/react-query';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { ProgressBar } from '@/components/ui/ProgressBar';
-import { getPracticeResults, retryPractice } from '@/lib/api/quiz';
+import { Skeleton } from '@/components/ui/Skeleton';
+import { getPracticeResults, retryPractice, getPracticeReview } from '@/lib/api/quiz';
 import { useQuizStore } from '@/lib/stores/quizStore';
-import { Loader2, AlertTriangle, Target, CheckCircle2 } from 'lucide-react';
+import { Loader2, AlertTriangle, Target, CheckCircle2, Eye, EyeOff, BookOpen, AlertCircle, XCircle } from 'lucide-react';
 import { CartoonOwl } from '@/components/cartoon/CartoonOwl';
 import { FloatingSparkles } from '@/components/cartoon/FloatingElements';
 import { StarRating } from '@/components/cartoon/CartoonStars';
@@ -41,6 +43,13 @@ export default function PracticeResultsPage() {
   const [retrying, setRetrying] = useState(false);
   const [error, setError] = useState('');
   const [displayScore, setDisplayScore] = useState(0);
+  const [showReview, setShowReview] = useState(false);
+  
+  const { data: reviewData, isLoading: loadingReview } = useQuery({
+    queryKey: ['practice-review', sessionId],
+    queryFn: () => getPracticeReview(sessionId),
+    enabled: showReview && !!sessionId,
+  });
   
   const startPracticeStore = useQuizStore((state) => state.startPractice);
   const { playQuizComplete, speakEncouragement, playStarCollect, playButtonClick } = useSoundEffects();
@@ -418,8 +427,18 @@ export default function PracticeResultsPage() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 1.2 }}
-            className="flex flex-wrap justify-center gap-4 pt-8 pb-16"
+            className="flex flex-wrap justify-center gap-4 pt-8 pb-8"
           >
+            <Button
+              variant={showReview ? "secondary" : "primary"}
+              size="lg"
+              className={`text-lg px-8 py-6 shadow-xl ${!showReview && 'bg-primary-500 hover:bg-primary-600 text-white border-primary-600'}`}
+              onClick={() => setShowReview(!showReview)}
+            >
+              {showReview ? <EyeOff className="w-5 h-5 mr-2" /> : <Eye className="w-5 h-5 mr-2" />}
+              {showReview ? 'Hide Review' : 'Review Answers'}
+            </Button>
+            
             <Button
               variant="gameAction"
               size="lg"
@@ -463,6 +482,99 @@ export default function PracticeResultsPage() {
               Home 🏠
             </Button>
           </motion.div>
+
+          {/* Detailed Review Section */}
+          {showReview && (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="mt-8 space-y-6 pb-20 max-w-4xl mx-auto"
+            >
+              <div className="flex items-center justify-between border-b border-gray-200 pb-4">
+                <h3 className="text-xl font-bold text-gray-900 flex items-center">
+                  <BookOpen className="w-6 h-6 mr-3 text-primary-500" />
+                  Detailed Question Review
+                </h3>
+              </div>
+
+              {loadingReview ? (
+                <div className="space-y-4">
+                  {[...Array(3)].map((_, i) => (
+                    <Skeleton key={i} className="h-48 w-full rounded-xl" />
+                  ))}
+                </div>
+              ) : reviewData && reviewData.length > 0 ? (
+                <div className="space-y-6">
+                  {reviewData.map((review: any, index: number) => (
+                    <Card key={review.id} className="p-6 rounded-xl border border-gray-200 shadow-sm bg-white overflow-hidden">
+                      <div className="flex items-start mb-6">
+                        <div className={`flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center mr-4 mt-1 border ${
+                          review.is_correct ? 'bg-green-50 border-green-200' : 'bg-red-50 border-red-200'
+                        }`}>
+                          {review.is_correct ? (
+                            <CheckCircle2 className="w-5 h-5 text-green-600" />
+                          ) : (
+                            <XCircle className="w-5 h-5 text-red-600" />
+                          )}
+                        </div>
+                        <div className="flex-1">
+                          <div className="flex items-center justify-between mb-2">
+                            <span className="text-sm font-semibold text-gray-500 uppercase tracking-wider">Question {index + 1}</span>
+                            <span className={`text-xs font-bold px-2.5 py-1 rounded-md ${
+                              review.question.questionType === 'theory' ? 'bg-purple-100 text-purple-700' : 'bg-primary-100 text-primary-700'
+                            }`}>
+                              {review.question.questionType === 'theory' ? 'Theory' : 'Objective'}
+                            </span>
+                          </div>
+                          <div 
+                            className="text-lg text-gray-900 font-medium prose max-w-none"
+                            dangerouslySetInnerHTML={{ __html: review.question.questionText }}
+                          />
+                        </div>
+                      </div>
+
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-6">
+                        <div className="bg-gray-50 rounded-lg p-4 border border-gray-100">
+                          <span className="text-xs font-semibold text-gray-500 uppercase tracking-wider block mb-2">Your Answer</span>
+                          <div 
+                            className={`text-base ${review.is_correct ? 'text-green-700 font-semibold' : 'text-red-600'} prose max-w-none`}
+                            dangerouslySetInnerHTML={{ __html: review.selected_answer || '<i>No answer provided</i>' }}
+                          />
+                        </div>
+                        
+                        {!review.is_correct && (
+                          <div className="bg-primary-50 rounded-lg p-4 border border-primary-200">
+                            <span className="text-xs font-semibold text-primary-600 uppercase tracking-wider block mb-2">Correct Answer</span>
+                            <div 
+                              className="text-base text-primary-700 font-semibold prose max-w-none"
+                              dangerouslySetInnerHTML={{ __html: review.question.correct_answer }}
+                            />
+                          </div>
+                        )}
+                      </div>
+
+                      {review.question.explanation && (
+                        <div className="mt-4 bg-amber-50 rounded-lg p-4 border border-amber-100 flex items-start">
+                          <AlertCircle className="w-5 h-5 text-amber-600 mr-3 mt-0.5 flex-shrink-0" />
+                          <div>
+                            <span className="text-xs font-semibold text-amber-800 uppercase tracking-wider block mb-1">Explanation</span>
+                            <div 
+                              className="text-sm text-amber-900 prose max-w-none"
+                              dangerouslySetInnerHTML={{ __html: review.question.explanation }}
+                            />
+                          </div>
+                        </div>
+                      )}
+                    </Card>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center py-12 bg-gray-50 rounded-xl border border-gray-200">
+                  <p className="text-gray-500">No review data available for this session.</p>
+                </div>
+              )}
+            </motion.div>
+          )}
 
         </div>
       </div>

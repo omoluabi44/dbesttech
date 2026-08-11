@@ -231,6 +231,17 @@ class PracticeRetryView(views.APIView):
             'questions': QuizSerializer(stage_1_questions, many=True).data
         })
 
+class PracticeReviewView(views.APIView):
+    permission_classes = [IsAuthenticated]
+    
+    def get(self, request, pk):
+        session = get_object_or_404(PracticeSession, pk=pk, student=request.user)
+        # We can optionally enforce that it must be 'completed', but for now let's just return what's available
+        
+        answers = session.answers.select_related('question').order_by('id')
+        from .serializers import PracticeAnswerReviewSerializer
+        return Response(PracticeAnswerReviewSerializer(answers, many=True).data)
+
 # ---------------------------------------------------------
 # PAST QUESTION API
 # ---------------------------------------------------------

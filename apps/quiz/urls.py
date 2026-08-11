@@ -14,6 +14,7 @@ urlpatterns = [
     path('practice/sessions/<int:pk>/submit-stage/', views.PracticeSubmitStageView.as_view(), name='practice-submit-stage'),
     path('practice/sessions/<int:pk>/results/', views.PracticeResultsView.as_view(), name='practice-results'),
     path('practice/sessions/<int:pk>/retry/', views.PracticeRetryView.as_view(), name='practice-retry'),
+    path('practice/sessions/<int:pk>/review/', views.PracticeReviewView.as_view(), name='practice-review'),
     
     # Past Question Endpoints
     path('past-questions/filters/', views.PastQuestionFiltersView.as_view(), name='past-question-filters'),

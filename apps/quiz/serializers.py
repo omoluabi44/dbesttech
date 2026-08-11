@@ -102,3 +102,11 @@ class PastQuestionAnswerReviewSerializer(serializers.ModelSerializer):
     class Meta:
         model = PastQuestionAnswer
         fields = ['id', 'question', 'selected_answer', 'is_correct']
+
+class PracticeAnswerReviewSerializer(serializers.ModelSerializer):
+    question = QuizSerializer(read_only=True)
+
+    class Meta:
+        model = PracticeAnswer
+        fields = ['id', 'question', 'selected_answer', 'is_correct']
+

@@ -75,6 +75,11 @@ export const completePastQuestion = async (sessionId: number): Promise<PastQuest
   return res.data;
 };
 
+export const getPracticeReview = async (sessionId: number): Promise<any[]> => {
+  const res = await client.get('/quiz/practice/sessions/' + sessionId + '/review/');
+  return res.data;
+};
+
 export const getPastQuestionReview = async (sessionId: number): Promise<import('../types/quiz').PastQuestionAnswerReview[]> => {
   const res = await client.get('/quiz/past-questions/sessions/' + sessionId + '/review/');
   return res.data;
