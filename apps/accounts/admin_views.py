@@ -90,8 +90,6 @@ class SchoolAdminStudentViewSet(viewsets.ModelViewSet):
             qs = User.objects.all().order_by('-date_joined')
             if role:
                 qs = qs.filter(role=role)
-            else:
-                qs = qs.filter(role__in=['student', 'admin', 'root_admin'])
             return qs
             
         try:
