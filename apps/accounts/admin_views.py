@@ -5,7 +5,7 @@ from django.contrib.auth import get_user_model
 from django.db.models import Count
 
 from .models import School, SchoolAdminProfile, StudentProfile, SubscriptionPlan
-from .serializers import SchoolSerializer, UserSerializer, StudentProfileSerializer, UserRegistrationSerializer, SubscriptionPlanAdminSerializer
+from .serializers import SchoolSerializer, UserSerializer, StudentProfileSerializer, UserRegistrationSerializer, SubscriptionPlanAdminSerializer, AdminUserCreationSerializer
 from utils.permissions import IsRootAdmin, IsSchoolAdmin
 
 User = get_user_model()
@@ -108,11 +108,11 @@ class SchoolAdminStudentViewSet(viewsets.ModelViewSet):
 
     def get_serializer_class(self):
         if self.action == 'create':
-            return UserRegistrationSerializer
+            return AdminUserCreationSerializer
         return UserSerializer
 
     def create(self, request, *args, **kwargs):
-        # We reuse UserRegistrationSerializer for creation.
+        # We use AdminUserCreationSerializer for creation.
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         # RegisterSerializer's save will call custom_signup, 
@@ -122,10 +122,11 @@ class SchoolAdminStudentViewSet(viewsets.ModelViewSet):
         # Tie to admin's school if school admin
         if self.request.user.role == 'school_admin' or hasattr(self.request.user, 'school_admin_profile'):
             try:
-                admin_profile = request.user.school_admin_profile
-                profile = user.student_profile
-                profile.school = admin_profile.school
-                profile.save()
+                if hasattr(user, 'student_profile'):
+                    admin_profile = request.user.school_admin_profile
+                    profile = user.student_profile
+                    profile.school = admin_profile.school
+                    profile.save()
             except SchoolAdminProfile.DoesNotExist:
                 pass
         

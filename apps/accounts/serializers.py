@@ -99,6 +99,66 @@ class UserRegistrationSerializer(RegisterSerializer):
             raise serializers.ValidationError({"detail": f"Server Error during signup: {str(e)}"})
 
 
+class AdminUserCreationSerializer(RegisterSerializer):
+    """Serializer for admins creating users (students or other admins)."""
+    first_name = serializers.CharField(required=True)
+    last_name = serializers.CharField(required=True)
+    level = serializers.ChoiceField(choices=SCHOOL_LEVELS, required=False, allow_blank=True)
+    role = serializers.ChoiceField(choices=[('student', 'Student'), ('admin', 'Admin'), ('school_admin', 'School Admin'), ('root_admin', 'Root Admin')], required=False, default='student')
+    
+    def __init__(self, *args, **kwargs):
+        if 'data' in kwargs and hasattr(kwargs['data'], 'copy'):
+            data = kwargs['data'].copy()
+            if 'password' in data:
+                data['password1'] = data['password']
+            if 'password_confirm' in data:
+                data['password2'] = data['password_confirm']
+            kwargs['data'] = data
+        super().__init__(*args, **kwargs)
+
+    def get_cleaned_data(self):
+        cleaned_data = super().get_cleaned_data()
+        cleaned_data['first_name'] = self.validated_data.get('first_name', '')
+        cleaned_data['last_name'] = self.validated_data.get('last_name', '')
+        cleaned_data['level'] = self.validated_data.get('level', '')
+        cleaned_data['role'] = self.validated_data.get('role', 'student')
+        return cleaned_data
+
+    def custom_signup(self, request, user):
+        user.first_name = self.validated_data.get('first_name', '')
+        user.last_name = self.validated_data.get('last_name', '')
+        requested_role = self.validated_data.get('role', 'student')
+        
+        # Only allow setting non-student roles if the requesting user is a root admin
+        if request.user.is_authenticated and request.user.role in ['admin', 'root_admin']:
+            user.role = requested_role
+        else:
+            user.role = 'student'
+
+    def save(self, request):
+        try:
+            user = super().save(request)
+            
+            if user.role == 'student':
+                from .models import StudentProfile
+                profile, created = StudentProfile.objects.get_or_create(user=user)
+                profile.level = self.validated_data.get('level', '')
+                profile.save()
+
+            from django.conf import settings
+            if getattr(settings, 'ACCOUNT_EMAIL_VERIFICATION', 'optional') == 'mandatory':
+                from allauth.account.models import EmailAddress
+                email_obj = EmailAddress.objects.filter(user=user, primary=True).first()
+                if email_obj and not email_obj.verified:
+                    email_obj.send_confirmation(request, signup=True)
+            
+            return user
+        except Exception as e:
+            import traceback
+            traceback.print_exc()
+            raise serializers.ValidationError({"detail": f"Server Error during user creation: {str(e)}"})
+
+
 class LoginSerializer(serializers.Serializer):
     """Serializer for user login."""
     email = serializers.EmailField()
