@@ -138,6 +138,7 @@ class AdminUserCreationSerializer(RegisterSerializer):
     def save(self, request):
         try:
             user = super().save(request)
+            user.save()  # Ensure role set in custom_signup is persisted
             
             if user.role == 'student':
                 from .models import StudentProfile
