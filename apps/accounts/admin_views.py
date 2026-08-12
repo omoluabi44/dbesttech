@@ -150,6 +150,15 @@ class SchoolAdminStudentViewSet(viewsets.ModelViewSet):
             email_obj.save()
         return Response({'status': 'Email marked as verified.'})
 
+    @action(detail=True, methods=['post'], permission_classes=[permissions.IsAuthenticated, IsRootAdmin])
+    def make_admin(self, request, pk=None):
+        user = self.get_object()
+        if user.role == 'admin':
+            return Response({'status': 'User is already an admin.'}, status=status.HTTP_400_BAD_REQUEST)
+        user.role = 'admin'
+        user.save()
+        return Response({'status': 'User successfully promoted to admin.'})
+
 
 class SubscriptionPlanAdminViewSet(viewsets.ModelViewSet):
     """

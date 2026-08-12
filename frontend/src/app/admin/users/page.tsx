@@ -2,11 +2,12 @@
 
 import React, { useEffect, useState, useCallback } from 'react';
 import { toast } from 'sonner';
-import { UserPlus, MoreVertical, CheckCircle, Trash2, Eye, X, Mail, ChevronLeft, ChevronRight } from 'lucide-react';
+import { UserPlus, MoreVertical, CheckCircle, Trash2, Eye, X, Mail, ChevronLeft, ChevronRight, ShieldAlert } from 'lucide-react';
 import api from '@/lib/api/client';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { SCHOOL_CATEGORIES, SCHOOL_LEVELS } from '@/lib/utils/constants';
+import { useAuthStore } from '@/lib/stores/authStore';
 
 interface StudentProfile {
   level_display: string;
@@ -29,6 +30,7 @@ interface User {
 }
 
 export default function UsersPage() {
+  const { user: currentUser } = useAuthStore();
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(1);
@@ -97,7 +99,22 @@ export default function UsersPage() {
       });
       fetchUsers();
     } catch (error: any) {
-      const msg = error.response?.data?.detail || error.response?.data?.non_field_errors?.[0] || 'Failed to create user.';
+      let msg = 'Failed to create user.';
+      if (error.response?.data) {
+        const data = error.response.data;
+        if (data.detail) {
+          msg = data.detail;
+        } else if (data.non_field_errors) {
+          msg = data.non_field_errors[0];
+        } else {
+          const firstKey = Object.keys(data)[0];
+          if (firstKey && Array.isArray(data[firstKey])) {
+            msg = `${firstKey}: ${data[firstKey][0]}`;
+          } else if (typeof data[firstKey] === 'string') {
+            msg = `${firstKey}: ${data[firstKey]}`;
+          }
+        }
+      }
       toast.error(msg);
     } finally {
       setIsSubmitting(false);
@@ -123,6 +140,17 @@ export default function UsersPage() {
       fetchUsers();
     } catch (err) {
       toast.error('Failed to delete user.');
+    }
+  };
+
+  const handleMakeAdmin = async (id: number) => {
+    if (!confirm('Are you sure you want to promote this user to admin?')) return;
+    try {
+      await api.post(`/auth/admin-students/${id}/make_admin/`);
+      toast.success('User promoted to admin successfully');
+      fetchUsers();
+    } catch (error: any) {
+      toast.error(error.response?.data?.status || 'Failed to promote user');
     }
   };
 
@@ -210,6 +238,11 @@ export default function UsersPage() {
                         {!user.email_verified && (
                           <button onClick={() => handleVerify(user.id)} className="p-2 text-gray-400 hover:text-green-400 transition-colors focus:outline-none focus:ring-2 focus:ring-green-500 rounded" aria-label={`Verify email for ${user.username}`} title="Verify Email">
                             <CheckCircle size={18} aria-hidden="true" />
+                          </button>
+                        )}
+                        {currentUser?.role === 'root_admin' && user.role !== 'admin' && user.role !== 'root_admin' && (
+                          <button onClick={() => handleMakeAdmin(user.id)} className="p-2 text-gray-400 hover:text-primary-400 transition-colors focus:outline-none focus:ring-2 focus:ring-primary-500 rounded" aria-label={`Make ${user.username} admin`} title="Promote to Admin">
+                            <ShieldAlert size={18} aria-hidden="true" />
                           </button>
                         )}
                         <button onClick={() => handleDelete(user.id)} className="p-2 text-gray-400 hover:text-red-400 transition-colors focus:outline-none focus:ring-2 focus:ring-red-500 rounded" aria-label={`Delete user ${user.username}`} title="Delete User">
