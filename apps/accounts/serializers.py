@@ -33,6 +33,9 @@ class UserSerializer(serializers.ModelSerializer):
     """Read-only user serializer."""
     student_profile = StudentProfileSerializer(read_only=True)
     email_verified = serializers.SerializerMethodField()
+    subscription_plan = serializers.SerializerMethodField()
+    subscription_status = serializers.SerializerMethodField()
+    
     class Meta:
         model = User
         fields = ['id', 'email', 'username', 'first_name', 'last_name', 'role', 'student_profile', 'email_verified', 'subscription_plan', 'subscription_status']
@@ -42,6 +45,16 @@ class UserSerializer(serializers.ModelSerializer):
         from allauth.account.models import EmailAddress
         email = EmailAddress.objects.filter(user=obj, primary=True).first()
         return email.verified if email else False
+
+    def get_subscription_plan(self, obj):
+        if obj.role in ['admin', 'root_admin']:
+            return 'admin_plan'
+        return obj.subscription_plan
+
+    def get_subscription_status(self, obj):
+        if obj.role in ['admin', 'root_admin']:
+            return 'active'
+        return obj.subscription_status
 
 
 class UserRegistrationSerializer(RegisterSerializer):
@@ -129,11 +142,18 @@ class AdminUserCreationSerializer(RegisterSerializer):
         user.last_name = self.validated_data.get('last_name', '')
         requested_role = self.validated_data.get('role', 'student')
         
-        # Only allow setting non-student roles if the requesting user is a root admin
-        if request.user.is_authenticated and request.user.role in ['admin', 'root_admin']:
-            user.role = requested_role
+        # Only allow setting non-student roles if the requesting user is a root admin or admin
+        # But ONLY root_admin can create another admin
+        if requested_role == 'admin':
+            if request.user.is_authenticated and request.user.role == 'root_admin':
+                user.role = 'admin'
+            else:
+                user.role = 'student'
         else:
-            user.role = 'student'
+            if request.user.is_authenticated and request.user.role in ['admin', 'root_admin']:
+                user.role = requested_role
+            else:
+                user.role = 'student'
 
     def save(self, request):
         try:

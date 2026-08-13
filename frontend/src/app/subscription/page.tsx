@@ -142,7 +142,13 @@ export default function SubscriptionPage() {
         // Skip setting current plan if we're verifying a payment redirect to prevent race conditions
         if (!isRedirect) {
           const currentSub = await getCurrentSubscription().catch(() => ({ plan: 'free', status: 'active', start_date: null, end_date: null }));
-          setCurrentPlan((currentSub as any).subscription_plan || (currentSub as any).plan || 'free');
+          let resolvedPlan = (currentSub as any).subscription_plan || (currentSub as any).plan || 'free';
+          
+          if (resolvedPlan !== 'free' && !finalPlans.find((p: any) => p.name === resolvedPlan)) {
+            resolvedPlan = 'free';
+          }
+          
+          setCurrentPlan(resolvedPlan);
         }
       } catch (error) {
         console.error('Error fetching subscription data:', error);
