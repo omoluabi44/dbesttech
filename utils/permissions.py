@@ -17,7 +17,7 @@ class IsTeacher(BasePermission):
 class IsAdminUser(BasePermission):
     """Allow access only to admin users."""
     def has_permission(self, request, view):
-        return request.user.is_authenticated and request.user.role == 'admin'
+        return request.user.is_authenticated and request.user.role in ['admin', 'root_admin']
 
 class IsRootAdmin(BasePermission):
     """Allow access only to root admins."""

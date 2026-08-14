@@ -6,7 +6,7 @@ from django.db.models import Count
 
 from .models import School, SchoolAdminProfile, StudentProfile, SubscriptionPlan
 from .serializers import SchoolSerializer, UserSerializer, StudentProfileSerializer, UserRegistrationSerializer, SubscriptionPlanAdminSerializer, AdminUserCreationSerializer
-from utils.permissions import IsRootAdmin, IsSchoolAdmin
+from utils.permissions import IsRootAdmin, IsSchoolAdmin, IsAdminUser
 
 User = get_user_model()
 
@@ -23,10 +23,10 @@ class SchoolViewSet(viewsets.ModelViewSet):
         if self.action in ['list', 'retrieve']:
             permission_classes = [permissions.AllowAny]
         else:
-            permission_classes = [permissions.IsAuthenticated, IsRootAdmin]
+            permission_classes = [permissions.IsAuthenticated, IsAdminUser]
         return [permission() for permission in permission_classes]
 
-    @action(detail=False, methods=['get'], permission_classes=[permissions.IsAuthenticated, IsRootAdmin])
+    @action(detail=False, methods=['get'], permission_classes=[permissions.IsAuthenticated, IsAdminUser])
     def stats(self, request):
         """Root Admin stats: total schools, total students"""
         total_schools = School.objects.count()
@@ -162,8 +162,8 @@ class SchoolAdminStudentViewSet(viewsets.ModelViewSet):
 
 class SubscriptionPlanAdminViewSet(viewsets.ModelViewSet):
     """
-    ViewSet for Root Admins to manage subscription plans from the frontend UI.
+    ViewSet for Root Admins and Admins to manage subscription plans from the frontend UI.
     """
-    permission_classes = [permissions.IsAuthenticated, IsRootAdmin]
+    permission_classes = [permissions.IsAuthenticated, IsAdminUser]
     serializer_class = SubscriptionPlanAdminSerializer
     queryset = SubscriptionPlan.objects.all().order_by('order')

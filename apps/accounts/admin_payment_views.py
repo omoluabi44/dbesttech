@@ -10,7 +10,7 @@ from rest_framework.pagination import PageNumberPagination
 from datetime import timedelta
 
 from .models import PaymentTransaction, WebhookLog
-from utils.permissions import IsRootAdmin
+from utils.permissions import IsAdminUser
 
 
 class TransactionPagination(PageNumberPagination):
@@ -21,7 +21,7 @@ class TransactionPagination(PageNumberPagination):
 
 class PaymentMetricsView(APIView):
     """GET /auth/admin-payments/metrics/?range=today|week|month"""
-    permission_classes = [IsAuthenticated, IsRootAdmin]
+    permission_classes = [IsAuthenticated, IsAdminUser]
     
     def get(self, request):
         date_range = request.query_params.get('range', 'today')
@@ -59,7 +59,7 @@ class PaymentMetricsView(APIView):
 
 class PaymentTransactionListView(APIView):
     """GET /auth/admin-payments/transactions/?search=&status=&channel=&page=&page_size="""
-    permission_classes = [IsAuthenticated, IsRootAdmin]
+    permission_classes = [IsAuthenticated, IsAdminUser]
     pagination_class = TransactionPagination
     
     def get(self, request):
@@ -109,7 +109,7 @@ class PaymentTransactionListView(APIView):
 class PaymentRequeryView(APIView):
     """POST /auth/admin-payments/transactions/<tx_ref>/requery/
     Manually re-verifies a transaction against the Flutterwave API."""
-    permission_classes = [IsAuthenticated, IsRootAdmin]
+    permission_classes = [IsAuthenticated, IsAdminUser]
     
     def post(self, request, tx_ref):
         try:
@@ -180,7 +180,7 @@ class PaymentRefundView(APIView):
     """POST /auth/admin-payments/transactions/<tx_ref>/refund/
     Initiates a full or partial refund via the Flutterwave API.
     Body: {"amount": 1000}  (optional, omit for full refund)"""
-    permission_classes = [IsAuthenticated, IsRootAdmin]
+    permission_classes = [IsAuthenticated, IsAdminUser]
     
     def post(self, request, tx_ref):
         try:
@@ -232,7 +232,7 @@ class PaymentRefundView(APIView):
 
 class WebhookLogListView(APIView):
     """GET /auth/admin-payments/webhooks/?page=&page_size="""
-    permission_classes = [IsAuthenticated, IsRootAdmin]
+    permission_classes = [IsAuthenticated, IsAdminUser]
     
     def get(self, request):
         qs = WebhookLog.objects.all()
