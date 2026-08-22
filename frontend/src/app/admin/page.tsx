@@ -107,8 +107,8 @@ export default function AdminDashboard() {
                   <Cell fill="#f43f5e" />
                 </Pie>
                 <RechartsTooltip 
-                  contentStyle={{ backgroundColor: 'var(--surface-dark)', border: 'none', borderRadius: '8px', color: '#fff' }}
-                  itemStyle={{ color: '#fff' }}
+                  contentStyle={{ backgroundColor: 'var(--surface)', border: '1px solid var(--surface-dark)', borderRadius: '8px', color: 'var(--foreground)' }}
+                  itemStyle={{ color: 'var(--foreground)' }}
                 />
                 <Legend />
               </PieChart>

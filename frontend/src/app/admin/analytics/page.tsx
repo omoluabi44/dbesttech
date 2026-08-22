@@ -129,8 +129,8 @@ export default function AnalyticsPage() {
                 <XAxis dataKey="name" stroke="#94a3b8" />
                 <YAxis stroke="#94a3b8" />
                 <RechartsTooltip 
-                  contentStyle={{ backgroundColor: '#1e293b', border: 'none', borderRadius: '8px', color: '#fff' }}
-                  itemStyle={{ color: '#fff' }}
+                  contentStyle={{ backgroundColor: 'var(--surface)', border: '1px solid var(--surface-dark)', borderRadius: '8px', color: 'var(--foreground)' }}
+                  itemStyle={{ color: 'var(--foreground)' }}
                 />
                 <Legend />
                 <Line type="monotone" dataKey="students" stroke="#3b82f6" strokeWidth={3} activeDot={{ r: 8 }} name="Students" />
@@ -159,7 +159,8 @@ export default function AnalyticsPage() {
                   ))}
                 </Pie>
                 <RechartsTooltip 
-                  contentStyle={{ backgroundColor: '#1e293b', border: 'none', borderRadius: '8px', color: '#fff' }}
+                  contentStyle={{ backgroundColor: 'var(--surface)', border: '1px solid var(--surface-dark)', borderRadius: '8px', color: 'var(--foreground)' }}
+                  itemStyle={{ color: 'var(--foreground)' }}
                 />
                 <Legend verticalAlign="bottom" height={36} />
               </PieChart>
