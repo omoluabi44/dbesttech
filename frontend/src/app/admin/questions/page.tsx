@@ -425,7 +425,7 @@ export default function QuestionBankPage() {
           <div className="bg-[var(--surface)] border border-[var(--surface-dark)] rounded-2xl w-full max-w-2xl max-h-[90vh] flex flex-col shadow-2xl">
             <div className="p-6 border-b border-[var(--surface-dark)] flex justify-between items-center">
               <h2 className="text-xl font-bold text-foreground">Edit Question</h2>
-              <button onClick={() => setIsEditModalOpen(false)} className="text-gray-400 hover:text-white transition-colors">&times;</button>
+              <button onClick={() => setIsEditModalOpen(false)} className="text-gray-400 hover:text-gray-900 dark:hover:text-gray-200 transition-colors text-2xl leading-none">&times;</button>
             </div>
             
             <div className="p-6 overflow-y-auto space-y-4 custom-scrollbar">
@@ -499,16 +499,16 @@ export default function QuestionBankPage() {
             <div className="p-6 border-t border-[var(--surface-dark)] flex justify-end gap-3 bg-[var(--surface-light)] rounded-b-2xl">
               <button 
                 onClick={() => setIsEditModalOpen(false)}
-                className="px-6 py-2.5 text-gray-400 hover:text-white transition-colors font-medium"
+                className="px-6 py-2.5 text-gray-500 hover:text-gray-900 dark:hover:text-gray-200 hover:bg-gray-200/50 dark:hover:bg-gray-800 rounded-lg transition-colors font-medium"
               >
                 Cancel
               </button>
               <button 
                 onClick={handleSaveEdit}
                 disabled={isSaving}
-                className="px-6 py-2.5 bg-primary-500 hover:bg-primary-400 text-white rounded-lg font-medium transition-colors flex items-center gap-2"
+                className="px-6 py-2.5 bg-primary-600 hover:bg-primary-700 text-white rounded-lg font-medium transition-colors flex items-center gap-2 shadow-sm"
               >
-                {isSaving ? <Loader2 className="w-5 h-5 animate-spin" /> : 'Save Changes'}
+                {isSaving ? <Loader2 className="w-5 h-5 animate-spin" /> : 'Edit'}
               </button>
             </div>
           </div>
