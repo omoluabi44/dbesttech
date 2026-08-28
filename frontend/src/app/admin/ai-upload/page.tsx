@@ -593,6 +593,50 @@ export default function AIUploadPage() {
                 />
               </div>
 
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="space-y-4">
+                  <h3 className="font-medium text-foreground border-b border-[var(--surface-dark)] pb-2">Options</h3>
+                  {['A', 'B', 'C', 'D'].map((opt) => (
+                    <div key={opt} className="flex gap-3 items-center">
+                      <span className="font-medium text-gray-500 w-4">{opt}</span>
+                      <input 
+                        required={opt === 'A' || opt === 'B'} // at least two options
+                        type="text"
+                        placeholder={`Option ${opt}`}
+                        value={(pqForm.incorrect_answers as any)[opt]}
+                        onChange={(e) => setPqForm({
+                          ...pqForm, 
+                          incorrect_answers: { ...pqForm.incorrect_answers, [opt]: e.target.value }
+                        })}
+                        className="flex-1 bg-[var(--background)] border border-[var(--surface-dark)] rounded-lg px-4 py-2 text-foreground focus:border-primary-500 outline-none"
+                      />
+                    </div>
+                  ))}
+                </div>
+                
+                <div className="space-y-4 flex flex-col">
+                  <div className="flex-1">
+                    <label className="block text-sm font-medium text-gray-400 mb-1">Correct Answer * (Matches one option exactly)</label>
+                    <input 
+                      required
+                      type="text"
+                      placeholder="Enter exact correct answer text"
+                      value={pqForm.correct_answer}
+                      onChange={(e) => setPqForm({...pqForm, correct_answer: e.target.value})}
+                      className="w-full bg-[var(--background)] border border-[var(--surface-dark)] rounded-lg px-4 py-2 text-green-400 font-medium focus:border-primary-500 outline-none mb-4"
+                    />
+
+                    <label className="block text-sm font-medium text-gray-400 mb-1">Explanation (Optional)</label>
+                    <textarea 
+                      value={pqForm.explanation}
+                      onChange={(e) => setPqForm({...pqForm, explanation: e.target.value})}
+                      className="w-full bg-[var(--background)] border border-[var(--surface-dark)] rounded-lg px-4 py-2 text-foreground focus:border-primary-500 outline-none min-h-[100px]"
+                      placeholder="Explain the correct answer..."
+                    />
+                  </div>
+                </div>
+              </div>
+
               {/* Image Upload Area for new question */}
               <div>
                 <label className="block text-sm font-medium text-gray-400 mb-2">Question Image (Optional)</label>
@@ -636,50 +680,6 @@ export default function AIUploadPage() {
                     </div>
                   </div>
                 )}
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="space-y-4">
-                  <h3 className="font-medium text-foreground border-b border-[var(--surface-dark)] pb-2">Options</h3>
-                  {['A', 'B', 'C', 'D'].map((opt) => (
-                    <div key={opt} className="flex gap-3 items-center">
-                      <span className="font-medium text-gray-500 w-4">{opt}</span>
-                      <input 
-                        required={opt === 'A' || opt === 'B'} // at least two options
-                        type="text"
-                        placeholder={`Option ${opt}`}
-                        value={(pqForm.incorrect_answers as any)[opt]}
-                        onChange={(e) => setPqForm({
-                          ...pqForm, 
-                          incorrect_answers: { ...pqForm.incorrect_answers, [opt]: e.target.value }
-                        })}
-                        className="flex-1 bg-[var(--background)] border border-[var(--surface-dark)] rounded-lg px-4 py-2 text-foreground focus:border-primary-500 outline-none"
-                      />
-                    </div>
-                  ))}
-                </div>
-                
-                <div className="space-y-4 flex flex-col">
-                  <div className="flex-1">
-                    <label className="block text-sm font-medium text-gray-400 mb-1">Correct Answer * (Matches one option exactly)</label>
-                    <input 
-                      required
-                      type="text"
-                      placeholder="Enter exact correct answer text"
-                      value={pqForm.correct_answer}
-                      onChange={(e) => setPqForm({...pqForm, correct_answer: e.target.value})}
-                      className="w-full bg-[var(--background)] border border-[var(--surface-dark)] rounded-lg px-4 py-2 text-green-400 font-medium focus:border-primary-500 outline-none mb-4"
-                    />
-
-                    <label className="block text-sm font-medium text-gray-400 mb-1">Explanation (Optional)</label>
-                    <textarea 
-                      value={pqForm.explanation}
-                      onChange={(e) => setPqForm({...pqForm, explanation: e.target.value})}
-                      className="w-full bg-[var(--background)] border border-[var(--surface-dark)] rounded-lg px-4 py-2 text-foreground focus:border-primary-500 outline-none min-h-[100px]"
-                      placeholder="Explain the correct answer..."
-                    />
-                  </div>
-                </div>
               </div>
 
               <div className="pt-4 border-t border-[var(--surface-dark)] flex justify-end">
