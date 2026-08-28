@@ -503,18 +503,18 @@ export default function QuestionBankPage() {
                                   {q.image_url && (
                                     <button 
                                       onClick={() => handleRemoveImage(q)}
-                                      className="text-red-500 hover:text-red-400 text-xs font-medium transition-colors underline"
+                                      className="text-red-600 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 text-xs font-medium transition-colors underline"
                                     >
                                       Remove
                                     </button>
                                   )}
                                 </>
                               )}
-                              <button onClick={() => handleEditClick(q)} className="text-gray-400 hover:text-primary-400 transition-colors" title="Edit">
-                                <Edit2 className="w-4 h-4" />
+                              <button onClick={() => handleEditClick(q)} className="text-gray-600 dark:text-gray-400 hover:text-[var(--primary)] transition-colors" title="Edit">
+                                <Edit2 className="w-5 h-5" />
                               </button>
-                              <button onClick={() => handleDelete(q.id, isPastQuestion)} className="text-gray-400 hover:text-red-400 transition-colors" title="Delete">
-                                <Trash2 className="w-4 h-4" />
+                              <button onClick={() => handleDelete(q.id, isPastQuestion)} className="text-gray-600 dark:text-gray-400 hover:text-red-600 dark:hover:text-red-400 transition-colors" title="Delete">
+                                <Trash2 className="w-5 h-5" />
                               </button>
                             </div>
                           </td>

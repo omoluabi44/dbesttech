@@ -131,6 +131,8 @@ class PastQuestion(models.Model):
     markingGuide = models.JSONField(null=True, blank=True, db_column='markingGuide')
     
     is_active = models.BooleanField(default=True)
+    image_url = models.URLField(max_length=500, null=True, blank=True, help_text='S3 URL of the question image')
+
 
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

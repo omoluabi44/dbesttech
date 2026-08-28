@@ -50,8 +50,21 @@ class PastQuestionSerializer(serializers.ModelSerializer):
         model = PastQuestion
         fields = [
             'id', 'questionText', 'questionType', 'correct_answer', 
-            'incorrect_answers', 'explanation'
+            'incorrect_answers', 'explanation', 'image_url'
         ]
+
+class PastQuestionAdminSerializer(serializers.ModelSerializer):
+    subject_name = serializers.CharField(source='subject.name', read_only=True)
+
+    class Meta:
+        model = PastQuestion
+        fields = [
+            'id', 'subject', 'subject_name', 'level', 'difficulty', 'exam_body', 'year',
+            'questionText', 'questionType', 'correct_answer', 'incorrect_answers',
+            'explanation', 'image_url', 'is_active', 'created_at', 'updated_at'
+        ]
+        read_only_fields = ['id', 'subject_name', 'created_at', 'updated_at']
+
 
 class PastQuestionUploadSerializer(serializers.ModelSerializer):
     class Meta:

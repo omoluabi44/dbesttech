@@ -29,6 +29,7 @@ export interface QuizQuestion {
   correct_answer: string;
   incorrect_answers: string[];
   explanation: string;
+  image_url?: string | null;
 }
 
 export interface PracticeSession {

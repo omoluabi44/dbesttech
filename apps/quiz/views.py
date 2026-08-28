@@ -14,6 +14,7 @@ from .serializers import (
     PracticeStageSubmitSerializer, PastQuestionSessionSerializer,
     PastAnswerSubmissionSerializer, PastQuestionSerializer
 )
+from .services import QuizGeneratorService
 
 class SubjectListView(generics.ListAPIView):
     queryset = Subject.objects.filter(is_active=True)
@@ -35,28 +36,36 @@ class PracticeStartView(views.APIView):
     
     def post(self, request):
         subject_id = request.data.get('subject_id')
+        topic_id = request.data.get('topic_id')
         level = request.data.get('level')
         difficulty = request.data.get('difficulty', 'medium')
         
         subject = get_object_or_404(Subject, id=subject_id)
+        if not topic_id:
+            return Response({'error': 'topic_id is required.'}, status=status.HTTP_400_BAD_REQUEST)
+        topic = get_object_or_404(Topic, id=topic_id, subject=subject)
         
         if request.user.role not in ['admin', 'root_admin'] and request.user.subscription_plan == 'free':
             if difficulty != 'easy':
                 return Response({'error': 'Free plan users can only access easy questions. Upgrade for medium and hard difficulty.'}, status=status.HTTP_403_FORBIDDEN)
             difficulty = 'easy'
         
-        # Get 50 random questions
-        questions = list(Quiz.objects.filter(subject=subject, level=level, difficulty=difficulty, is_practice=True, is_active=True))
-        random.shuffle(questions)
-        if len(questions) > 50:
-            questions = questions[:50]
+        # Get up to 50 questions, with AI fallback if needed
+        questions = QuizGeneratorService.select_questions(
+            subject=subject,
+            level=level,
+            difficulty=difficulty,
+            num_questions=50,
+            topic=topic
+        )
         
         if not questions:
-            return Response({'error': f'No {difficulty} questions available for this subject.'}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({'error': f'Could not retrieve or generate {difficulty} questions for this topic.'}, status=status.HTTP_400_BAD_REQUEST)
         
         session = PracticeSession.objects.create(
             student=request.user,
             subject=subject,
+            topic=topic,
             level=level,
             difficulty=difficulty,
             total_questions=len(questions),

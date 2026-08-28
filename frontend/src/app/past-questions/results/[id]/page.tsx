@@ -211,6 +211,15 @@ export default function PastQuestionResultsPage() {
                           className="text-lg text-gray-900 font-medium prose max-w-none"
                           dangerouslySetInnerHTML={{ __html: review.question.questionText }}
                         />
+                        {review.question.image_url && (
+                          <div className="mt-3">
+                            <img
+                              src={review.question.image_url}
+                              alt="Question illustration"
+                              className="max-w-full max-h-64 h-auto rounded-lg border border-gray-200 shadow-sm"
+                            />
+                          </div>
+                        )}
                       </div>
                     </div>
 

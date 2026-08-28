@@ -239,6 +239,17 @@ export default function PastQuestionSessionPage() {
               />
             )}
 
+            {question?.image_url && (
+              <div className="mt-4 mb-6">
+                <img
+                  src={question.image_url}
+                  alt="Question illustration"
+                  className="max-w-full max-h-96 h-auto rounded-lg border border-gray-200 shadow-sm cursor-pointer hover:shadow-md transition-shadow"
+                  onClick={() => window.open(question.image_url!, '_blank')}
+                />
+              </div>
+            )}
+
             <div className="space-y-3 mt-8">
               {(() => {
                 if (!question) return null;

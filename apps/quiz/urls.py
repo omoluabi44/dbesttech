@@ -29,7 +29,13 @@ urlpatterns = [
     path('admin/ai/generate/', admin_views.AIGenerateQuizView.as_view(), name='ai-generate-quiz'),
     path('admin/ai/generate/<str:task_id>/status/', admin_views.AIGenerateStatusView.as_view(), name='ai-generate-status'),
     path('admin/ai/bulk-save/', admin_views.AIBulkSaveQuizView.as_view(), name='ai-bulk-save-quiz'),
-    
+
+    # Admin Past Question CRUD & Image Upload
+    path('admin/past-questions/presigned-url/', admin_views.PastQuestionPresignedUrlView.as_view(), name='admin-past-question-presigned-url'),
+    path('admin/past-questions/remove-image/', admin_views.PastQuestionRemoveImageView.as_view(), name='admin-past-question-remove-image'),
+    path('admin/past-questions/', admin_views.PastQuestionListAdminView.as_view(), name='admin-past-question-list'),
+    path('admin/past-questions/<str:pk>/', admin_views.PastQuestionDetailAdminView.as_view(), name='admin-past-question-detail'),
+
     # Admin Question Bank Data Grid
     path('admin/questions/', admin_views.QuizListAdminView.as_view(), name='admin-quiz-list'),
     path('admin/questions/<str:pk>/', admin_views.QuizDetailAdminView.as_view(), name='admin-quiz-detail'),

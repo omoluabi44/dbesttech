@@ -50,3 +50,5 @@ whitenoise==6.8.0
 django-import-export
 celery==5.4.0
 redis==5.2.1
+boto3
+ 

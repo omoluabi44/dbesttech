@@ -132,3 +132,34 @@ export const getAdminQuestions = async (params: any) => {
   const res = await client.get('/quiz/admin/questions/', { params });
   return res.data;
 };
+
+// Admin Past Question CRUD
+export const getAdminPastQuestions = async (params: any) => {
+  const res = await client.get('/quiz/admin/past-questions/', { params });
+  return res.data;
+};
+
+export const createPastQuestion = async (data: any) => {
+  const res = await client.post('/quiz/admin/past-questions/', data);
+  return res.data;
+};
+
+export const updatePastQuestion = async (id: string, data: any) => {
+  const res = await client.patch(`/quiz/admin/past-questions/${id}/`, data);
+  return res.data;
+};
+
+export const deletePastQuestion = async (id: string) => {
+  const res = await client.delete(`/quiz/admin/past-questions/${id}/`);
+  return res.data;
+};
+
+export const getPastQuestionPresignedUrl = async (data: { question_id: string; filename: string; content_type: string }) => {
+  const res = await client.post('/quiz/admin/past-questions/presigned-url/', data);
+  return res.data;
+};
+
+export const removePastQuestionImage = async (question_id: string) => {
+  const res = await client.post('/quiz/admin/past-questions/remove-image/', { question_id });
+  return res.data;
+};

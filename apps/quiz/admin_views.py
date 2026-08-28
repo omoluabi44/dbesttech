@@ -3,9 +3,13 @@ from rest_framework.response import Response
 from rest_framework.parsers import MultiPartParser, FormParser
 from django.shortcuts import get_object_or_404
 from django.db import transaction
-
-from .models import PastQuestionUpload, Subject, Topic, Quiz
-from .serializers import PastQuestionUploadSerializer, QuizSerializer
+from django.db.models import Q
+from django.conf import settings
+import boto3
+from botocore.exceptions import ClientError
+import uuid as uuid_lib
+from .models import PastQuestionUpload, PastQuestion, Subject, Topic, Quiz
+from .serializers import PastQuestionUploadSerializer, QuizSerializer, PastQuestionAdminSerializer
 from .tasks import extract_past_questions_task, generate_questions_task
 from .ai.gemini_client import GeminiQuizClient
 from celery.result import AsyncResult
@@ -249,4 +253,133 @@ class QuizDetailAdminView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Quiz.objects.all()
     serializer_class = QuizSerializer
     permission_classes = [IsAdminUser]
+
+
+class PastQuestionListAdminView(generics.ListCreateAPIView):
+    """List and create PastQuestion records for the admin interface."""
+    serializer_class = PastQuestionAdminSerializer
+    permission_classes = [IsAdminUser]
+
+    def get_queryset(self):
+        queryset = PastQuestion.objects.all()
+        subject_id = self.request.query_params.get('subject_id')
+        level = self.request.query_params.get('level')
+        exam_body = self.request.query_params.get('exam_body')
+        year = self.request.query_params.get('year')
+        has_image = self.request.query_params.get('has_image')
+
+        if subject_id:
+            queryset = queryset.filter(subject_id=subject_id)
+        if level:
+            queryset = queryset.filter(level=level)
+        if exam_body:
+            queryset = queryset.filter(exam_body=exam_body)
+        if year:
+            queryset = queryset.filter(year=year)
+        if has_image is not None:
+            if str(has_image).lower() == 'true':
+                queryset = queryset.exclude(image_url__isnull=True).exclude(image_url='')
+            else:
+                queryset = queryset.filter(Q(image_url__isnull=True) | Q(image_url=''))
+        return queryset
+
+
+class PastQuestionDetailAdminView(generics.RetrieveUpdateDestroyAPIView):
+    """Retrieve, update or delete a specific PastQuestion."""
+    queryset = PastQuestion.objects.all()
+    serializer_class = PastQuestionAdminSerializer
+    permission_classes = [IsAdminUser]
+
+
+class PastQuestionPresignedUrlView(views.APIView):
+    """Generate an S3 presigned URL for direct browser upload of question images."""
+    permission_classes = [IsAdminUser]
+
+    def post(self, request):
+        question_id = request.data.get('question_id')
+        filename = request.data.get('filename', 'image.png')
+        content_type = request.data.get('content_type', 'image/png')
+
+        if not question_id:
+            return Response({'error': 'question_id is required.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        allowed_types = ['image/jpeg', 'image/png', 'image/webp']
+        if content_type not in allowed_types:
+            return Response({'error': f'Invalid content type. Allowed: {allowed_types}'}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Verify the question exists
+        question = PastQuestion.objects.filter(id=question_id).first()
+        if not question:
+            return Response({'error': 'Question not found.'}, status=status.HTTP_404_NOT_FOUND)
+
+        # Build the S3 key
+        ext = filename.rsplit('.', 1)[-1] if '.' in filename else 'png'
+        unique_name = f"{uuid_lib.uuid4().hex}.{ext}"
+        s3_key = f"{settings.AWS_S3_QUESTION_IMAGE_PREFIX}{question_id}/{unique_name}"
+
+        try:
+            s3_client = boto3.client(
+                's3',
+                region_name=settings.AWS_S3_REGION,
+                aws_access_key_id=settings.AWS_ACCESS_KEY_ID,
+                aws_secret_access_key=settings.AWS_SECRET_ACCESS_KEY,
+            )
+
+            presigned_url = s3_client.generate_presigned_url(
+                'put_object',
+                Params={
+                    'Bucket': settings.AWS_S3_BUCKET_NAME,
+                    'Key': s3_key,
+                    'ContentType': content_type,
+                },
+                ExpiresIn=settings.AWS_PRESIGNED_URL_EXPIRY,
+            )
+
+            image_url = f"https://{settings.AWS_S3_BUCKET_NAME}.s3.{settings.AWS_S3_REGION}.amazonaws.com/{s3_key}"
+
+            return Response({
+                'upload_url': presigned_url,
+                'image_url': image_url,
+            })
+        except ClientError as e:
+            logger.error(f"Error generating presigned URL: {e}")
+            return Response({'error': 'Failed to generate upload URL.'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+class PastQuestionRemoveImageView(views.APIView):
+    """Remove an image from a PastQuestion and delete it from S3."""
+    permission_classes = [IsAdminUser]
+
+    def post(self, request):
+        question_id = request.data.get('question_id')
+        if not question_id:
+            return Response({'error': 'question_id is required.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        question = PastQuestion.objects.filter(id=question_id).first()
+        if not question:
+            return Response({'error': 'Question not found.'}, status=status.HTTP_404_NOT_FOUND)
+
+        if not question.image_url:
+            return Response({'error': 'Question has no image.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Extract S3 key from image_url
+        try:
+            bucket_prefix = f"https://{settings.AWS_S3_BUCKET_NAME}.s3.{settings.AWS_S3_REGION}.amazonaws.com/"
+            if question.image_url.startswith(bucket_prefix):
+                s3_key = question.image_url[len(bucket_prefix):]
+
+                s3_client = boto3.client(
+                    's3',
+                    region_name=settings.AWS_S3_REGION,
+                    aws_access_key_id=settings.AWS_ACCESS_KEY_ID,
+                    aws_secret_access_key=settings.AWS_SECRET_ACCESS_KEY,
+                )
+                s3_client.delete_object(Bucket=settings.AWS_S3_BUCKET_NAME, Key=s3_key)
+        except ClientError as e:
+            logger.warning(f"Failed to delete S3 object: {e}")
+
+        question.image_url = None
+        question.save(update_fields=['image_url'])
+
+        return Response({'message': 'Image removed successfully.'})
 

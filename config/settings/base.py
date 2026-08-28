@@ -195,6 +195,14 @@ FLUTTERWAVE_PUBLIC_KEY = os.getenv('FLUTTERWAVE_PUBLIC_KEY', '')
 FLUTTERWAVE_SECRET_KEY = os.getenv('FLUTTERWAVE_SECRET_KEY', '')
 FLUTTERWAVE_WEBHOOK_SECRET = os.getenv('FLUTTERWAVE_WEBHOOK_SECRET', '')
 
+# AWS S3 Configuration for question images
+AWS_ACCESS_KEY_ID = os.getenv('AWS_ACCESS_KEY_ID', '')
+AWS_SECRET_ACCESS_KEY = os.getenv('AWS_SECRET_ACCESS_KEY', '')
+AWS_S3_BUCKET_NAME = os.getenv('AWS_S3_BUCKET_NAME', 'dbestquiz-question-images')
+AWS_S3_REGION = os.getenv('AWS_S3_REGION', 'eu-west-2')
+AWS_S3_QUESTION_IMAGE_PREFIX = 'question-images/'
+AWS_PRESIGNED_URL_EXPIRY = 3600
+
 # Logging configuration to output 500 errors to console
 LOGGING = {
     'version': 1,
