@@ -62,6 +62,10 @@ export default function PerformancePage() {
     accuracy: Math.round(sub.accuracy_rate),
   })) || [];
 
+  const sortedStrengths = [...(strengthsWeaknesses?.results || [])].sort((a: any, b: any) => b.mastery_percentage - a.mastery_percentage);
+  const strongestTopic = sortedStrengths.length > 0 ? sortedStrengths[0].topic_name : 'None';
+  const weakestTopic = sortedStrengths.length > 0 ? sortedStrengths[sortedStrengths.length - 1].topic_name : 'None';
+
   return (
     <DashboardLayout>
       <div className="mb-8">
@@ -105,9 +109,9 @@ export default function PerformancePage() {
               <Award size={24} />
             </div>
             <div>
-              <p className="text-sm font-medium text-slate-500">Strongest Subject</p>
-              <div className="text-lg font-bold text-slate-900 truncate max-w-[120px]">
-                {isLoadingSummary ? <Skeleton className="h-8 w-24" /> : summary?.strongest_subject || 'None'}
+              <p className="text-sm font-medium text-slate-500">Strongest Topic</p>
+              <div className="text-lg font-bold text-slate-900 truncate max-w-[120px]" title={strongestTopic}>
+                {isLoadingStrengths ? <Skeleton className="h-8 w-24" /> : strongestTopic}
               </div>
             </div>
           </div>
@@ -119,21 +123,37 @@ export default function PerformancePage() {
               <BrainCircuit size={24} />
             </div>
             <div>
-              <p className="text-sm font-medium text-slate-500">Weakest Subject</p>
-              <div className="text-lg font-bold text-slate-900 truncate max-w-[120px]">
-                {isLoadingSummary ? <Skeleton className="h-8 w-24" /> : summary?.weakest_subject || 'None'}
+              <p className="text-sm font-medium text-slate-500">Weakest Topic</p>
+              <div className="text-lg font-bold text-slate-900 truncate max-w-[120px]" title={weakestTopic}>
+                {isLoadingStrengths ? <Skeleton className="h-8 w-24" /> : weakestTopic}
               </div>
             </div>
           </div>
         </Card>
       </div>
 
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8 bg-[var(--surface)] p-4 rounded-xl border border-[var(--surface-dark)]">
+        <div>
+          <h3 className="text-lg font-bold text-slate-900 dark:text-white">Subject Filter</h3>
+          <p className="text-sm text-slate-500">Select a subject to view specific performance data.</p>
+        </div>
+        <select
+          value={selectedSubject}
+          onChange={(e) => setSelectedSubject(e.target.value)}
+          className="bg-[var(--background)] border border-[var(--surface-dark)] rounded-lg px-4 py-2 min-w-[200px] text-foreground focus:border-primary-500 outline-none"
+        >
+          <option value="">All Subjects</option>
+          {subjectsList?.map((s: any) => (
+            <option key={s.id} value={s.id}>{s.name}</option>
+          ))}
+        </select>
+      </div>
+
       {/* Tabs */}
       <div className="flex border-b border-slate-200 mb-8 overflow-x-auto hide-scrollbar">
         {[
           { id: 'overview', label: 'Progress Overview' },
-          { id: 'subjects', label: 'Subject Breakdown' },
-          { id: 'strengths', label: 'Strengths & Weaknesses' },
+          { id: 'strengths', label: 'Topic Mastery & Action Plan' },
         ].map(tab => (
           <button
             key={tab.id}
@@ -185,59 +205,9 @@ export default function PerformancePage() {
           </Card>
         </div>
       )}
-
-      {activeTab === 'subjects' && (
-        <div className="space-y-8">
-          <Card padding="lg" className="border-slate-100 shadow-sm">
-            <h3 className="text-lg font-bold text-slate-900 mb-6">Average Score by Subject</h3>
-            {isLoadingSubjects ? (
-              <Skeleton className="h-[300px] w-full" />
-            ) : subjectData.length > 0 ? (
-              <div className="h-[300px] w-full">
-                <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={subjectData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }} layout="vertical">
-                    <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="#f1f5f9" />
-                    <XAxis type="number" domain={[0, 100]} axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#64748b' }} />
-                    <YAxis dataKey="name" type="category" axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#475569', fontWeight: 500 }} width={120} />
-                    <Tooltip 
-                      cursor={{ fill: '#f8fafc' }}
-                      contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
-                      formatter={(value: any) => [`${value}%`, 'Score']}
-                    />
-                    <Bar dataKey="score" fill="#0ea5e9" radius={[0, 4, 4, 0]} barSize={24} />
-                  </BarChart>
-                </ResponsiveContainer>
-              </div>
-            ) : (
-              <div className="h-[300px] flex items-center justify-center text-slate-400 border-2 border-dashed border-slate-100 rounded-xl">
-                No subject data available.
-              </div>
-            )}
-          </Card>
-        </div>
-      )}
-
       {activeTab === 'strengths' && (
         <div className="space-y-8">
           
-          {/* Subject Filter & Action Plan Header */}
-          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-[var(--surface)] p-4 rounded-xl border border-[var(--surface-dark)]">
-            <div>
-              <h3 className="text-lg font-bold text-slate-900 dark:text-white">Topic Analysis</h3>
-              <p className="text-sm text-slate-500">Filter performance by subject to see detailed topic mastery.</p>
-            </div>
-            <select
-              value={selectedSubject}
-              onChange={(e) => setSelectedSubject(e.target.value)}
-              className="bg-[var(--background)] border border-[var(--surface-dark)] rounded-lg px-4 py-2 min-w-[200px] text-foreground focus:border-primary-500 outline-none"
-            >
-              <option value="">All Subjects</option>
-              {subjectsList?.map((s: any) => (
-                <option key={s.id} value={s.id}>{s.name}</option>
-              ))}
-            </select>
-          </div>
-
           {/* Action Plan Section */}
           {!isLoadingStrengths && strengthsWeaknesses?.results?.length > 0 && (
             <Card padding="lg" className="border-orange-100 shadow-sm bg-orange-50/50 dark:bg-orange-900/10 dark:border-orange-900/30">
