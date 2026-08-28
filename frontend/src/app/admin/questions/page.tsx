@@ -910,9 +910,9 @@ export default function QuestionBankPage() {
               <button 
                 onClick={handleSaveEdit}
                 disabled={isSaving}
-                className="px-6 py-2.5 bg-primary-600 hover:bg-primary-700 text-white rounded-lg font-medium transition-colors flex items-center gap-2 shadow-sm"
+                className="px-6 py-2.5 bg-primary-600 hover:bg-primary-700 text-black rounded-lg font-medium transition-colors flex items-center gap-2 shadow-sm"
               >
-                {isSaving ? <Loader2 className="w-5 h-5 animate-spin" /> : 'Edit'}
+                {isSaving ? <Loader2 className="w-5 h-5 animate-spin text-black" /> : 'Edit'}
               </button>
             </div>
           </div>
