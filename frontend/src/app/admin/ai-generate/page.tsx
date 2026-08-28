@@ -323,7 +323,7 @@ export default function AIGeneratePage() {
                           />
                         </div>
                         <div className="flex justify-end gap-2">
-                          <button onClick={() => setEditingIndex(null)} className="px-4 py-1.5 text-sm text-gray-400 hover:text-white">Cancel</button>
+                          <button onClick={() => setEditingIndex(null)} className="px-4 py-1.5 text-sm text-gray-400 hover:text-gray-900 dark:hover:text-white">Cancel</button>
                           <button onClick={saveEdit} className="px-4 py-1.5 text-sm bg-primary-500 text-white rounded hover:bg-primary-400">Done</button>
                         </div>
                       </div>

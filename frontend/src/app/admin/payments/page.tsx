@@ -178,13 +178,13 @@ export default function PaymentsDashboard() {
         <div className="flex bg-[var(--surface)] p-1 rounded-lg border border-[var(--surface-dark)]">
           <button
             onClick={() => setActiveTab('overview')}
-            className={`px-4 py-2 rounded-md text-sm font-medium transition-all ${activeTab === 'overview' ? 'bg-primary-500/20 text-primary-400' : 'text-gray-400 hover:text-white'}`}
+            className={`px-4 py-2 rounded-md text-sm font-medium transition-all ${activeTab === 'overview' ? 'bg-primary-500/20 text-primary-400' : 'text-gray-400 hover:text-gray-900 dark:hover:text-white'}`}
           >
             Overview
           </button>
           <button
             onClick={() => setActiveTab('technical')}
-            className={`px-4 py-2 rounded-md text-sm font-medium transition-all ${activeTab === 'technical' ? 'bg-primary-500/20 text-primary-400' : 'text-gray-400 hover:text-white'}`}
+            className={`px-4 py-2 rounded-md text-sm font-medium transition-all ${activeTab === 'technical' ? 'bg-primary-500/20 text-primary-400' : 'text-gray-400 hover:text-gray-900 dark:hover:text-white'}`}
           >
             Technical Monitoring
           </button>
@@ -326,7 +326,7 @@ export default function PaymentsDashboard() {
                         <td className="p-4 text-right">
                           <button 
                             onClick={() => { setSelectedTx(tx); setShowRefundConfirm(false); setRefundAmount(''); }}
-                            className="p-2 text-gray-400 hover:text-white hover:bg-[var(--surface-dark)] rounded-md transition-colors"
+                            className="p-2 text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-[var(--surface-dark)] rounded-md transition-colors"
                           >
                             <MoreVertical size={16} />
                           </button>
@@ -399,7 +399,7 @@ export default function PaymentsDashboard() {
                         <td className="p-4 font-mono text-xs text-gray-300">{log.tx_ref || '—'}</td>
                         <td className="p-4">
                           <details className="cursor-pointer">
-                            <summary className="text-xs text-gray-400 hover:text-white">View payload</summary>
+                            <summary className="text-xs text-gray-400 hover:text-gray-900 dark:hover:text-white">View payload</summary>
                             <pre className="bg-[var(--background)] p-2 rounded border border-[var(--surface-dark)] font-mono text-xs text-gray-300 overflow-x-auto max-w-md mt-2 max-h-40 overflow-y-auto">
                               {JSON.stringify(log.payload, null, 2)}
                             </pre>
@@ -463,7 +463,7 @@ export default function PaymentsDashboard() {
           <div className="bg-[var(--surface)] border border-[var(--surface-dark)] w-full max-w-md rounded-2xl shadow-2xl overflow-hidden">
             <div className="flex justify-between items-center p-6 border-b border-[var(--surface-dark)]">
               <h3 className="text-xl font-bold">Transaction Actions</h3>
-              <button onClick={() => setSelectedTx(null)} className="text-gray-400 hover:text-white transition-colors">
+              <button onClick={() => setSelectedTx(null)} className="text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors">
                 <X size={20} />
               </button>
             </div>
@@ -522,7 +522,7 @@ export default function PaymentsDashboard() {
                         <div className="flex gap-2">
                           <button
                             onClick={() => setShowRefundConfirm(false)}
-                            className="flex-1 py-2 rounded-lg border border-[var(--surface-dark)] text-gray-400 hover:text-white transition-colors text-sm"
+                            className="flex-1 py-2 rounded-lg border border-[var(--surface-dark)] text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors text-sm"
                           >
                             Cancel
                           </button>

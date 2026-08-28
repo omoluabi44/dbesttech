@@ -179,7 +179,7 @@ export default function SubscriptionsAdminPage() {
                     </td>
                     <td className="p-4 text-right">
                       <div className="flex justify-end gap-2">
-                        <button onClick={() => openEditModal(plan)} className="p-2 text-gray-400 hover:text-white transition-colors">
+                        <button onClick={() => openEditModal(plan)} className="p-2 text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors">
                           <Edit2 size={18} />
                         </button>
                       </div>
@@ -198,7 +198,7 @@ export default function SubscriptionsAdminPage() {
           <div className="bg-[var(--surface)] border border-[var(--surface-dark)] w-full max-w-2xl rounded-2xl shadow-2xl overflow-hidden my-8">
             <div className="flex justify-between items-center p-6 border-b border-[var(--surface-dark)]">
               <h2 className="text-xl font-bold text-foreground">Edit Plan</h2>
-              <button onClick={() => setIsModalOpen(false)} className="text-gray-400 hover:text-white transition-colors">
+              <button onClick={() => setIsModalOpen(false)} className="text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors">
                 <X size={20} />
               </button>
             </div>

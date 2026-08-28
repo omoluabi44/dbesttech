@@ -232,7 +232,7 @@ export default function UsersPage() {
                     </td>
                     <td className="p-4 text-right">
                       <div className="flex justify-end gap-2">
-                        <button onClick={() => setViewUser(user)} className="p-2 text-gray-400 hover:text-white transition-colors focus:outline-none focus:ring-2 focus:ring-primary-500 rounded" aria-label={`View details for ${user.username}`} title="View Details">
+                        <button onClick={() => setViewUser(user)} className="p-2 text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors focus:outline-none focus:ring-2 focus:ring-primary-500 rounded" aria-label={`View details for ${user.username}`} title="View Details">
                           <Eye size={18} aria-hidden="true" />
                         </button>
                         {!user.email_verified && (
@@ -289,7 +289,7 @@ export default function UsersPage() {
           <div className="bg-[var(--surface)] border border-[var(--surface-dark)] w-full max-w-md rounded-2xl shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-200">
             <div className="flex justify-between items-center p-6 border-b border-[var(--surface-dark)]">
               <h2 id="add-user-title" className="text-xl font-bold text-foreground">Add New User</h2>
-              <button onClick={() => setIsAddModalOpen(false)} className="text-gray-400 hover:text-white transition-colors focus:outline-none focus:ring-2 focus:ring-primary-500 rounded" aria-label="Close modal">
+              <button onClick={() => setIsAddModalOpen(false)} className="text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors focus:outline-none focus:ring-2 focus:ring-primary-500 rounded" aria-label="Close modal">
                 <X size={20} aria-hidden="true" />
               </button>
             </div>
@@ -359,7 +359,7 @@ export default function UsersPage() {
           <div className="bg-[var(--surface)] border border-[var(--surface-dark)] w-full max-w-md rounded-2xl shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-200">
             <div className="flex justify-between items-center p-6 border-b border-[var(--surface-dark)]">
               <h2 id="view-user-title" className="text-xl font-bold text-foreground">User Details</h2>
-              <button onClick={() => setViewUser(null)} className="text-gray-400 hover:text-white transition-colors focus:outline-none focus:ring-2 focus:ring-primary-500 rounded" aria-label="Close modal">
+              <button onClick={() => setViewUser(null)} className="text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors focus:outline-none focus:ring-2 focus:ring-primary-500 rounded" aria-label="Close modal">
                 <X size={20} aria-hidden="true" />
               </button>
             </div>

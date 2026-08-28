@@ -7,6 +7,9 @@
   --color-primary-hover: var(--primary-hover);
   --color-primary-light: var(--primary-light);
   --color-primary-dark: var(--primary-dark);
+  --color-primary-400: var(--primary-light);
+  --color-primary-500: var(--primary);
+  --color-primary-600: var(--primary-hover);
   --color-secondary: var(--secondary);
   --color-secondary-hover: var(--secondary-hover);
   --color-accent: var(--accent);
