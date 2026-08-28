@@ -281,8 +281,8 @@ export default function AIUploadPage() {
         });
 
         await uploadToS3(upload_url, pqFile, (pct) => setPqUploadProgress(pct));
-        // We do not need to update the past question again since the URL is deterministic,
-        // but if the backend requires saving it, you might need a PATCH call here.
+        // Update the past question with the new image URL
+        await updatePastQuestion(newQuestion.id, { image_url });
         // Actually, the remove image endpoint handles deletion, but let's assume the upload 
         // is just saved via the update API that we used earlier. Wait, we should update the question with the URL.
         // I will copy what was originally done:
