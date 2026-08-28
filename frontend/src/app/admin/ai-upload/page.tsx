@@ -259,7 +259,7 @@ export default function AIUploadPage() {
 
       // 1. Create question
       const createData = {
-        subject_id: parseInt(pqForm.subject),
+        subject: parseInt(pqForm.subject),
         level: pqForm.level,
         exam_body: pqForm.exam_body,
         year: pqForm.year,
