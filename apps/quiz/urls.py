@@ -39,6 +39,10 @@ urlpatterns = [
     # Admin Question Bank Data Grid
     path('admin/questions/', admin_views.QuizListAdminView.as_view(), name='admin-quiz-list'),
     path('admin/questions/<str:pk>/', admin_views.QuizDetailAdminView.as_view(), name='admin-quiz-detail'),
+    
+    # Admin Topics
+    path('admin/topics/', admin_views.TopicListAdminView.as_view(), name='admin-topic-list'),
+    path('admin/topics/<int:pk>/', admin_views.TopicDetailAdminView.as_view(), name='admin-topic-detail'),
 
     # Admin Batch Upload
     path('admin/quizzes/import/', views.QuizBatchUploadView.as_view(), name='quiz-batch-import'),

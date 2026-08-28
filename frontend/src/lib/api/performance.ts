@@ -22,8 +22,12 @@ export const getWeeklyProgress = async (): Promise<PaginatedResponse<WeeklyProgr
   return res.data;
 };
 
-export const getStrengths = async (status?: string): Promise<PaginatedResponse<StrengthWeakness>> => {
-  const url = status ? `/performance/strengths/?status=${status}` : '/performance/strengths/';
+export const getStrengths = async (status?: string, subjectId?: string): Promise<PaginatedResponse<StrengthWeakness>> => {
+  const params = new URLSearchParams();
+  if (status) params.append('status', status);
+  if (subjectId) params.append('subject_id', subjectId);
+  
+  const url = `/performance/strengths/?${params.toString()}`;
   const res = await client.get(url);
   return res.data;
 };

@@ -40,6 +40,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         ]
       : []),
     { name: 'Question Bank', href: '/admin/questions', icon: FileText },
+    { name: 'Topics', href: '/admin/topics', icon: GraduationCap },
   ];
 
   return (

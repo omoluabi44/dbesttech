@@ -36,6 +36,15 @@ class TopicSerializer(serializers.ModelSerializer):
         model = Topic
         fields = ['id', 'name', 'level', 'description']
 
+class AdminTopicSerializer(serializers.ModelSerializer):
+    subject_name = serializers.CharField(source='subject.name', read_only=True)
+    level_display = serializers.CharField(source='get_level_display', read_only=True)
+
+    class Meta:
+        model = Topic
+        fields = ['id', 'subject', 'subject_name', 'name', 'level', 'level_display', 'description', 'is_active', 'created_at']
+        read_only_fields = ['id', 'subject_name', 'level_display', 'created_at']
+
 
 class QuizSerializer(serializers.ModelSerializer):
     class Meta:

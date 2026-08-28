@@ -163,3 +163,24 @@ export const removePastQuestionImage = async (question_id: string) => {
   const res = await client.post('/quiz/admin/past-questions/remove-image/', { question_id });
   return res.data;
 };
+
+// Admin Topics CRUD
+export const getAdminTopics = async (params: any) => {
+  const res = await client.get('/quiz/admin/topics/', { params });
+  return res.data;
+};
+
+export const createTopic = async (data: any) => {
+  const res = await client.post('/quiz/admin/topics/', data);
+  return res.data;
+};
+
+export const updateTopic = async (id: number, data: any) => {
+  const res = await client.patch(`/quiz/admin/topics/${id}/`, data);
+  return res.data;
+};
+
+export const deleteTopic = async (id: number) => {
+  const res = await client.delete(`/quiz/admin/topics/${id}/`);
+  return res.data;
+};

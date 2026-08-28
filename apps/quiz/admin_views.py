@@ -9,7 +9,10 @@ import boto3
 from botocore.exceptions import ClientError
 import uuid as uuid_lib
 from .models import PastQuestionUpload, PastQuestion, Subject, Topic, Quiz
-from .serializers import PastQuestionUploadSerializer, QuizSerializer, PastQuestionAdminSerializer
+from .serializers import (
+    PastQuestionUploadSerializer, QuizSerializer, PastQuestionAdminSerializer, 
+    AdminTopicSerializer
+)
 from .tasks import extract_past_questions_task, generate_questions_task
 from .ai.gemini_client import GeminiQuizClient
 from celery.result import AsyncResult
@@ -253,6 +256,35 @@ class QuizDetailAdminView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Quiz.objects.all()
     serializer_class = QuizSerializer
     permission_classes = [IsAdminUser]
+
+
+class TopicListAdminView(generics.ListCreateAPIView):
+    """
+    List and create Topics for the Admin UI.
+    """
+    serializer_class = AdminTopicSerializer
+    permission_classes = [IsAdminUser]
+
+    def get_queryset(self):
+        queryset = Topic.objects.all()
+        subject_id = self.request.query_params.get('subject_id')
+        level = self.request.query_params.get('level')
+        
+        if subject_id:
+            queryset = queryset.filter(subject_id=subject_id)
+        if level:
+            queryset = queryset.filter(level=level)
+            
+        return queryset
+
+class TopicDetailAdminView(generics.RetrieveUpdateDestroyAPIView):
+    """
+    Retrieve, update, or delete a specific Topic.
+    """
+    queryset = Topic.objects.all()
+    serializer_class = AdminTopicSerializer
+    permission_classes = [IsAdminUser]
+
 
 
 class PastQuestionListAdminView(generics.ListCreateAPIView):

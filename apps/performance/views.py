@@ -115,5 +115,9 @@ class StrengthWeaknessView(generics.ListAPIView):
                 mastery_percentage__gte=50,
                 mastery_percentage__lt=80,
             )
+            
+        subject_id = self.request.query_params.get('subject_id')
+        if subject_id:
+            queryset = queryset.filter(topic__subject_id=subject_id)
         
         return queryset

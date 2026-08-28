@@ -53,9 +53,13 @@ export default function PastQuestionSessionPage() {
   // Initialize timer
   useEffect(() => {
     if (pastQuestions.length > 0 && timeLeftSeconds === -1) {
-      setTimeLeftSeconds(pastQuestions.length * 60);
+      if (pastSession && ['Federal Common Entrance', 'State Common Entrance', 'BECE'].includes(pastSession.exam_body_display)) {
+        setTimeLeftSeconds(90 * 60); // 1hr 30mins
+      } else {
+        setTimeLeftSeconds(pastQuestions.length * 60); // 1 minute per question default
+      }
     }
-  }, [pastQuestions.length, timeLeftSeconds]);
+  }, [pastQuestions.length, timeLeftSeconds, pastSession]);
 
   useEffect(() => {
     if (submitting || timeLeftSeconds <= 0 || isPaywallActive) return;

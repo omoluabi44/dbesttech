@@ -8,6 +8,7 @@ import {
 } from 'recharts';
 import { Target, TrendingUp, TrendingDown, Activity, Award, BrainCircuit } from 'lucide-react';
 import { getOverallSummary, getBySubject, getWeeklyProgress, getStrengths } from '@/lib/api/performance';
+import { getSubjects } from '@/lib/api/quiz';
 import { formatTime } from '@/lib/utils/formatters';
 
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
@@ -18,10 +19,19 @@ import { ProgressBar } from '@/components/ui/ProgressBar';
 
 export default function PerformancePage() {
   const [activeTab, setActiveTab] = useState<'overview' | 'subjects' | 'strengths'>('overview');
+  const [selectedSubject, setSelectedSubject] = useState<string>('');
 
   const { data: summary, isLoading: isLoadingSummary } = useQuery({
     queryKey: ['performance', 'summary'],
     queryFn: getOverallSummary,
+  });
+
+  const { data: subjectsList } = useQuery({
+    queryKey: ['subjects'],
+    queryFn: async () => {
+      const res = await getSubjects();
+      return res.results;
+    },
   });
 
   const { data: bySubject, isLoading: isLoadingSubjects } = useQuery({
@@ -35,8 +45,8 @@ export default function PerformancePage() {
   });
 
   const { data: strengthsWeaknesses, isLoading: isLoadingStrengths } = useQuery({
-    queryKey: ['performance', 'strengths'],
-    queryFn: () => getStrengths(),
+    queryKey: ['performance', 'strengths', selectedSubject],
+    queryFn: () => getStrengths(undefined, selectedSubject),
   });
 
   // Prepare chart data
@@ -208,13 +218,72 @@ export default function PerformancePage() {
       )}
 
       {activeTab === 'strengths' && (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-          {/* Strengths */}
-          <Card padding="lg" className="border-slate-100 shadow-sm">
-            <div className="flex items-center gap-2 mb-6">
-              <TrendingUp className="text-green-500" />
-              <h3 className="text-lg font-bold text-slate-900">Your Strengths</h3>
+        <div className="space-y-8">
+          
+          {/* Subject Filter & Action Plan Header */}
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-[var(--surface)] p-4 rounded-xl border border-[var(--surface-dark)]">
+            <div>
+              <h3 className="text-lg font-bold text-slate-900 dark:text-white">Topic Analysis</h3>
+              <p className="text-sm text-slate-500">Filter performance by subject to see detailed topic mastery.</p>
             </div>
+            <select
+              value={selectedSubject}
+              onChange={(e) => setSelectedSubject(e.target.value)}
+              className="bg-[var(--background)] border border-[var(--surface-dark)] rounded-lg px-4 py-2 min-w-[200px] text-foreground focus:border-primary-500 outline-none"
+            >
+              <option value="">All Subjects</option>
+              {subjectsList?.map((s: any) => (
+                <option key={s.id} value={s.id}>{s.name}</option>
+              ))}
+            </select>
+          </div>
+
+          {/* Action Plan Section */}
+          {!isLoadingStrengths && strengthsWeaknesses?.results?.length > 0 && (
+            <Card padding="lg" className="border-orange-100 shadow-sm bg-orange-50/50 dark:bg-orange-900/10 dark:border-orange-900/30">
+              <div className="mb-4 flex items-start justify-between">
+                <div>
+                  <h3 className="text-lg font-bold text-orange-800 dark:text-orange-400 flex items-center gap-2">
+                    <Target className="w-5 h-5" />
+                    Recommended Action Plan
+                  </h3>
+                  <p className="text-sm text-orange-600/80 dark:text-orange-400/80 mt-1">
+                    Based on your recent performance, focus on these top 3 areas to maximize your score improvement.
+                  </p>
+                </div>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
+                {strengthsWeaknesses.results
+                  .sort((a: any, b: any) => a.mastery_percentage - b.mastery_percentage)
+                  .slice(0, 3)
+                  .map((item: any, idx: number) => (
+                    <div key={`action-${item.id}`} className="bg-white dark:bg-[var(--surface)] p-4 rounded-xl border border-orange-100 dark:border-orange-900/30 shadow-sm">
+                      <div className="flex items-center gap-2 mb-2">
+                        <span className="flex items-center justify-center w-6 h-6 rounded-full bg-orange-100 text-orange-600 text-xs font-bold">{idx + 1}</span>
+                        <h4 className="font-semibold text-slate-900 dark:text-white truncate" title={item.topic_name}>{item.topic_name}</h4>
+                      </div>
+                      <div className="flex justify-between items-end">
+                        <div>
+                          <p className="text-xs text-slate-500">{item.subject_name}</p>
+                          <p className="text-xs font-medium text-orange-600 mt-1">Current Mastery: {Math.round(item.mastery_percentage)}%</p>
+                        </div>
+                        <button className="text-xs font-medium bg-orange-500 hover:bg-orange-600 text-white px-3 py-1.5 rounded-lg transition-colors">
+                          Practice
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+              </div>
+            </Card>
+          )}
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            {/* Strengths */}
+            <Card padding="lg" className="border-slate-100 shadow-sm">
+              <div className="flex items-center gap-2 mb-6">
+                <TrendingUp className="text-green-500" />
+                <h3 className="text-lg font-bold text-slate-900 dark:text-white">Your Strengths</h3>
+              </div>
             
             {isLoadingStrengths ? (
               <div className="space-y-4">
@@ -247,7 +316,7 @@ export default function PerformancePage() {
           <Card padding="lg" className="border-slate-100 shadow-sm">
             <div className="flex items-center gap-2 mb-6">
               <TrendingDown className="text-rose-500" />
-              <h3 className="text-lg font-bold text-slate-900">Needs Improvement</h3>
+              <h3 className="text-lg font-bold text-slate-900 dark:text-white">Needs Improvement</h3>
             </div>
             
             {isLoadingStrengths ? (
@@ -276,6 +345,7 @@ export default function PerformancePage() {
               </div>
             )}
           </Card>
+          </div>
         </div>
       )}
 
