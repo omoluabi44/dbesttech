@@ -686,7 +686,7 @@ export default function AIUploadPage() {
                 <button
                   type="submit"
                   disabled={isSubmittingPq}
-                  className="px-8 py-2.5 bg-primary-600 hover:bg-primary-700 text-white rounded-lg font-medium transition-colors flex items-center gap-2"
+                  className="px-8 py-3 bg-primary hover:bg-[var(--primary-hover)] text-white rounded-lg font-medium shadow-md transition-all flex items-center gap-2 disabled:opacity-50"
                 >
                   {isSubmittingPq ? <Loader2 className="w-5 h-5 animate-spin" /> : 'Create Past Question'}
                 </button>
