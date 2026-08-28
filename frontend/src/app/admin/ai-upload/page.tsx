@@ -602,7 +602,13 @@ export default function AIUploadPage() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-4">
                   <h3 className="font-medium text-foreground border-b border-[var(--surface-dark)] pb-2">Options & Correct Answer</h3>
-                  <p className="text-xs text-gray-400">Enter your options and select the radio button next to the correct one.</p>
+                  <div className="bg-primary/10 border border-primary/20 rounded-lg p-3 mb-2">
+                    <p className="text-sm text-primary font-medium flex items-center gap-2">
+                      <span className="w-4 h-4 rounded-full border-2 border-primary flex items-center justify-center p-[2px]"><span className="w-full h-full bg-primary rounded-full"></span></span>
+                      Important
+                    </p>
+                    <p className="text-xs text-gray-400 mt-1">Please enter your options below and <strong>tick the circular radio button</strong> next to the one that is the correct answer.</p>
+                  </div>
                   {(['A', 'B', 'C', 'D'] as const).map((opt) => (
                     <div key={opt} className="flex gap-3 items-center">
                       <input 
