@@ -48,7 +48,7 @@ export default function AIUploadPage() {
   const [isDragging, setIsDragging] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // Manual Entry State
+  // Form State for new past question
   const [pqForm, setPqForm] = useState({
     subject: '',
     level: '',
@@ -56,8 +56,8 @@ export default function AIUploadPage() {
     year: new Date().getFullYear(),
     difficulty: 'medium',
     questionText: '',
-    correct_answer: '',
-    incorrect_answers: { A: '', B: '', C: '', D: '' },
+    correctOption: 'A' as 'A' | 'B' | 'C' | 'D',
+    options: { A: '', B: '', C: '', D: '' },
     explanation: ''
   });
   const [pqFile, setPqFile] = useState<File | null>(null);
@@ -251,6 +251,12 @@ export default function AIUploadPage() {
       setIsSubmittingPq(true);
       setPqUploadProgress(0);
 
+      // Extract correct answer and incorrect answers based on the selected option
+      const correct_answer = pqForm.options[pqForm.correctOption];
+      const incorrect_answers = Object.entries(pqForm.options)
+        .filter(([key, value]) => key !== pqForm.correctOption && value.trim() !== '')
+        .map(([, value]) => value);
+
       // 1. Create question
       const createData = {
         subject_id: parseInt(pqForm.subject),
@@ -259,8 +265,8 @@ export default function AIUploadPage() {
         year: pqForm.year,
         difficulty: pqForm.difficulty,
         questionText: pqForm.questionText,
-        correct_answer: pqForm.correct_answer,
-        incorrect_answers: Object.values(pqForm.incorrect_answers).filter(v => v !== ''),
+        correct_answer: correct_answer,
+        incorrect_answers: incorrect_answers,
         explanation: pqForm.explanation
       };
       
@@ -291,8 +297,8 @@ export default function AIUploadPage() {
       setPqForm({
         ...pqForm,
         questionText: '',
-        correct_answer: '',
-        incorrect_answers: { A: '', B: '', C: '', D: '' },
+        correctOption: 'A',
+        options: { A: '', B: '', C: '', D: '' },
         explanation: ''
       });
       setPqFile(null);
@@ -595,20 +601,29 @@ export default function AIUploadPage() {
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-4">
-                  <h3 className="font-medium text-foreground border-b border-[var(--surface-dark)] pb-2">Options</h3>
-                  {['A', 'B', 'C', 'D'].map((opt) => (
+                  <h3 className="font-medium text-foreground border-b border-[var(--surface-dark)] pb-2">Options & Correct Answer</h3>
+                  <p className="text-xs text-gray-400">Enter your options and select the radio button next to the correct one.</p>
+                  {(['A', 'B', 'C', 'D'] as const).map((opt) => (
                     <div key={opt} className="flex gap-3 items-center">
+                      <input 
+                        type="radio" 
+                        name="correctOption"
+                        checked={pqForm.correctOption === opt}
+                        onChange={() => setPqForm({ ...pqForm, correctOption: opt })}
+                        className="w-4 h-4 text-primary bg-[var(--background)] border-[var(--surface-dark)] focus:ring-primary-500 cursor-pointer"
+                        title={`Set option ${opt} as correct answer`}
+                      />
                       <span className="font-medium text-gray-500 w-4">{opt}</span>
                       <input 
                         required={opt === 'A' || opt === 'B'} // at least two options
                         type="text"
                         placeholder={`Option ${opt}`}
-                        value={(pqForm.incorrect_answers as any)[opt]}
+                        value={pqForm.options[opt]}
                         onChange={(e) => setPqForm({
                           ...pqForm, 
-                          incorrect_answers: { ...pqForm.incorrect_answers, [opt]: e.target.value }
+                          options: { ...pqForm.options, [opt]: e.target.value }
                         })}
-                        className="flex-1 bg-[var(--background)] border border-[var(--surface-dark)] rounded-lg px-4 py-2 text-foreground focus:border-primary-500 outline-none"
+                        className={`flex-1 bg-[var(--background)] border ${pqForm.correctOption === opt ? 'border-green-500 text-green-400' : 'border-[var(--surface-dark)] text-foreground'} rounded-lg px-4 py-2 focus:border-primary-500 outline-none transition-colors`}
                       />
                     </div>
                   ))}
@@ -616,21 +631,11 @@ export default function AIUploadPage() {
                 
                 <div className="space-y-4 flex flex-col">
                   <div className="flex-1">
-                    <label className="block text-sm font-medium text-gray-400 mb-1">Correct Answer * (Matches one option exactly)</label>
-                    <input 
-                      required
-                      type="text"
-                      placeholder="Enter exact correct answer text"
-                      value={pqForm.correct_answer}
-                      onChange={(e) => setPqForm({...pqForm, correct_answer: e.target.value})}
-                      className="w-full bg-[var(--background)] border border-[var(--surface-dark)] rounded-lg px-4 py-2 text-green-400 font-medium focus:border-primary-500 outline-none mb-4"
-                    />
-
                     <label className="block text-sm font-medium text-gray-400 mb-1">Explanation (Optional)</label>
                     <textarea 
                       value={pqForm.explanation}
                       onChange={(e) => setPqForm({...pqForm, explanation: e.target.value})}
-                      className="w-full bg-[var(--background)] border border-[var(--surface-dark)] rounded-lg px-4 py-2 text-foreground focus:border-primary-500 outline-none min-h-[100px]"
+                      className="w-full bg-[var(--background)] border border-[var(--surface-dark)] rounded-lg px-4 py-2 text-foreground focus:border-primary-500 outline-none min-h-[150px]"
                       placeholder="Explain the correct answer..."
                     />
                   </div>
