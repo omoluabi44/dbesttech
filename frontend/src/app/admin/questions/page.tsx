@@ -43,7 +43,7 @@ const uploadToS3 = (uploadUrl: string, file: File, onProgress: (pct: number) => 
 };
 
 export default function QuestionBankPage() {
-  const [activeTab, setActiveTab] = useState<'list' | 'upload_past' | 'import'>('list');
+  const [activeTab, setActiveTab] = useState<'list' | 'import'>('list');
   const [importType, setImportType] = useState<'quizzes' | 'past_questions'>('quizzes');
   
   // Import State
@@ -71,22 +71,6 @@ export default function QuestionBankPage() {
   const [isUploadingImage, setIsUploadingImage] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
   
-  // Form State for new past question
-  const [pqForm, setPqForm] = useState({
-    subject: '',
-    level: '',
-    exam_body: '',
-    year: new Date().getFullYear(),
-    difficulty: 'medium',
-    questionText: '',
-    correct_answer: '',
-    incorrect_answers: { A: '', B: '', C: '', D: '' },
-    explanation: ''
-  });
-  const [pqFile, setPqFile] = useState<File | null>(null);
-  const [pqPreview, setPqPreview] = useState<string | null>(null);
-  const [isSubmittingPq, setIsSubmittingPq] = useState(false);
-  const [pqUploadProgress, setPqUploadProgress] = useState(0);
 
   // Filters
   const [filters, setFilters] = useState({
@@ -304,72 +288,6 @@ export default function QuestionBankPage() {
     }
   };
 
-  const handlePqImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files.length > 0) {
-      const file = e.target.files[0];
-      if (file.size > 5 * 1024 * 1024) {
-        toast.error('File size must be less than 5MB');
-        return;
-      }
-      setPqFile(file);
-      setPqPreview(URL.createObjectURL(file));
-    }
-  };
-
-  const submitPqForm = async (e: React.FormEvent) => {
-    e.preventDefault();
-    try {
-      setIsSubmittingPq(true);
-      setPqUploadProgress(0);
-
-      // 1. Create question
-      const createData = {
-        subject_id: parseInt(pqForm.subject),
-        level: pqForm.level,
-        exam_body: pqForm.exam_body,
-        year: pqForm.year,
-        difficulty: pqForm.difficulty,
-        questionText: pqForm.questionText,
-        correct_answer: pqForm.correct_answer,
-        incorrect_answers: Object.values(pqForm.incorrect_answers).filter(v => v !== ''),
-        explanation: pqForm.explanation
-      };
-      
-      const newQuestion = await createPastQuestion(createData);
-
-      // 2. Upload image if selected
-      if (pqFile) {
-        const { upload_url, image_url } = await getPastQuestionPresignedUrl({
-          question_id: newQuestion.id,
-          filename: pqFile.name,
-          content_type: pqFile.type
-        });
-
-        await uploadToS3(upload_url, pqFile, (pct) => setPqUploadProgress(pct));
-        await updatePastQuestion(newQuestion.id, { image_url });
-      }
-
-      toast.success('Past question created successfully');
-      
-      // Reset form
-      setPqForm({
-        ...pqForm,
-        questionText: '',
-        correct_answer: '',
-        incorrect_answers: { A: '', B: '', C: '', D: '' },
-        explanation: ''
-      });
-      setPqFile(null);
-      setPqPreview(null);
-      
-    } catch (err) {
-      toast.error('Failed to create past question');
-      console.error(err);
-    } finally {
-      setIsSubmittingPq(false);
-    }
-  };
-
   return (
     <div className="space-y-6">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
@@ -393,16 +311,7 @@ export default function QuestionBankPage() {
           >
             Question List
           </button>
-          <button
-            onClick={() => setActiveTab('upload_past')}
-            className={`flex-1 py-4 px-6 text-sm font-medium transition-all duration-300 ${
-              activeTab === 'upload_past'
-                ? 'bg-primary-500/10 text-primary-600 border-b-2 border-primary-500'
-                : 'text-gray-500 hover:text-primary-600 hover:bg-primary-500/10'
-            }`}
-          >
-            Upload Past Question
-          </button>
+
           <button
             onClick={() => setActiveTab('import')}
             className={`flex-1 py-4 px-6 text-sm font-medium transition-all duration-300 ${
@@ -553,106 +462,6 @@ export default function QuestionBankPage() {
           </div>
         )}
         
-        {activeTab === 'upload_past' && (
-          <div className="p-8 max-w-4xl mx-auto">
-            <h3 className="text-xl font-semibold text-[var(--foreground)] mb-6">Manually Create Past Question</h3>
-            <form onSubmit={submitPqForm} className="space-y-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-400 mb-1">Subject</label>
-                  <select required value={pqForm.subject} onChange={e => setPqForm({...pqForm, subject: e.target.value})} className="w-full bg-[var(--background)] border border-[var(--surface-dark)] rounded-lg p-2 text-foreground focus:border-primary-500 outline-none">
-                    <option value="">Select Subject</option>
-                    {subjects.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
-                  </select>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-400 mb-1">Level</label>
-                  <select required value={pqForm.level} onChange={e => setPqForm({...pqForm, level: e.target.value})} className="w-full bg-[var(--background)] border border-[var(--surface-dark)] rounded-lg p-2 text-foreground focus:border-primary-500 outline-none">
-                    <option value="">Select Level</option>
-                    {SCHOOL_LEVELS.map(lvl => <option key={lvl.value} value={lvl.value}>{lvl.label}</option>)}
-                  </select>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-400 mb-1">Exam Body</label>
-                  <select required value={pqForm.exam_body} onChange={e => setPqForm({...pqForm, exam_body: e.target.value})} className="w-full bg-[var(--background)] border border-[var(--surface-dark)] rounded-lg p-2 text-foreground focus:border-primary-500 outline-none">
-                    <option value="">Select Exam Body</option>
-                    {EXAM_BODY_OPTIONS.map(opt => <option key={opt.value} value={opt.value}>{opt.label}</option>)}
-                  </select>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-400 mb-1">Year</label>
-                  <input required type="number" value={pqForm.year} onChange={e => setPqForm({...pqForm, year: parseInt(e.target.value)})} className="w-full bg-[var(--background)] border border-[var(--surface-dark)] rounded-lg p-2 text-foreground focus:border-primary-500 outline-none" />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-400 mb-1">Difficulty</label>
-                  <select required value={pqForm.difficulty} onChange={e => setPqForm({...pqForm, difficulty: e.target.value})} className="w-full bg-[var(--background)] border border-[var(--surface-dark)] rounded-lg p-2 text-foreground focus:border-primary-500 outline-none">
-                    <option value="easy">Easy</option>
-                    <option value="medium">Medium</option>
-                    <option value="hard">Hard</option>
-                  </select>
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-400 mb-1">Question Text</label>
-                <textarea required value={pqForm.questionText} onChange={e => setPqForm({...pqForm, questionText: e.target.value})} className="w-full bg-[var(--background)] border border-[var(--surface-dark)] rounded-lg p-3 text-foreground focus:border-primary-500 outline-none" rows={4} />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-400 mb-1">Image Upload (Optional, max 5MB)</label>
-                <input type="file" accept=".jpg,.jpeg,.png,.webp" onChange={handlePqImageChange} className="w-full text-sm text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-primary-500/10 file:text-primary-600 hover:file:bg-primary-500/20" />
-                {pqPreview && (
-                  <div className="mt-4">
-                    <img src={pqPreview} alt="Preview" className="h-32 rounded-lg border border-[var(--surface-dark)] object-cover" />
-                  </div>
-                )}
-                {isSubmittingPq && pqFile && pqUploadProgress > 0 && (
-                  <div className="mt-2 w-full bg-gray-200 rounded-full h-2.5 dark:bg-gray-700">
-                    <div className="bg-primary-600 h-2.5 rounded-full transition-all duration-300" style={{ width: `${pqUploadProgress}%` }}></div>
-                  </div>
-                )}
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-400 mb-1">Correct Answer</label>
-                <input required type="text" value={pqForm.correct_answer} onChange={e => setPqForm({...pqForm, correct_answer: e.target.value})} className="w-full bg-[var(--background)] border border-[var(--surface-dark)] rounded-lg p-3 text-green-400 focus:border-primary-500 outline-none font-medium" />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-400 mb-2">Incorrect Answers (Options A, B, C, D)</label>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {Object.entries(pqForm.incorrect_answers).map(([key, value]) => (
-                    <div key={key} className="flex gap-2 items-center">
-                      <span className="text-gray-500 w-6">{key}.</span>
-                      <input 
-                        type="text"
-                        value={value}
-                        onChange={(e) => setPqForm({...pqForm, incorrect_answers: { ...pqForm.incorrect_answers, [key]: e.target.value }})}
-                        className="flex-1 bg-[var(--background)] border border-[var(--surface-dark)] rounded-lg p-2 text-foreground focus:border-primary-500 outline-none"
-                      />
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-400 mb-1">Explanation</label>
-                <textarea required value={pqForm.explanation} onChange={e => setPqForm({...pqForm, explanation: e.target.value})} className="w-full bg-[var(--background)] border border-[var(--surface-dark)] rounded-lg p-3 text-foreground focus:border-primary-500 outline-none" rows={3} />
-              </div>
-
-              <div className="pt-4 flex justify-end">
-                <button 
-                  type="submit" 
-                  disabled={isSubmittingPq}
-                  className="px-6 py-3 bg-primary-600 hover:bg-primary-700 text-white rounded-lg font-medium transition-colors flex items-center gap-2"
-                >
-                  {isSubmittingPq ? <Loader2 className="w-5 h-5 animate-spin" /> : 'Create Past Question'}
-                </button>
-              </div>
-            </form>
-          </div>
-        )}
-
         {activeTab === 'import' && (
           /* Bulk Import Tab */
           <div className="p-8">
