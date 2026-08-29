@@ -41,9 +41,9 @@ class PracticeStartView(views.APIView):
         difficulty = request.data.get('difficulty', 'medium')
         
         subject = get_object_or_404(Subject, id=subject_id)
-        if not topic_id:
-            return Response({'error': 'topic_id is required.'}, status=status.HTTP_400_BAD_REQUEST)
-        topic = get_object_or_404(Topic, id=topic_id, subject=subject)
+        topic = None
+        if topic_id:
+            topic = get_object_or_404(Topic, id=topic_id, subject=subject)
         
         if request.user.role not in ['admin', 'root_admin'] and request.user.subscription_plan == 'free':
             if difficulty != 'easy':
