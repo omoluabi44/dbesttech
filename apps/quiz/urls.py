@@ -6,6 +6,7 @@ app_name = 'quiz'
 
 urlpatterns = [
     # General Endpoints
+    path('history/', views.QuizHistoryView.as_view(), name='quiz-history'),
     path('subjects/', views.SubjectListView.as_view(), name='subject-list'),
     path('subjects/<int:subject_id>/topics/', views.TopicListView.as_view(), name='topic-list'),
     

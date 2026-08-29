@@ -16,6 +16,48 @@ from .serializers import (
 )
 from .services import QuizGeneratorService
 
+class QuizHistoryView(views.APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        practice_sessions = PracticeSession.objects.filter(
+            student=request.user, 
+            status='completed'
+        ).select_related('subject').order_by('-completed_at')[:50]
+        
+        pq_sessions = PastQuestionSession.objects.filter(
+            student=request.user,
+            status='completed'
+        ).select_related('subject').order_by('-completed_at')[:50]
+
+        history = []
+        for s in practice_sessions:
+            history.append({
+                'id': f"prac_{s.id}",
+                'type': 'practice',
+                'subject_name': s.subject.name,
+                'level': s.get_level_display() if hasattr(s, 'get_level_display') else s.level,
+                'score_percentage': s.score_percentage,
+                'total_questions': s.total_questions,
+                'completed_at': s.completed_at
+            })
+            
+        for s in pq_sessions:
+            history.append({
+                'id': f"pq_{s.id}",
+                'type': 'past_question',
+                'subject_name': s.subject.name,
+                'level': s.get_level_display() if hasattr(s, 'get_level_display') else s.level,
+                'exam_body_display': s.get_exam_body_display(),
+                'year': s.year,
+                'score_percentage': s.score_percentage,
+                'total_questions': s.total_questions,
+                'completed_at': s.completed_at
+            })
+
+        history.sort(key=lambda x: x['completed_at'] or timezone.now(), reverse=True)
+        return Response(history[:100])
+
 class SubjectListView(generics.ListAPIView):
     queryset = Subject.objects.filter(is_active=True)
     serializer_class = SubjectSerializer

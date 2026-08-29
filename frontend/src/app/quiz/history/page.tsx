@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import Link from 'next/link';
 import { useQuery } from '@tanstack/react-query';
 import { History, Search, ArrowRight, Trophy, XCircle, Clock } from 'lucide-react';
-import { getWeeklyProgress } from '@/lib/api/performance';
+import { getQuizHistory } from '@/lib/api/quiz';
 import { formatTime, formatDate } from '@/lib/utils/formatters';
 
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
@@ -16,11 +16,9 @@ import { Badge } from '@/components/ui/Badge';
 export default function QuizHistoryPage() {
   const [searchQuery, setSearchQuery] = useState('');
 
-  // Reusing the weekly progress endpoint which contains some history
-  // Ideally, a dedicated /quiz/history/ endpoint should be added to the backend
-  const { data, isLoading } = useQuery({
-    queryKey: ['performance', 'weekly'],
-    queryFn: getWeeklyProgress,
+  const { data: history, isLoading } = useQuery({
+    queryKey: ['quiz', 'history'],
+    queryFn: getQuizHistory,
   });
 
   return (
@@ -47,9 +45,9 @@ export default function QuizHistoryPage() {
             <thead>
               <tr className="bg-slate-50 border-b border-slate-200">
                 <th className="py-4 px-6 font-semibold text-slate-600 text-sm">Date</th>
-                <th className="py-4 px-6 font-semibold text-slate-600 text-sm">Week Stats</th>
-                <th className="py-4 px-6 font-semibold text-slate-600 text-sm">Questions</th>
-                <th className="py-4 px-6 font-semibold text-slate-600 text-sm">Accuracy</th>
+                <th className="py-4 px-6 font-semibold text-slate-600 text-sm">Quiz Details</th>
+                <th className="py-4 px-6 font-semibold text-slate-600 text-sm">Type</th>
+                <th className="py-4 px-6 font-semibold text-slate-600 text-sm">Score</th>
               </tr>
             </thead>
             <tbody>
@@ -63,25 +61,36 @@ export default function QuizHistoryPage() {
                     <td className="py-4 px-6"><Skeleton className="h-5 w-20" /></td>
                   </tr>
                 ))
-              ) : data?.results?.length ? (
-                // We're adapting the weekly progress data to show history
-                // In a real app, this would be a list of individual QuizSessions
-                data.results.map((week: any) => (
-                  <tr key={week.id} className="border-b border-slate-100 hover:bg-slate-50/50 transition-colors">
+              ) : history?.length ? (
+                history.map((session: any) => (
+                  <tr key={session.id} className="border-b border-slate-100 hover:bg-slate-50/50 transition-colors">
                     <td className="py-4 px-6">
-                      <div className="font-medium text-slate-900">{formatDate(week.week_start)}</div>
+                      <div className="font-medium text-slate-900">
+                        {session.completed_at ? formatDate(session.completed_at) : 'N/A'}
+                      </div>
+                      <div className="text-xs text-slate-500">
+                        {session.completed_at ? new Date(session.completed_at).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) : ''}
+                      </div>
                     </td>
                     <td className="py-4 px-6">
-                      <div className="font-medium text-slate-900">{week.quizzes_taken} quizzes taken</div>
+                      <div className="font-medium text-slate-900">{session.subject_name}</div>
+                      <div className="text-sm text-slate-500">
+                        {session.type === 'past_question' ? `${session.exam_body_display} ${session.year}` : session.level}
+                      </div>
                     </td>
-                    <td className="py-4 px-6 text-slate-600">
-                      {week.total_questions} total
+                    <td className="py-4 px-6">
+                      <Badge variant="outline" className={session.type === 'past_question' ? 'bg-purple-50 text-purple-700 border-purple-200' : 'bg-blue-50 text-blue-700 border-blue-200'}>
+                        {session.type === 'past_question' ? 'Past Question' : 'Practice'}
+                      </Badge>
                     </td>
                     <td className="py-4 px-6">
                       <div className="flex items-center gap-2">
-                        <Badge variant={week.accuracy_rate >= 70 ? 'success' : week.accuracy_rate >= 50 ? 'warning' : 'danger'}>
-                          {Math.round(week.accuracy_rate)}%
+                        <Badge variant={session.score_percentage >= 70 ? 'success' : session.score_percentage >= 50 ? 'warning' : 'danger'}>
+                          {Math.round(session.score_percentage)}%
                         </Badge>
+                        <span className="text-xs text-slate-500">
+                          ({session.total_questions} Qs)
+                        </span>
                       </div>
                     </td>
                   </tr>
@@ -101,7 +110,7 @@ export default function QuizHistoryPage() {
       </Card>
       
       <div className="mt-6 text-center text-sm text-slate-500">
-        Showing grouped weekly history. Take more quizzes to populate this view.
+        Showing your most recent quiz history.
       </div>
     </DashboardLayout>
   );

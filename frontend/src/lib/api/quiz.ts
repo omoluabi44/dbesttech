@@ -184,3 +184,9 @@ export const deleteTopic = async (id: number) => {
   const res = await client.delete(`/quiz/admin/topics/${id}/`);
   return res.data;
 };
+
+// Quiz History
+export const getQuizHistory = async () => {
+  const res = await client.get('/quiz/history/');
+  return res.data;
+};
