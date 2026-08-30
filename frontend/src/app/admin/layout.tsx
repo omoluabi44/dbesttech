@@ -55,7 +55,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                 Admin Panel
               </h2>
             </div>
-            <p className="text-sm text-black mt-1">
+            <p className="text-sm text-[var(--foreground)] mt-1">
               {['admin', 'root_admin'].includes(user.role) ? 'Root Administrator' : 'Administrator'}
             </p>
           </div>
@@ -69,8 +69,8 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                   href={item.href}
                   className={`flex items-center space-x-3 px-4 py-3 rounded-lg transition-all duration-200 ${
                     isActive
-                      ? 'bg-primary-500/15 text-black dark:text-white border border-primary-500/30 font-bold shadow-sm'
-                      : 'text-black dark:text-white hover:bg-gray-200 dark:hover:bg-gray-700 hover:text-black hover:font-medium'
+                      ? 'bg-primary-500/15 text-[var(--foreground)] border border-primary-500/30 font-bold shadow-sm'
+                      : 'text-[var(--foreground)] hover:bg-[var(--surface-dark)] hover:font-medium'
                   }`}
                 >
                   <Icon className="w-5 h-5" />
@@ -82,14 +82,14 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           <div className="p-4 border-t border-[var(--surface-dark)] space-y-2">
             <button
               onClick={() => router.push('/dashboard')}
-              className="flex items-center space-x-3 px-4 py-3 rounded-lg w-full text-black dark:text-white hover:bg-gray-200 dark:hover:bg-gray-700 hover:font-medium transition-all duration-200"
+              className="flex items-center space-x-3 px-4 py-3 rounded-lg w-full text-[var(--foreground)] hover:bg-[var(--surface-dark)] hover:font-medium transition-all duration-200"
             >
               <ArrowLeft className="w-5 h-5" />
               <span>Back to App</span>
             </button>
             <button
               onClick={() => { clearAuth(); router.push('/login'); }}
-              className="flex items-center space-x-3 px-4 py-3 rounded-lg w-full text-black dark:text-white hover:text-red-700 dark:hover:text-red-400 hover:bg-red-100 dark:hover:bg-red-500/10 hover:font-medium transition-all duration-200"
+              className="flex items-center space-x-3 px-4 py-3 rounded-lg w-full text-[var(--foreground)] hover:text-red-600 hover:bg-red-100 hover:font-medium transition-all duration-200"
             >
               <LogOut className="w-5 h-5" />
               <span>Sign Out</span>
