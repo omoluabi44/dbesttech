@@ -38,6 +38,7 @@ urlpatterns = [
     path('admin/past-questions/<str:pk>/', admin_views.PastQuestionDetailAdminView.as_view(), name='admin-past-question-detail'),
 
     # Admin Question Bank Data Grid
+    path('admin/questions/bulk-delete/', admin_views.QuizBulkDeleteAdminView.as_view(), name='admin-quiz-bulk-delete'),
     path('admin/questions/', admin_views.QuizListAdminView.as_view(), name='admin-quiz-list'),
     path('admin/questions/<str:pk>/', admin_views.QuizDetailAdminView.as_view(), name='admin-quiz-detail'),
     

@@ -250,12 +250,29 @@ class QuizListAdminView(generics.ListCreateAPIView):
         return queryset
 
 class QuizDetailAdminView(generics.RetrieveUpdateDestroyAPIView):
-    """
-    Retrieve, update or delete a specific question.
-    """
     queryset = Quiz.objects.all()
     serializer_class = QuizSerializer
     permission_classes = [IsAdminUser]
+
+class QuizBulkDeleteAdminView(views.APIView):
+    permission_classes = [IsAdminUser]
+
+    def post(self, request):
+        ids = request.data.get('ids', [])
+        question_type = request.data.get('type', 'practice') # 'practice' or 'past_question'
+        
+        if not ids or not isinstance(ids, list):
+            return Response({'error': 'Please provide a list of ids to delete.'}, status=status.HTTP_400_BAD_REQUEST)
+            
+        try:
+            with transaction.atomic():
+                if question_type == 'past_question':
+                    PastQuestion.objects.filter(id__in=ids).delete()
+                else:
+                    Quiz.objects.filter(id__in=ids).delete()
+            return Response({'message': f'Successfully deleted {len(ids)} questions.'}, status=status.HTTP_200_OK)
+        except Exception as e:
+            return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 class TopicListAdminView(generics.ListCreateAPIView):

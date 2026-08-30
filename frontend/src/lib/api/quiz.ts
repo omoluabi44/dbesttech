@@ -164,6 +164,11 @@ export const removePastQuestionImage = async (question_id: string) => {
   return res.data;
 };
 
+export const bulkDeleteQuestions = async (ids: string[], type: 'practice' | 'past_question') => {
+  const res = await client.post('/quiz/admin/questions/bulk-delete/', { ids, type });
+  return res.data;
+};
+
 // Admin Topics CRUD
 export const getAdminTopics = async (params: any) => {
   const res = await client.get('/quiz/admin/topics/', { params });

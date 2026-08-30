@@ -11,7 +11,8 @@ import {
   updatePastQuestion,
   deletePastQuestion,
   getPastQuestionPresignedUrl,
-  removePastQuestionImage
+  removePastQuestionImage,
+  bulkDeleteQuestions
 } from '@/lib/api/quiz';
 import { Subject } from '@/lib/types/quiz';
 import { SCHOOL_LEVELS } from '@/lib/utils/constants';
@@ -62,6 +63,10 @@ export default function QuestionBankPage() {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [editingQuestion, setEditingQuestion] = useState<any>(null);
   const [isSaving, setIsSaving] = useState(false);
+
+  // Selection State for Bulk Delete
+  const [selectedQuestions, setSelectedQuestions] = useState<Set<string>>(new Set());
+  const [isBulkDeleting, setIsBulkDeleting] = useState(false);
 
   // Image Upload Modal State
   const [isImageModalOpen, setIsImageModalOpen] = useState(false);
@@ -114,6 +119,7 @@ export default function QuestionBankPage() {
         previous: res.data.previous,
         current: pageUrl ? (pageUrl.includes('page=') ? parseInt(new URL(pageUrl, window.location.origin).searchParams.get('page') || '1') : 1) : 1
       });
+      setSelectedQuestions(new Set());
     } catch (error) {
       toast.error('Failed to load questions.');
       console.error(error);
@@ -224,6 +230,42 @@ export default function QuestionBankPage() {
       toast.error('Failed to update question.');
     } finally {
       setIsSaving(false);
+    }
+  };
+
+  const handleSelectAll = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.checked) {
+      const allIds = questions.map(q => q.id);
+      setSelectedQuestions(new Set(allIds));
+    } else {
+      setSelectedQuestions(new Set());
+    }
+  };
+
+  const handleSelectQuestion = (id: string, checked: boolean) => {
+    const newSelected = new Set(selectedQuestions);
+    if (checked) {
+      newSelected.add(id);
+    } else {
+      newSelected.delete(id);
+    }
+    setSelectedQuestions(newSelected);
+  };
+
+  const handleBulkDelete = async () => {
+    if (!window.confirm(`Are you sure you want to delete ${selectedQuestions.size} selected questions?`)) return;
+    try {
+      setIsBulkDeleting(true);
+      const isPastQuestion = listSource === 'past_questions';
+      await bulkDeleteQuestions(Array.from(selectedQuestions), isPastQuestion ? 'past_question' : 'practice');
+      toast.success(`Successfully deleted ${selectedQuestions.size} questions`);
+      setSelectedQuestions(new Set());
+      fetchQuestions();
+    } catch (err) {
+      toast.error('Failed to delete selected questions');
+      console.error(err);
+    } finally {
+      setIsBulkDeleting(false);
     }
   };
 
@@ -368,11 +410,35 @@ export default function QuestionBankPage() {
               </select>
             </div>
 
+            {selectedQuestions.size > 0 && (
+              <div className="mb-4 bg-primary-500/10 border border-primary-500/30 rounded-lg p-3 flex justify-between items-center">
+                <span className="text-sm font-medium text-primary-700 dark:text-primary-400">
+                  {selectedQuestions.size} question{selectedQuestions.size > 1 ? 's' : ''} selected
+                </span>
+                <button 
+                  onClick={handleBulkDelete}
+                  disabled={isBulkDeleting}
+                  className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors flex items-center gap-2 shadow-sm"
+                >
+                  {isBulkDeleting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Trash2 className="w-4 h-4" />}
+                  Delete Selected
+                </button>
+              </div>
+            )}
+
             {/* Table */}
             <div className="overflow-x-auto border border-[var(--surface-dark)] rounded-lg">
               <table className="w-full text-left border-collapse">
                 <thead>
                   <tr className="bg-[var(--surface-dark)] text-gray-400 text-sm">
+                    <th className="p-4 w-10">
+                      <input 
+                        type="checkbox" 
+                        checked={questions.length > 0 && selectedQuestions.size === questions.length}
+                        onChange={handleSelectAll}
+                        className="rounded border-gray-400 text-primary-600 focus:ring-primary-500"
+                      />
+                    </th>
                     <th className="p-4 font-medium">Question Text</th>
                     <th className="p-4 font-medium w-32">Type</th>
                     <th className="p-4 font-medium w-32">Correct Answer</th>
@@ -381,14 +447,22 @@ export default function QuestionBankPage() {
                 </thead>
                 <tbody className="divide-y divide-[var(--surface-dark)]">
                   {isLoading ? (
-                    <tr><td colSpan={4} className="p-8 text-center"><Loader2 className="w-6 h-6 animate-spin mx-auto text-primary-500" /></td></tr>
+                    <tr><td colSpan={5} className="p-8 text-center"><Loader2 className="w-6 h-6 animate-spin mx-auto text-primary-500" /></td></tr>
                   ) : questions.length === 0 ? (
-                    <tr><td colSpan={4} className="p-8 text-center text-gray-500">No questions found matching your filters.</td></tr>
+                    <tr><td colSpan={5} className="p-8 text-center text-gray-500">No questions found matching your filters.</td></tr>
                   ) : (
                     questions.map((q) => {
                       const isPastQuestion = listSource === 'past_questions' || q.is_past_question;
                       return (
                         <tr key={q.id} className="hover:bg-[var(--background)] transition-colors">
+                          <td className="p-4">
+                            <input 
+                              type="checkbox"
+                              checked={selectedQuestions.has(q.id)}
+                              onChange={(e) => handleSelectQuestion(q.id, e.target.checked)}
+                              className="rounded border-gray-400 text-primary-600 focus:ring-primary-500"
+                            />
+                          </td>
                           <td className="p-4 text-foreground text-sm max-w-md">
                             <div className="flex items-start gap-2">
                               {q.image_url && (

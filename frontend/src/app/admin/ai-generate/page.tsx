@@ -42,6 +42,7 @@ export default function AIGeneratePage() {
   });
 
   const selectedSubjectId = watch('subject_id');
+  const selectedLevel = watch('level');
 
   useEffect(() => {
     getSubjects().then(res => setSubjects(res.results)).catch(console.error);
@@ -166,13 +167,28 @@ export default function AIGeneratePage() {
             
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
               <div>
+                <label className="block text-sm font-medium text-gray-400 mb-1">Class Level</label>
+                <select 
+                  {...register('level', { required: true })}
+                  className="w-full bg-[var(--background)] border border-[var(--surface-dark)] rounded-lg px-4 py-2.5 text-foreground focus:outline-none focus:border-primary-500"
+                >
+                  <option value="">Select Level...</option>
+                  {SCHOOL_LEVELS.map(lvl => (
+                    <option key={lvl.value} value={lvl.value}>{lvl.label}</option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
                 <label className="block text-sm font-medium text-gray-400 mb-1">Subject</label>
                 <select 
                   {...register('subject_id', { required: true })}
                   className="w-full bg-[var(--background)] border border-[var(--surface-dark)] rounded-lg px-4 py-2.5 text-foreground focus:outline-none focus:border-primary-500"
                 >
                   <option value="">Select Subject...</option>
-                  {subjects.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
+                  {subjects
+                    .filter(s => !selectedLevel || s.applicable_levels.includes(selectedLevel))
+                    .map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
                 </select>
               </div>
 
@@ -184,19 +200,6 @@ export default function AIGeneratePage() {
                 >
                   <option value="">Any Topic (Mixed)</option>
                   {topics.map(t => <option key={t.id} value={t.id}>{t.name}</option>)}
-                </select>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-400 mb-1">Class Level</label>
-                <select 
-                  {...register('level', { required: true })}
-                  className="w-full bg-[var(--background)] border border-[var(--surface-dark)] rounded-lg px-4 py-2.5 text-foreground focus:outline-none focus:border-primary-500"
-                >
-                  <option value="">Select Level...</option>
-                  {SCHOOL_LEVELS.map(lvl => (
-                    <option key={lvl.value} value={lvl.value}>{lvl.label}</option>
-                  ))}
                 </select>
               </div>
 
