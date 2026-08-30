@@ -199,7 +199,9 @@ export default function AIGeneratePage() {
                   className="w-full bg-[var(--background)] border border-[var(--surface-dark)] rounded-lg px-4 py-2.5 text-foreground focus:outline-none focus:border-primary-500"
                 >
                   <option value="">Any Topic (Mixed)</option>
-                  {topics.map(t => <option key={t.id} value={t.id}>{t.name}</option>)}
+                  {topics
+                    .filter(t => !selectedLevel || t.level === selectedLevel)
+                    .map(t => <option key={t.id} value={t.id}>{t.name}</option>)}
                 </select>
               </div>
 
