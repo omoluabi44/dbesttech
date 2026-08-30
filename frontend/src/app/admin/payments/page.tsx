@@ -150,7 +150,7 @@ export default function PaymentsDashboard() {
       'successful': 'bg-green-500/20 text-green-400',
       'pending': 'bg-yellow-500/20 text-yellow-400',
       'failed': 'bg-red-500/20 text-red-400',
-      'refunded': 'bg-gray-500/20 text-gray-400',
+      'refunded': 'bg-gray-500/20 text-black',
     };
     return (
       <span className={`px-2.5 py-1 rounded-full text-xs font-medium capitalize ${styles[status] || styles['pending']}`}>
@@ -172,19 +172,19 @@ export default function PaymentsDashboard() {
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
           <h1 className="text-3xl font-bold">Payments</h1>
-          <p className="text-gray-400 text-sm mt-1">Manage transactions, monitor gateways, and process refunds.</p>
+          <p className="text-black text-sm mt-1">Manage transactions, monitor gateways, and process refunds.</p>
         </div>
         
         <div className="flex bg-[var(--surface)] p-1 rounded-lg border border-[var(--surface-dark)]">
           <button
             onClick={() => setActiveTab('overview')}
-            className={`px-4 py-2 rounded-md text-sm font-medium transition-all ${activeTab === 'overview' ? 'bg-primary-500/20 text-primary-400' : 'text-gray-400 hover:text-gray-900 dark:hover:text-white'}`}
+            className={`px-4 py-2 rounded-md text-sm font-medium transition-all ${activeTab === 'overview' ? 'bg-primary-500/20 text-primary-400' : 'text-black hover:text-gray-900 dark:hover:text-white'}`}
           >
             Overview
           </button>
           <button
             onClick={() => setActiveTab('technical')}
-            className={`px-4 py-2 rounded-md text-sm font-medium transition-all ${activeTab === 'technical' ? 'bg-primary-500/20 text-primary-400' : 'text-gray-400 hover:text-gray-900 dark:hover:text-white'}`}
+            className={`px-4 py-2 rounded-md text-sm font-medium transition-all ${activeTab === 'technical' ? 'bg-primary-500/20 text-primary-400' : 'text-black hover:text-gray-900 dark:hover:text-white'}`}
           >
             Technical Monitoring
           </button>
@@ -210,7 +210,7 @@ export default function PaymentsDashboard() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
             <div className="glass-card p-6 rounded-xl border border-[var(--surface-dark)] flex items-center justify-between">
               <div>
-                <p className="text-gray-400 text-sm">Revenue</p>
+                <p className="text-black text-sm">Revenue</p>
                 <h3 className="text-2xl font-bold mt-1">
                   {metricsLoading ? '...' : `₦${(metrics?.revenue ?? 0).toLocaleString()}`}
                 </h3>
@@ -222,7 +222,7 @@ export default function PaymentsDashboard() {
             
             <div className="glass-card p-6 rounded-xl border border-[var(--surface-dark)] flex items-center justify-between">
               <div>
-                <p className="text-gray-400 text-sm">Volume</p>
+                <p className="text-black text-sm">Volume</p>
                 <h3 className="text-2xl font-bold mt-1">
                   {metricsLoading ? '...' : `${metrics?.volume ?? 0} Txns`}
                 </h3>
@@ -234,7 +234,7 @@ export default function PaymentsDashboard() {
 
             <div className="glass-card p-6 rounded-xl border border-[var(--surface-dark)] flex items-center justify-between">
               <div>
-                <p className="text-gray-400 text-sm">Success Rate</p>
+                <p className="text-black text-sm">Success Rate</p>
                 <h3 className="text-2xl font-bold mt-1">
                   {metricsLoading ? '...' : `${metrics?.success_rate ?? 0}%`}
                 </h3>
@@ -246,7 +246,7 @@ export default function PaymentsDashboard() {
 
             <div className="glass-card p-6 rounded-xl border border-[var(--surface-dark)] flex items-center justify-between">
               <div>
-                <p className="text-gray-400 text-sm">Settlement</p>
+                <p className="text-black text-sm">Settlement</p>
                 <h3 className="text-2xl font-bold mt-1">
                   {metricsLoading ? '...' : `₦${(metrics?.settlement ?? 0).toLocaleString()}`}
                 </h3>
@@ -263,7 +263,7 @@ export default function PaymentsDashboard() {
               <h2 className="text-lg font-bold flex items-center gap-2">
                 <FileText className="w-5 h-5 text-primary-400" />
                 Transaction Ledger
-                <span className="text-sm font-normal text-gray-400">({txCount} total)</span>
+                <span className="text-sm font-normal text-black">({txCount} total)</span>
               </h2>
               <div className="flex gap-2">
                 <select
@@ -278,7 +278,7 @@ export default function PaymentsDashboard() {
                   <option value="refunded">Refunded</option>
                 </select>
                 <div className="relative w-64">
-                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-4 h-4" />
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-black w-4 h-4" />
                   <input 
                     type="text" 
                     placeholder="Search ref or email..." 
@@ -294,39 +294,39 @@ export default function PaymentsDashboard() {
               <table className="w-full text-left border-collapse">
                 <thead>
                   <tr className="bg-[var(--surface)] border-b border-[var(--surface-dark)] text-sm">
-                    <th className="p-4 font-medium text-gray-400">Transaction Ref</th>
-                    <th className="p-4 font-medium text-gray-400">Customer</th>
-                    <th className="p-4 font-medium text-gray-400">Amount</th>
-                    <th className="p-4 font-medium text-gray-400">Channel</th>
-                    <th className="p-4 font-medium text-gray-400">Status</th>
-                    <th className="p-4 font-medium text-gray-400">Date</th>
-                    <th className="p-4 font-medium text-gray-400 text-right">Actions</th>
+                    <th className="p-4 font-medium text-black">Transaction Ref</th>
+                    <th className="p-4 font-medium text-black">Customer</th>
+                    <th className="p-4 font-medium text-black">Amount</th>
+                    <th className="p-4 font-medium text-black">Channel</th>
+                    <th className="p-4 font-medium text-black">Status</th>
+                    <th className="p-4 font-medium text-black">Date</th>
+                    <th className="p-4 font-medium text-black text-right">Actions</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-[var(--surface-dark)] text-sm">
                   {txLoading ? (
-                    <tr><td colSpan={7} className="p-8 text-center text-gray-500">Loading transactions...</td></tr>
+                    <tr><td colSpan={7} className="p-8 text-center text-black">Loading transactions...</td></tr>
                   ) : transactions.length === 0 ? (
-                    <tr><td colSpan={7} className="p-8 text-center text-gray-500">No transactions found.</td></tr>
+                    <tr><td colSpan={7} className="p-8 text-center text-black">No transactions found.</td></tr>
                   ) : (
                     transactions.map(tx => (
                       <tr key={tx.id} className="hover:bg-[var(--surface-light)] transition-colors">
                         <td className="p-4">
                           <div className="font-mono text-primary-400 text-xs">{tx.tx_ref}</div>
-                          {tx.flw_transaction_id && <div className="text-xs text-gray-500 mt-1">{tx.flw_transaction_id}</div>}
+                          {tx.flw_transaction_id && <div className="text-xs text-black mt-1">{tx.flw_transaction_id}</div>}
                         </td>
                         <td className="p-4">
                           <div>{tx.customer_name}</div>
-                          <div className="text-xs text-gray-500">{tx.customer_email}</div>
+                          <div className="text-xs text-black">{tx.customer_email}</div>
                         </td>
                         <td className="p-4 font-medium">{tx.currency} {parseFloat(tx.amount).toLocaleString()}</td>
-                        <td className="p-4 text-gray-400 capitalize">{tx.payment_type || '—'}</td>
+                        <td className="p-4 text-black capitalize">{tx.payment_type || '—'}</td>
                         <td className="p-4">{renderStatusBadge(tx.status)}</td>
-                        <td className="p-4 text-gray-400 text-xs">{formatDate(tx.created_at)}</td>
+                        <td className="p-4 text-black text-xs">{formatDate(tx.created_at)}</td>
                         <td className="p-4 text-right">
                           <button 
                             onClick={() => { setSelectedTx(tx); setShowRefundConfirm(false); setRefundAmount(''); }}
-                            className="p-2 text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-[var(--surface-dark)] rounded-md transition-colors"
+                            className="p-2 text-black hover:text-gray-900 dark:hover:text-white hover:bg-[var(--surface-dark)] rounded-md transition-colors"
                           >
                             <MoreVertical size={16} />
                           </button>
@@ -341,7 +341,7 @@ export default function PaymentsDashboard() {
             {/* Pagination */}
             {totalTxPages > 1 && (
               <div className="flex items-center justify-between p-4 border-t border-[var(--surface-dark)]">
-                <span className="text-sm text-gray-400">Page {txPage} of {totalTxPages}</span>
+                <span className="text-sm text-black">Page {txPage} of {totalTxPages}</span>
                 <div className="flex gap-2">
                   <button
                     onClick={() => setTxPage(p => Math.max(1, p - 1))}
@@ -371,35 +371,35 @@ export default function PaymentsDashboard() {
               <h2 className="text-lg font-bold flex items-center gap-2">
                 <Activity className="w-5 h-5 text-primary-400" />
                 Webhook Logs & Monitoring
-                <span className="text-sm font-normal text-gray-400">({whCount} total)</span>
+                <span className="text-sm font-normal text-black">({whCount} total)</span>
               </h2>
-              <p className="text-sm text-gray-400 mt-1">Raw payloads from payment gateway and automated discrepancy flags.</p>
+              <p className="text-sm text-black mt-1">Raw payloads from payment gateway and automated discrepancy flags.</p>
             </div>
             <div className="overflow-x-auto">
               <table className="w-full text-left border-collapse">
                 <thead>
                   <tr className="bg-[var(--surface)] border-b border-[var(--surface-dark)] text-sm">
-                    <th className="p-4 font-medium text-gray-400">Timestamp</th>
-                    <th className="p-4 font-medium text-gray-400">Event</th>
-                    <th className="p-4 font-medium text-gray-400">TX Ref</th>
-                    <th className="p-4 font-medium text-gray-400">Payload</th>
-                    <th className="p-4 font-medium text-gray-400">Status</th>
+                    <th className="p-4 font-medium text-black">Timestamp</th>
+                    <th className="p-4 font-medium text-black">Event</th>
+                    <th className="p-4 font-medium text-black">TX Ref</th>
+                    <th className="p-4 font-medium text-black">Payload</th>
+                    <th className="p-4 font-medium text-black">Status</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-[var(--surface-dark)] text-sm">
                   {whLoading ? (
-                    <tr><td colSpan={5} className="p-8 text-center text-gray-500">Loading webhook logs...</td></tr>
+                    <tr><td colSpan={5} className="p-8 text-center text-black">Loading webhook logs...</td></tr>
                   ) : webhooks.length === 0 ? (
-                    <tr><td colSpan={5} className="p-8 text-center text-gray-500">No webhook logs found.</td></tr>
+                    <tr><td colSpan={5} className="p-8 text-center text-black">No webhook logs found.</td></tr>
                   ) : (
                     webhooks.map(log => (
                       <tr key={log.id} className="hover:bg-[var(--surface-light)] transition-colors">
-                        <td className="p-4 text-gray-400 whitespace-nowrap text-xs">{formatDate(log.created_at)}</td>
+                        <td className="p-4 text-black whitespace-nowrap text-xs">{formatDate(log.created_at)}</td>
                         <td className="p-4 font-mono text-xs text-primary-400">{log.event}</td>
                         <td className="p-4 font-mono text-xs text-gray-300">{log.tx_ref || '—'}</td>
                         <td className="p-4">
                           <details className="cursor-pointer">
-                            <summary className="text-xs text-gray-400 hover:text-gray-900 dark:hover:text-white">View payload</summary>
+                            <summary className="text-xs text-black hover:text-gray-900 dark:hover:text-white">View payload</summary>
                             <pre className="bg-[var(--background)] p-2 rounded border border-[var(--surface-dark)] font-mono text-xs text-gray-300 overflow-x-auto max-w-md mt-2 max-h-40 overflow-y-auto">
                               {JSON.stringify(log.payload, null, 2)}
                             </pre>
@@ -418,7 +418,7 @@ export default function PaymentsDashboard() {
                           ) : (
                             <span className={`px-2.5 py-1 rounded-full text-xs font-medium ${
                               log.status === 'processed' ? 'bg-green-500/20 text-green-400' :
-                              log.status === 'ignored' ? 'bg-gray-500/20 text-gray-400' :
+                              log.status === 'ignored' ? 'bg-gray-500/20 text-black' :
                               'bg-red-500/20 text-red-400'
                             }`}>
                               {log.status}
@@ -434,7 +434,7 @@ export default function PaymentsDashboard() {
             {/* Webhook Pagination */}
             {totalWhPages > 1 && (
               <div className="flex items-center justify-between p-4 border-t border-[var(--surface-dark)]">
-                <span className="text-sm text-gray-400">Page {whPage} of {totalWhPages}</span>
+                <span className="text-sm text-black">Page {whPage} of {totalWhPages}</span>
                 <div className="flex gap-2">
                   <button
                     onClick={() => setWhPage(p => Math.max(1, p - 1))}
@@ -463,14 +463,14 @@ export default function PaymentsDashboard() {
           <div className="bg-[var(--surface)] border border-[var(--surface-dark)] w-full max-w-md rounded-2xl shadow-2xl overflow-hidden">
             <div className="flex justify-between items-center p-6 border-b border-[var(--surface-dark)]">
               <h3 className="text-xl font-bold">Transaction Actions</h3>
-              <button onClick={() => setSelectedTx(null)} className="text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors">
+              <button onClick={() => setSelectedTx(null)} className="text-black hover:text-gray-900 dark:hover:text-white transition-colors">
                 <X size={20} />
               </button>
             </div>
             
             <div className="p-6 space-y-6">
               <div className="bg-[var(--surface-light)] p-4 rounded-lg border border-[var(--surface-dark)]">
-                <div className="text-sm text-gray-400">Transaction Reference</div>
+                <div className="text-sm text-black">Transaction Reference</div>
                 <div className="font-mono text-sm text-primary-400 mt-1 break-all">{selectedTx.tx_ref}</div>
                 <div className="flex justify-between mt-3 text-sm">
                   <span className="text-gray-300">{selectedTx.customer_email}</span>
@@ -509,7 +509,7 @@ export default function PaymentsDashboard() {
                     ) : (
                       <div className="space-y-3">
                         <div>
-                          <label className="text-sm text-gray-400 block mb-1">Refund Amount (leave blank for full refund)</label>
+                          <label className="text-sm text-black block mb-1">Refund Amount (leave blank for full refund)</label>
                           <input
                             type="number"
                             step="0.01"
@@ -522,7 +522,7 @@ export default function PaymentsDashboard() {
                         <div className="flex gap-2">
                           <button
                             onClick={() => setShowRefundConfirm(false)}
-                            className="flex-1 py-2 rounded-lg border border-[var(--surface-dark)] text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors text-sm"
+                            className="flex-1 py-2 rounded-lg border border-[var(--surface-dark)] text-black hover:text-gray-900 dark:hover:text-white transition-colors text-sm"
                           >
                             Cancel
                           </button>
@@ -535,7 +535,7 @@ export default function PaymentsDashboard() {
                         </div>
                       </div>
                     )}
-                    <p className="text-xs text-center text-gray-500 mt-2">Requires Root Admin permissions</p>
+                    <p className="text-xs text-center text-black mt-2">Requires Root Admin permissions</p>
                   </div>
                 )}
               </div>

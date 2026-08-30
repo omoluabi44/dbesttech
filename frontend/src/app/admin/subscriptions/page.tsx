@@ -125,23 +125,23 @@ export default function SubscriptionsAdminPage() {
           <table className="w-full text-left border-collapse" aria-label="Plans Table">
             <thead>
               <tr className="bg-[var(--surface-light)] border-b border-[var(--surface-dark)]">
-                <th scope="col" className="p-4 font-medium text-gray-400">Plan Name</th>
-                <th scope="col" className="p-4 font-medium text-gray-400">Price</th>
-                <th scope="col" className="p-4 font-medium text-gray-400 text-center">Active</th>
-                <th scope="col" className="p-4 font-medium text-gray-400 text-center">Featured</th>
-                <th scope="col" className="p-4 font-medium text-gray-400 text-right">Actions</th>
+                <th scope="col" className="p-4 font-medium text-black">Plan Name</th>
+                <th scope="col" className="p-4 font-medium text-black">Price</th>
+                <th scope="col" className="p-4 font-medium text-black text-center">Active</th>
+                <th scope="col" className="p-4 font-medium text-black text-center">Featured</th>
+                <th scope="col" className="p-4 font-medium text-black text-right">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-[var(--surface-dark)]">
               {loading ? (
                 <tr>
-                  <td colSpan={6} className="p-8 text-center text-gray-500">
+                  <td colSpan={6} className="p-8 text-center text-black">
                     Loading plans...
                   </td>
                 </tr>
               ) : plans.length === 0 ? (
                 <tr>
-                  <td colSpan={5} className="p-8 text-center text-gray-500">
+                  <td colSpan={5} className="p-8 text-center text-black">
                     No subscription plans found.
                   </td>
                 </tr>
@@ -150,7 +150,7 @@ export default function SubscriptionsAdminPage() {
                   <tr key={plan.id} className="hover:bg-[var(--surface-light)] transition-colors">
                     <td className="p-4">
                       <p className="text-foreground font-medium">{plan.display_name}</p>
-                      <p className="text-sm text-gray-500 font-mono">{plan.name}</p>
+                      <p className="text-sm text-black font-mono">{plan.name}</p>
                     </td>
                     <td className="p-4 text-gray-600 dark:text-gray-300">
                       {plan.price === '0.00' ? 'Free' : `₦${parseFloat(plan.price).toLocaleString()}`}
@@ -167,7 +167,7 @@ export default function SubscriptionsAdminPage() {
                           </span>
                         )
                       ) : (
-                        <span className="text-xs text-gray-400">Always Active</span>
+                        <span className="text-xs text-black">Always Active</span>
                       )}
                     </td>
                     <td className="p-4 text-center">
@@ -179,7 +179,7 @@ export default function SubscriptionsAdminPage() {
                     </td>
                     <td className="p-4 text-right">
                       <div className="flex justify-end gap-2">
-                        <button onClick={() => openEditModal(plan)} className="p-2 text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors">
+                        <button onClick={() => openEditModal(plan)} className="p-2 text-black hover:text-gray-900 dark:hover:text-white transition-colors">
                           <Edit2 size={18} />
                         </button>
                       </div>
@@ -198,7 +198,7 @@ export default function SubscriptionsAdminPage() {
           <div className="bg-[var(--surface)] border border-[var(--surface-dark)] w-full max-w-2xl rounded-2xl shadow-2xl overflow-hidden my-8">
             <div className="flex justify-between items-center p-6 border-b border-[var(--surface-dark)]">
               <h2 className="text-xl font-bold text-foreground">Edit Plan</h2>
-              <button onClick={() => setIsModalOpen(false)} className="text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors">
+              <button onClick={() => setIsModalOpen(false)} className="text-black hover:text-gray-900 dark:hover:text-white transition-colors">
                 <X size={20} />
               </button>
             </div>

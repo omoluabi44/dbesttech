@@ -335,7 +335,7 @@ export default function QuestionBankPage() {
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <h1 className="text-3xl font-bold text-[var(--foreground)]">Question Bank</h1>
-          <p className="text-gray-500 mt-1">Manage and import questions across all subjects and levels.</p>
+          <p className="text-black mt-1">Manage and import questions across all subjects and levels.</p>
         </div>
       </div>
 
@@ -348,7 +348,7 @@ export default function QuestionBankPage() {
             className={`flex-1 py-4 px-6 text-sm font-medium transition-all duration-300 ${
               activeTab === 'list'
                 ? 'bg-primary-500/10 text-primary-600 border-b-2 border-primary-500'
-                : 'text-gray-500 hover:text-primary-600 hover:bg-primary-500/10'
+                : 'text-black hover:text-primary-600 hover:bg-primary-500/10'
             }`}
           >
             Question List
@@ -359,7 +359,7 @@ export default function QuestionBankPage() {
             className={`flex-1 py-4 px-6 text-sm font-medium transition-all duration-300 ${
               activeTab === 'import'
                 ? 'bg-primary-500/10 text-primary-600 border-b-2 border-primary-500'
-                : 'text-gray-500 hover:text-primary-600 hover:bg-primary-500/10'
+                : 'text-black hover:text-primary-600 hover:bg-primary-500/10'
             }`}
           >
             Bulk Import CSV
@@ -372,19 +372,19 @@ export default function QuestionBankPage() {
             <div className="mb-6 flex gap-2 p-1 bg-[var(--surface-dark)] rounded-lg w-fit">
               <button 
                 onClick={() => setListSource('all')} 
-                className={`px-4 py-2 text-sm rounded-md transition-colors ${listSource === 'all' ? 'bg-[var(--surface)] text-foreground shadow' : 'text-gray-400'}`}
+                className={`px-4 py-2 text-sm rounded-md transition-colors ${listSource === 'all' ? 'bg-[var(--surface)] text-foreground shadow' : 'text-black'}`}
               >
                 Source: All
               </button>
               <button 
                 onClick={() => setListSource('practice')} 
-                className={`px-4 py-2 text-sm rounded-md transition-colors ${listSource === 'practice' ? 'bg-[var(--surface)] text-foreground shadow' : 'text-gray-400'}`}
+                className={`px-4 py-2 text-sm rounded-md transition-colors ${listSource === 'practice' ? 'bg-[var(--surface)] text-foreground shadow' : 'text-black'}`}
               >
                 Practice Quiz
               </button>
               <button 
                 onClick={() => setListSource('past_questions')} 
-                className={`px-4 py-2 text-sm rounded-md transition-colors ${listSource === 'past_questions' ? 'bg-[var(--surface)] text-foreground shadow' : 'text-gray-400'}`}
+                className={`px-4 py-2 text-sm rounded-md transition-colors ${listSource === 'past_questions' ? 'bg-[var(--surface)] text-foreground shadow' : 'text-black'}`}
               >
                 Past Questions
               </button>
@@ -430,7 +430,7 @@ export default function QuestionBankPage() {
             <div className="overflow-x-auto border border-[var(--surface-dark)] rounded-lg">
               <table className="w-full text-left border-collapse">
                 <thead>
-                  <tr className="bg-[var(--surface-dark)] text-gray-400 text-sm">
+                  <tr className="bg-[var(--surface-dark)] text-black text-sm">
                     <th className="p-4 w-10">
                       <input 
                         type="checkbox" 
@@ -449,7 +449,7 @@ export default function QuestionBankPage() {
                   {isLoading ? (
                     <tr><td colSpan={5} className="p-8 text-center"><Loader2 className="w-6 h-6 animate-spin mx-auto text-primary-500" /></td></tr>
                   ) : questions.length === 0 ? (
-                    <tr><td colSpan={5} className="p-8 text-center text-gray-500">No questions found matching your filters.</td></tr>
+                    <tr><td colSpan={5} className="p-8 text-center text-black">No questions found matching your filters.</td></tr>
                   ) : (
                     questions.map((q) => {
                       const isPastQuestion = listSource === 'past_questions' || q.is_past_question;
@@ -471,7 +471,7 @@ export default function QuestionBankPage() {
                               <div className="truncate">{q.questionText}</div>
                             </div>
                           </td>
-                          <td className="p-4 text-gray-400 text-sm">{q.questionType === 'mcq' ? 'Multiple Choice' : 'Theory'}</td>
+                          <td className="p-4 text-black text-sm">{q.questionType === 'mcq' ? 'Multiple Choice' : 'Theory'}</td>
                           <td className="p-4 text-green-400 font-medium text-sm">{q.correct_answer}</td>
                           <td className="p-4 text-center">
                             <div className="flex items-center justify-center gap-3">
@@ -493,10 +493,10 @@ export default function QuestionBankPage() {
                                   )}
                                 </>
                               )}
-                              <button onClick={() => handleEditClick(q)} className="text-gray-600 dark:text-gray-400 hover:text-[var(--primary)] transition-colors" title="Edit">
+                              <button onClick={() => handleEditClick(q)} className="text-gray-600 dark:text-black hover:text-[var(--primary)] transition-colors" title="Edit">
                                 <Edit2 className="w-5 h-5" />
                               </button>
-                              <button onClick={() => handleDelete(q.id, isPastQuestion)} className="text-gray-600 dark:text-gray-400 hover:text-red-600 dark:hover:text-red-400 transition-colors" title="Delete">
+                              <button onClick={() => handleDelete(q.id, isPastQuestion)} className="text-gray-600 dark:text-black hover:text-red-600 dark:hover:text-red-400 transition-colors" title="Delete">
                                 <Trash2 className="w-5 h-5" />
                               </button>
                             </div>
@@ -512,21 +512,21 @@ export default function QuestionBankPage() {
             {/* Pagination */}
             {!isLoading && pagination.count > 0 && (
               <div className="flex items-center justify-between mt-6">
-                <span className="text-sm text-gray-500">
+                <span className="text-sm text-black">
                   Showing page {pagination.current} of {Math.ceil(pagination.count / 10) || 1} ({pagination.count} total)
                 </span>
                 <div className="flex gap-2">
                   <button 
                     disabled={!pagination.previous}
                     onClick={() => fetchQuestions(pagination.previous!)}
-                    className="p-2 bg-[var(--background)] border border-[var(--surface-dark)] rounded-lg text-gray-400 hover:text-foreground disabled:opacity-50 transition-colors"
+                    className="p-2 bg-[var(--background)] border border-[var(--surface-dark)] rounded-lg text-black hover:text-foreground disabled:opacity-50 transition-colors"
                   >
                     <ChevronLeft className="w-5 h-5" />
                   </button>
                   <button 
                     disabled={!pagination.next}
                     onClick={() => fetchQuestions(pagination.next!)}
-                    className="p-2 bg-[var(--background)] border border-[var(--surface-dark)] rounded-lg text-gray-400 hover:text-foreground disabled:opacity-50 transition-colors"
+                    className="p-2 bg-[var(--background)] border border-[var(--surface-dark)] rounded-lg text-black hover:text-foreground disabled:opacity-50 transition-colors"
                   >
                     <ChevronRight className="w-5 h-5" />
                   </button>
@@ -545,13 +545,13 @@ export default function QuestionBankPage() {
                 <div className="bg-[var(--background)] p-1 rounded-lg flex border border-[var(--surface-dark)]">
                   <button 
                     onClick={() => setImportType('quizzes')} 
-                    className={`px-4 py-2 text-sm rounded-md transition-colors ${importType === 'quizzes' ? 'bg-[var(--surface-dark)] text-foreground' : 'text-gray-500'}`}
+                    className={`px-4 py-2 text-sm rounded-md transition-colors ${importType === 'quizzes' ? 'bg-[var(--surface-dark)] text-foreground' : 'text-black'}`}
                   >
                     Practice Quizzes
                   </button>
                   <button 
                     onClick={() => setImportType('past_questions')} 
-                    className={`px-4 py-2 text-sm rounded-md transition-colors ${importType === 'past_questions' ? 'bg-[var(--surface-dark)] text-foreground' : 'text-gray-500'}`}
+                    className={`px-4 py-2 text-sm rounded-md transition-colors ${importType === 'past_questions' ? 'bg-[var(--surface-dark)] text-foreground' : 'text-black'}`}
                   >
                     Past Questions
                   </button>
@@ -562,7 +562,7 @@ export default function QuestionBankPage() {
                 <h3 className="text-xl font-semibold text-[var(--foreground)] mb-2">
                   Upload {importType === 'quizzes' ? 'Practice Quizzes' : 'Past Questions'} CSV
                 </h3>
-                <p className="text-sm text-gray-500">
+                <p className="text-sm text-black">
                   Please ensure your CSV file follows the correct template format. 
                   Incorrect answers should be separated into columns: 
                   <code className="bg-gray-800 text-primary-300 px-2 py-0.5 rounded mx-1 text-xs">incorrect_answer_1</code>, 
@@ -584,15 +584,15 @@ export default function QuestionBankPage() {
                       <>
                         <CheckCircle2 className="w-12 h-12 text-green-500 mb-3" />
                         <p className="mb-2 text-sm text-[var(--foreground)] font-medium">{file.name}</p>
-                        <p className="text-xs text-gray-500">{(file.size / 1024).toFixed(2)} KB</p>
+                        <p className="text-xs text-black">{(file.size / 1024).toFixed(2)} KB</p>
                       </>
                     ) : (
                       <>
-                        <UploadCloud className="w-12 h-12 text-gray-400 group-hover:text-primary-500 mb-3 transition-colors" />
-                        <p className="mb-2 text-sm text-gray-500">
+                        <UploadCloud className="w-12 h-12 text-black group-hover:text-primary-500 mb-3 transition-colors" />
+                        <p className="mb-2 text-sm text-black">
                           <span className="font-semibold text-[var(--foreground)]">Click to upload</span> or drag and drop
                         </p>
-                        <p className="text-xs text-gray-400">CSV files only</p>
+                        <p className="text-xs text-black">CSV files only</p>
                       </>
                     )}
                   </div>
@@ -626,7 +626,7 @@ export default function QuestionBankPage() {
                 disabled={!file || isUploading}
                 className={`mt-6 w-full py-3 px-4 rounded-lg font-medium flex items-center justify-center gap-2 transition-all duration-300 ${
                   !file || isUploading
-                    ? 'bg-[var(--surface-dark)] text-gray-500 cursor-not-allowed'
+                    ? 'bg-[var(--surface-dark)] text-black cursor-not-allowed'
                     : 'bg-[var(--primary)] text-white hover:bg-[var(--primary-hover)] shadow-sm'
                 }`}
               >
@@ -654,13 +654,13 @@ export default function QuestionBankPage() {
           <div className="bg-[var(--surface)] border border-[var(--surface-dark)] rounded-2xl w-full max-w-md shadow-2xl">
             <div className="p-6 border-b border-[var(--surface-dark)] flex justify-between items-center">
               <h2 className="text-xl font-bold text-foreground">Upload Image</h2>
-              <button onClick={() => setIsImageModalOpen(false)} className="text-gray-400 hover:text-gray-900 dark:hover:text-gray-200 transition-colors">
+              <button onClick={() => setIsImageModalOpen(false)} className="text-black hover:text-gray-900 dark:hover:text-gray-200 transition-colors">
                 <X className="w-5 h-5" />
               </button>
             </div>
             
             <div className="p-6">
-              <div className="mb-4 text-sm text-gray-400 line-clamp-2">
+              <div className="mb-4 text-sm text-black line-clamp-2">
                 {imageModalQuestion.questionText}
               </div>
 
@@ -670,11 +670,11 @@ export default function QuestionBankPage() {
                     <img src={imagePreview} alt="Preview" className="h-full w-full object-contain p-2" />
                   ) : (
                     <div className="flex flex-col items-center justify-center pt-5 pb-6">
-                      <ImagePlus className="w-10 h-10 text-gray-400 mb-3" />
-                      <p className="mb-2 text-sm text-gray-500">
+                      <ImagePlus className="w-10 h-10 text-black mb-3" />
+                      <p className="mb-2 text-sm text-black">
                         <span className="font-semibold text-[var(--foreground)]">Click to browse</span>
                       </p>
-                      <p className="text-xs text-gray-400">JPG, PNG, WEBP up to 5MB</p>
+                      <p className="text-xs text-black">JPG, PNG, WEBP up to 5MB</p>
                     </div>
                   )}
                   <input type="file" accept=".jpg,.jpeg,.png,.webp" className="hidden" onChange={handleImageFileChange} />
@@ -683,7 +683,7 @@ export default function QuestionBankPage() {
 
               {isUploadingImage && uploadProgress > 0 && (
                 <div className="mb-6">
-                  <div className="flex justify-between text-xs text-gray-400 mb-1">
+                  <div className="flex justify-between text-xs text-black mb-1">
                     <span>Uploading...</span>
                     <span>{uploadProgress}%</span>
                   </div>
@@ -697,7 +697,7 @@ export default function QuestionBankPage() {
                 onClick={handleImageUpload}
                 disabled={!imageFile || isUploadingImage}
                 className={`w-full py-2.5 rounded-lg font-medium flex items-center justify-center gap-2 transition-all ${
-                  !imageFile || isUploadingImage ? 'bg-[var(--surface-dark)] text-gray-500 cursor-not-allowed' : 'bg-green-600 hover:bg-green-700 text-white shadow-sm'
+                  !imageFile || isUploadingImage ? 'bg-[var(--surface-dark)] text-black cursor-not-allowed' : 'bg-green-600 hover:bg-green-700 text-white shadow-sm'
                 }`}
               >
                 {isUploadingImage ? <Loader2 className="w-5 h-5 animate-spin" /> : 'Upload'}
@@ -713,12 +713,12 @@ export default function QuestionBankPage() {
           <div className="bg-[var(--surface)] border border-[var(--surface-dark)] rounded-2xl w-full max-w-2xl max-h-[90vh] flex flex-col shadow-2xl">
             <div className="p-6 border-b border-[var(--surface-dark)] flex justify-between items-center">
               <h2 className="text-xl font-bold text-foreground">Edit Question</h2>
-              <button onClick={() => setIsEditModalOpen(false)} className="text-gray-400 hover:text-gray-900 dark:hover:text-gray-200 transition-colors text-2xl leading-none">&times;</button>
+              <button onClick={() => setIsEditModalOpen(false)} className="text-black hover:text-gray-900 dark:hover:text-gray-200 transition-colors text-2xl leading-none">&times;</button>
             </div>
             
             <div className="p-6 overflow-y-auto space-y-4 custom-scrollbar">
               <div>
-                <label className="block text-sm font-medium text-gray-400 mb-1">Question Text</label>
+                <label className="block text-sm font-medium text-black mb-1">Question Text</label>
                 <textarea 
                   value={editingQuestion.questionText}
                   onChange={(e) => setEditingQuestion({...editingQuestion, questionText: e.target.value})}
@@ -728,7 +728,7 @@ export default function QuestionBankPage() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-400 mb-1">Correct Answer</label>
+                <label className="block text-sm font-medium text-black mb-1">Correct Answer</label>
                 <input 
                   type="text"
                   value={editingQuestion.correct_answer}
@@ -738,11 +738,11 @@ export default function QuestionBankPage() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-400 mb-2">Incorrect Answers</label>
+                <label className="block text-sm font-medium text-black mb-2">Incorrect Answers</label>
                 <div className="space-y-2">
                   {Object.entries(editingQuestion.incorrect_answers || {}).map(([key, value]) => (
                     <div key={key} className="flex gap-2 items-center">
-                      <span className="text-gray-500 w-6">{key}.</span>
+                      <span className="text-black w-6">{key}.</span>
                       <input 
                         type="text"
                         value={value as string}
@@ -756,7 +756,7 @@ export default function QuestionBankPage() {
                   ))}
                   {Array.isArray(editingQuestion.incorrect_answers) && editingQuestion.incorrect_answers.map((ans: string, idx: number) => (
                     <div key={idx} className="flex gap-2 items-center">
-                      <span className="text-gray-500">{idx + 1}.</span>
+                      <span className="text-black">{idx + 1}.</span>
                       <input 
                         type="text"
                         value={ans}
@@ -773,7 +773,7 @@ export default function QuestionBankPage() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-400 mb-1">Explanation</label>
+                <label className="block text-sm font-medium text-black mb-1">Explanation</label>
                 <textarea 
                   value={editingQuestion.explanation || ''}
                   onChange={(e) => setEditingQuestion({...editingQuestion, explanation: e.target.value})}

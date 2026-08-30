@@ -56,7 +56,7 @@ export default function AdminDashboard() {
     <div className="space-y-8" role="main" aria-label="Admin Dashboard Overview">
       <header>
         <h1 className="text-3xl font-bold mb-2">Overview</h1>
-        <p className="text-gray-400">
+        <p className="text-black">
           {['admin', 'root_admin'].includes(user?.role || '') ? 'Global Platform Statistics' : `Statistics for ${stats?.school_name || 'your dashboard'}`}
         </p>
       </header>
@@ -65,7 +65,7 @@ export default function AdminDashboard() {
         {['admin', 'root_admin'].includes(user?.role || '') && (
           <article className="glass-card p-6 border-l-4 border-l-secondary-500 rounded-xl" aria-label="Total Schools metric">
             <div className="flex items-center justify-between mb-4">
-              <h3 className="text-gray-400 font-medium">Total Schools</h3>
+              <h3 className="text-black font-medium">Total Schools</h3>
               <div className="w-10 h-10 rounded-full bg-secondary-500/20 flex items-center justify-center text-secondary-400" aria-hidden="true">
                 <GraduationCap className="w-5 h-5" />
               </div>
@@ -76,7 +76,7 @@ export default function AdminDashboard() {
 
         <article className="glass-card p-6 border-l-4 border-l-primary-500 rounded-xl" aria-label="Total Students metric">
           <div className="flex items-center justify-between mb-4">
-            <h3 className="text-gray-400 font-medium">Total Users</h3>
+            <h3 className="text-black font-medium">Total Users</h3>
             <div className="w-10 h-10 rounded-full bg-primary-500/20 flex items-center justify-center text-primary-400" aria-hidden="true">
               <Users className="w-5 h-5" />
             </div>

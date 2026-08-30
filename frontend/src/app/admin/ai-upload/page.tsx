@@ -321,7 +321,7 @@ export default function AIUploadPage() {
         </div>
         <div>
           <h1 className="text-2xl font-bold text-foreground">Upload Past Questions</h1>
-          <p className="text-gray-400">Upload multiple PDFs or Images of past exams and AI will automatically extract and save the questions.</p>
+          <p className="text-black">Upload multiple PDFs or Images of past exams and AI will automatically extract and save the questions.</p>
         </div>
       </div>
 
@@ -334,7 +334,7 @@ export default function AIUploadPage() {
             className={`flex-1 py-4 px-6 text-sm font-medium transition-all duration-300 ${
               activeTab === 'ai'
                 ? 'bg-primary-500/10 text-primary-600 border-b-2 border-primary-500'
-                : 'text-gray-500 hover:text-primary-600 hover:bg-primary-500/10'
+                : 'text-black hover:text-primary-600 hover:bg-primary-500/10'
             }`}
           >
             AI Document Extraction
@@ -344,7 +344,7 @@ export default function AIUploadPage() {
             className={`flex-1 py-4 px-6 text-sm font-medium transition-all duration-300 ${
               activeTab === 'manual'
                 ? 'bg-primary-500/10 text-primary-600 border-b-2 border-primary-500'
-                : 'text-gray-500 hover:text-primary-600 hover:bg-primary-500/10'
+                : 'text-black hover:text-primary-600 hover:bg-primary-500/10'
             }`}
           >
             Manual Entry
@@ -387,7 +387,7 @@ export default function AIUploadPage() {
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
-                <label className="block text-sm font-medium text-gray-400 mb-1">Subject</label>
+                <label className="block text-sm font-medium text-black mb-1">Subject</label>
                 <select 
                   {...register('subject_id', { required: true })}
                   className="w-full bg-[var(--background)] border border-[var(--surface-dark)] rounded-lg px-4 py-3 text-foreground focus:outline-none focus:border-primary-500"
@@ -398,7 +398,7 @@ export default function AIUploadPage() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-400 mb-1">Class Level</label>
+                <label className="block text-sm font-medium text-black mb-1">Class Level</label>
                 <select 
                   {...register('level', { required: true })}
                   className="w-full bg-[var(--background)] border border-[var(--surface-dark)] rounded-lg px-4 py-3 text-foreground focus:outline-none focus:border-primary-500"
@@ -411,7 +411,7 @@ export default function AIUploadPage() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-400 mb-1">Exam Body</label>
+                <label className="block text-sm font-medium text-black mb-1">Exam Body</label>
                 <select 
                   {...register('exam_body', { required: true })}
                   className="w-full bg-[var(--background)] border border-[var(--surface-dark)] rounded-lg px-4 py-3 text-foreground focus:outline-none focus:border-primary-500"
@@ -429,7 +429,7 @@ export default function AIUploadPage() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-400 mb-1">Year</label>
+                <label className="block text-sm font-medium text-black mb-1">Year</label>
                 <input 
                   type="number"
                   min="1990"
@@ -442,7 +442,7 @@ export default function AIUploadPage() {
             </div>
 
             <div className="mt-6">
-              <label className="block text-sm font-medium text-gray-400 mb-2">Document Files (PDFs or Images)</label>
+              <label className="block text-sm font-medium text-black mb-2">Document Files (PDFs or Images)</label>
               
               <div 
                 onDragOver={onDragOver}
@@ -465,7 +465,7 @@ export default function AIUploadPage() {
                     <UploadCloud className="w-8 h-8 text-primary-400" />
                   </div>
                   <h4 className="text-lg font-medium text-foreground mb-1">Click to browse or drag files here</h4>
-                  <p className="text-sm text-gray-400 max-w-sm">
+                  <p className="text-sm text-black max-w-sm">
                     Upload multiple scanned PDFs or clear images of past questions.
                   </p>
                 </label>
@@ -478,10 +478,10 @@ export default function AIUploadPage() {
                 {uploads.map((u, idx) => (
                   <div key={idx} className="flex items-center justify-between p-3 bg-[var(--background)] border border-[var(--surface-dark)] rounded-lg">
                     <div className="flex items-center gap-3">
-                      <FileText className="w-5 h-5 text-gray-400" />
+                      <FileText className="w-5 h-5 text-black" />
                       <div>
                         <p className="text-sm font-medium text-foreground truncate max-w-[200px] sm:max-w-xs">{u.file.name}</p>
-                        <p className="text-xs text-gray-500">{(u.file.size / (1024 * 1024)).toFixed(2)} MB</p>
+                        <p className="text-xs text-black">{(u.file.size / (1024 * 1024)).toFixed(2)} MB</p>
                       </div>
                     </div>
                     
@@ -502,7 +502,7 @@ export default function AIUploadPage() {
                         <button 
                           type="button" 
                           onClick={() => removeFile(idx)}
-                          className="p-1.5 text-gray-400 hover:text-red-400 hover:bg-red-400/10 rounded transition-colors"
+                          className="p-1.5 text-black hover:text-red-400 hover:bg-red-400/10 rounded transition-colors"
                         >
                           <Trash2 className="w-4 h-4" />
                         </button>
@@ -533,7 +533,7 @@ export default function AIUploadPage() {
           <form onSubmit={handleCreatePastQuestion} className="space-y-6">
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                 <div>
-                  <label className="block text-sm font-medium text-gray-400 mb-1">Subject *</label>
+                  <label className="block text-sm font-medium text-black mb-1">Subject *</label>
                   <select 
                     required
                     value={pqForm.subject}
@@ -546,7 +546,7 @@ export default function AIUploadPage() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-400 mb-1">Level</label>
+                  <label className="block text-sm font-medium text-black mb-1">Level</label>
                   <select 
                     value={pqForm.level}
                     onChange={(e) => setPqForm({...pqForm, level: e.target.value})}
@@ -558,7 +558,7 @@ export default function AIUploadPage() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-400 mb-1">Exam Body *</label>
+                  <label className="block text-sm font-medium text-black mb-1">Exam Body *</label>
                   <select 
                     required
                     value={pqForm.exam_body}
@@ -578,7 +578,7 @@ export default function AIUploadPage() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-400 mb-1">Year</label>
+                  <label className="block text-sm font-medium text-black mb-1">Year</label>
                   <input 
                     type="number"
                     value={pqForm.year}
@@ -589,7 +589,7 @@ export default function AIUploadPage() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-400 mb-1">Question Text *</label>
+                <label className="block text-sm font-medium text-black mb-1">Question Text *</label>
                 <textarea 
                   required
                   value={pqForm.questionText}
@@ -607,7 +607,7 @@ export default function AIUploadPage() {
                       <span className="w-4 h-4 rounded-full border-2 border-primary flex items-center justify-center p-[2px]"><span className="w-full h-full bg-primary rounded-full"></span></span>
                       Important
                     </p>
-                    <p className="text-xs text-gray-400 mt-1">Please enter your options below and <strong>tick the circular radio button</strong> next to the one that is the correct answer.</p>
+                    <p className="text-xs text-black mt-1">Please enter your options below and <strong>tick the circular radio button</strong> next to the one that is the correct answer.</p>
                   </div>
                   {(['A', 'B', 'C', 'D'] as const).map((opt) => (
                     <div key={opt} className="flex gap-3 items-center">
@@ -619,7 +619,7 @@ export default function AIUploadPage() {
                         className="w-4 h-4 text-primary bg-[var(--background)] border-[var(--surface-dark)] focus:ring-primary-500 cursor-pointer"
                         title={`Set option ${opt} as correct answer`}
                       />
-                      <span className="font-medium text-gray-500 w-4">{opt}</span>
+                      <span className="font-medium text-black w-4">{opt}</span>
                       <input 
                         required={opt === 'A' || opt === 'B'} // at least two options
                         type="text"
@@ -637,7 +637,7 @@ export default function AIUploadPage() {
                 
                 <div className="space-y-4 flex flex-col">
                   <div className="flex-1">
-                    <label className="block text-sm font-medium text-gray-400 mb-1">Explanation (Optional)</label>
+                    <label className="block text-sm font-medium text-black mb-1">Explanation (Optional)</label>
                     <textarea 
                       value={pqForm.explanation}
                       onChange={(e) => setPqForm({...pqForm, explanation: e.target.value})}
@@ -650,7 +650,7 @@ export default function AIUploadPage() {
 
               {/* Image Upload Area for new question */}
               <div>
-                <label className="block text-sm font-medium text-gray-400 mb-2">Question Image (Optional)</label>
+                <label className="block text-sm font-medium text-black mb-2">Question Image (Optional)</label>
                 <div className="relative group">
                   <label className={`flex flex-col items-center justify-center w-full h-32 border-2 border-dashed rounded-xl cursor-pointer transition-all duration-300 ${pqFile ? 'border-primary-500/50 bg-primary-500/5' : 'border-[var(--surface-dark)] bg-[var(--surface-light)] hover:bg-gray-800'}`}>
                     {pqPreview ? (
@@ -662,8 +662,8 @@ export default function AIUploadPage() {
                       </div>
                     ) : (
                       <div className="flex flex-col items-center justify-center pt-5 pb-6">
-                        <ImagePlus className="w-8 h-8 text-gray-400 mb-2" />
-                        <p className="text-sm text-gray-500">
+                        <ImagePlus className="w-8 h-8 text-black mb-2" />
+                        <p className="text-sm text-black">
                           <span className="font-semibold text-[var(--foreground)]">Click to upload image</span>
                         </p>
                       </div>
@@ -682,7 +682,7 @@ export default function AIUploadPage() {
                 </div>
                 {isSubmittingPq && pqUploadProgress > 0 && pqUploadProgress < 100 && (
                   <div className="mt-2">
-                    <div className="flex justify-between text-xs text-gray-400 mb-1">
+                    <div className="flex justify-between text-xs text-black mb-1">
                       <span>Uploading Image...</span>
                       <span>{pqUploadProgress}%</span>
                     </div>

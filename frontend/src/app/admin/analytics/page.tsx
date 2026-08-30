@@ -72,7 +72,7 @@ export default function AnalyticsPage() {
       <div className="flex justify-between items-center">
         <div>
           <h1 className="text-3xl font-bold mb-2">Analytics</h1>
-          <p className="text-gray-400">
+          <p className="text-black">
             Platform usage and growth metrics
           </p>
         </div>
@@ -82,7 +82,7 @@ export default function AnalyticsPage() {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <div className="glass-card p-6 border-l-4 border-l-primary-500 rounded-xl" aria-label="Total Students">
           <div className="flex items-center justify-between mb-4">
-            <h3 className="text-gray-400 font-medium">Total Students</h3>
+            <h3 className="text-black font-medium">Total Students</h3>
             <div className="w-10 h-10 rounded-full bg-primary-500/20 flex items-center justify-center text-primary-400">
               <Users className="w-5 h-5" aria-hidden="true" />
             </div>
@@ -95,7 +95,7 @@ export default function AnalyticsPage() {
 
         <div className="glass-card p-6 border-l-4 border-l-secondary-500 rounded-xl" aria-label="New Signups">
           <div className="flex items-center justify-between mb-4">
-            <h3 className="text-gray-400 font-medium">New Signups (7d)</h3>
+            <h3 className="text-black font-medium">New Signups (7d)</h3>
             <div className="w-10 h-10 rounded-full bg-secondary-500/20 flex items-center justify-center text-secondary-400">
               <UserPlus className="w-5 h-5" aria-hidden="true" />
             </div>
@@ -108,13 +108,13 @@ export default function AnalyticsPage() {
 
         <div className="glass-card p-6 border-l-4 border-l-amber-500 rounded-xl" aria-label="Active Users">
           <div className="flex items-center justify-between mb-4">
-            <h3 className="text-gray-400 font-medium">Active Users (24h)</h3>
+            <h3 className="text-black font-medium">Active Users (24h)</h3>
             <div className="w-10 h-10 rounded-full bg-amber-500/20 flex items-center justify-center text-amber-400">
               <Activity className="w-5 h-5" aria-hidden="true" />
             </div>
           </div>
           <p className="text-3xl font-bold text-foreground">856</p>
-          <p className="text-sm text-gray-400 mt-2">Currently online: 45</p>
+          <p className="text-sm text-black mt-2">Currently online: 45</p>
         </div>
       </div>
 

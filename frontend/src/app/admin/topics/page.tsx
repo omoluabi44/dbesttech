@@ -154,7 +154,7 @@ export default function AdminTopicsPage() {
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <h1 className="text-3xl font-bold text-[var(--foreground)]">Topic Management</h1>
-          <p className="text-gray-500 mt-1">Manage topics mapped to specific subjects and school levels.</p>
+          <p className="text-black mt-1">Manage topics mapped to specific subjects and school levels.</p>
         </div>
         <button
           onClick={handleCreateClick}
@@ -184,7 +184,7 @@ export default function AdminTopicsPage() {
         <div className="overflow-x-auto border border-[var(--surface-dark)] rounded-lg">
           <table className="w-full text-left border-collapse">
             <thead>
-              <tr className="bg-[var(--surface-dark)] text-gray-400 text-sm">
+              <tr className="bg-[var(--surface-dark)] text-black text-sm">
                 <th className="p-4 font-medium">Topic Name</th>
                 <th className="p-4 font-medium">Subject</th>
                 <th className="p-4 font-medium">Level</th>
@@ -196,13 +196,13 @@ export default function AdminTopicsPage() {
               {isLoading ? (
                 <tr><td colSpan={5} className="p-8 text-center"><Loader2 className="w-6 h-6 animate-spin mx-auto text-primary-500" /></td></tr>
               ) : topics.length === 0 ? (
-                <tr><td colSpan={5} className="p-8 text-center text-gray-500">No topics found matching your filters.</td></tr>
+                <tr><td colSpan={5} className="p-8 text-center text-black">No topics found matching your filters.</td></tr>
               ) : (
                 topics.map((t) => (
                   <tr key={t.id} className="hover:bg-[var(--background)] transition-colors">
                     <td className="p-4 text-foreground text-sm font-medium">{t.name}</td>
-                    <td className="p-4 text-gray-400 text-sm">{t.subject_name}</td>
-                    <td className="p-4 text-gray-400 text-sm">{t.level_display}</td>
+                    <td className="p-4 text-black text-sm">{t.subject_name}</td>
+                    <td className="p-4 text-black text-sm">{t.level_display}</td>
                     <td className="p-4 text-sm">
                       <span className={`px-2 py-1 rounded-full text-xs font-medium ${t.is_active ? 'bg-green-500/10 text-green-400' : 'bg-red-500/10 text-red-400'}`}>
                         {t.is_active ? 'Active' : 'Inactive'}
@@ -210,10 +210,10 @@ export default function AdminTopicsPage() {
                     </td>
                     <td className="p-4 text-center">
                       <div className="flex items-center justify-center gap-3">
-                        <button onClick={() => handleEditClick(t)} className="text-gray-600 dark:text-gray-400 hover:text-[var(--primary)] transition-colors" title="Edit">
+                        <button onClick={() => handleEditClick(t)} className="text-gray-600 dark:text-black hover:text-[var(--primary)] transition-colors" title="Edit">
                           <Edit2 className="w-5 h-5" />
                         </button>
-                        <button onClick={() => handleDelete(t.id)} className="text-gray-600 dark:text-gray-400 hover:text-red-600 dark:hover:text-red-400 transition-colors" title="Delete">
+                        <button onClick={() => handleDelete(t.id)} className="text-gray-600 dark:text-black hover:text-red-600 dark:hover:text-red-400 transition-colors" title="Delete">
                           <Trash2 className="w-5 h-5" />
                         </button>
                       </div>
@@ -228,21 +228,21 @@ export default function AdminTopicsPage() {
         {/* Pagination */}
         {!isLoading && pagination.count > 0 && (
           <div className="flex items-center justify-between mt-6">
-            <span className="text-sm text-gray-500">
+            <span className="text-sm text-black">
               Showing page {pagination.current} of {Math.ceil(pagination.count / 10) || 1} ({pagination.count} total)
             </span>
             <div className="flex gap-2">
               <button 
                 disabled={!pagination.previous}
                 onClick={() => fetchTopics(pagination.previous!)}
-                className="p-2 bg-[var(--background)] border border-[var(--surface-dark)] rounded-lg text-gray-400 hover:text-foreground disabled:opacity-50 transition-colors"
+                className="p-2 bg-[var(--background)] border border-[var(--surface-dark)] rounded-lg text-black hover:text-foreground disabled:opacity-50 transition-colors"
               >
                 <ChevronLeft className="w-5 h-5" />
               </button>
               <button 
                 disabled={!pagination.next}
                 onClick={() => fetchTopics(pagination.next!)}
-                className="p-2 bg-[var(--background)] border border-[var(--surface-dark)] rounded-lg text-gray-400 hover:text-foreground disabled:opacity-50 transition-colors"
+                className="p-2 bg-[var(--background)] border border-[var(--surface-dark)] rounded-lg text-black hover:text-foreground disabled:opacity-50 transition-colors"
               >
                 <ChevronRight className="w-5 h-5" />
               </button>
@@ -257,7 +257,7 @@ export default function AdminTopicsPage() {
           <div className="bg-[var(--surface)] border border-[var(--surface-dark)] rounded-2xl w-full max-w-md flex flex-col shadow-2xl">
             <div className="p-6 border-b border-[var(--surface-dark)] flex justify-between items-center">
               <h2 className="text-xl font-bold text-foreground">{editingTopic ? 'Edit Topic' : 'Add Topic'}</h2>
-              <button onClick={() => setIsModalOpen(false)} className="text-gray-400 hover:text-gray-900 dark:hover:text-gray-200 transition-colors">
+              <button onClick={() => setIsModalOpen(false)} className="text-black hover:text-gray-900 dark:hover:text-gray-200 transition-colors">
                 <X className="w-6 h-6" />
               </button>
             </div>
@@ -265,7 +265,7 @@ export default function AdminTopicsPage() {
             <form onSubmit={handleSave} className="flex flex-col">
               <div className="p-6 space-y-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-400 mb-1">Subject</label>
+                  <label className="block text-sm font-medium text-black mb-1">Subject</label>
                   <select 
                     required
                     value={formData.subject}
@@ -278,7 +278,7 @@ export default function AdminTopicsPage() {
                 </div>
                 
                 <div>
-                  <label className="block text-sm font-medium text-gray-400 mb-1">Level</label>
+                  <label className="block text-sm font-medium text-black mb-1">Level</label>
                   <select 
                     required
                     value={formData.level}
@@ -292,7 +292,7 @@ export default function AdminTopicsPage() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-400 mb-1">Topic Name</label>
+                  <label className="block text-sm font-medium text-black mb-1">Topic Name</label>
                   <input 
                     type="text"
                     required
@@ -304,7 +304,7 @@ export default function AdminTopicsPage() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-400 mb-1">Description (Optional)</label>
+                  <label className="block text-sm font-medium text-black mb-1">Description (Optional)</label>
                   <textarea 
                     value={formData.description}
                     onChange={(e) => setFormData({...formData, description: e.target.value})}
@@ -321,7 +321,7 @@ export default function AdminTopicsPage() {
                     onChange={(e) => setFormData({...formData, is_active: e.target.checked})}
                     className="w-4 h-4 text-primary-600 bg-[var(--background)] border-[var(--surface-dark)] rounded focus:ring-primary-500"
                   />
-                  <label htmlFor="is_active" className="text-sm font-medium text-gray-400">
+                  <label htmlFor="is_active" className="text-sm font-medium text-black">
                     Active (visible to students)
                   </label>
                 </div>
