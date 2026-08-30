@@ -70,7 +70,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                   className={`flex items-center space-x-3 px-4 py-3 rounded-lg transition-colors ${
                     isActive
                       ? 'bg-primary-500/10 text-primary-600 dark:text-primary-400 border border-primary-500/20 font-medium'
-                      : 'text-gray-500 hover:text-primary-600 dark:hover:text-primary-400 hover:bg-primary-500/10'
+                      : 'text-gray-500 hover:text-black dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-800'
                   }`}
                 >
                   <Icon className="w-5 h-5" />
@@ -82,14 +82,14 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           <div className="p-4 border-t border-[var(--surface-dark)] space-y-2">
             <button
               onClick={() => router.push('/dashboard')}
-              className="flex items-center space-x-3 px-4 py-3 rounded-lg w-full text-gray-500 hover:text-primary-600 dark:hover:text-primary-400 hover:bg-primary-500/10 transition-colors"
+              className="flex items-center space-x-3 px-4 py-3 rounded-lg w-full text-gray-500 hover:text-black dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
             >
               <ArrowLeft className="w-5 h-5" />
               <span>Back to App</span>
             </button>
             <button
               onClick={() => { clearAuth(); router.push('/login'); }}
-              className="flex items-center space-x-3 px-4 py-3 rounded-lg w-full text-gray-500 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-500/10 transition-colors"
+              className="flex items-center space-x-3 px-4 py-3 rounded-lg w-full text-gray-500 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50/50 dark:hover:bg-red-500/10 transition-colors"
             >
               <LogOut className="w-5 h-5" />
               <span>Sign Out</span>
