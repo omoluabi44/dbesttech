@@ -41,5 +41,7 @@ urlpatterns = [
     path('admin-payments/transactions/<str:tx_ref>/refund/', admin_payment_views.PaymentRefundView.as_view(), name='admin-payment-refund'),
     path('admin-payments/webhooks/', admin_payment_views.WebhookLogListView.as_view(), name='admin-webhook-logs'),
     
+    path('admin-settings/platform/', admin_views.PlatformSettingView.as_view(), name='admin-platform-setting'),
+    
     path('', include(router.urls)),
 ]

@@ -87,7 +87,10 @@ class PracticeStartView(views.APIView):
         if topic_id:
             topic = get_object_or_404(Topic, id=topic_id, subject=subject)
         
-        if request.user.role not in ['admin', 'root_admin'] and request.user.subscription_plan == 'free':
+        from apps.accounts.models import PlatformSetting
+        platform_setting = PlatformSetting.get_setting()
+        
+        if not platform_setting.is_free_mode and request.user.role not in ['admin', 'root_admin'] and request.user.subscription_plan == 'free':
             if difficulty != 'easy':
                 return Response({'error': 'Free plan users can only access easy questions. Upgrade for medium and hard difficulty.'}, status=status.HTTP_403_FORBIDDEN)
             difficulty = 'easy'
@@ -183,11 +186,14 @@ class PracticeSubmitStageView(views.APIView):
         session.correct_answers += stage_correct
         
         requires_upgrade = False
+        from apps.accounts.models import PlatformSetting
+        platform_setting = PlatformSetting.get_setting()
+        
         if stage == 5 or end_idx >= len(all_session_answers):
             session.status = 'completed'
             session.completed_at = timezone.now()
             session.score_percentage = (session.correct_answers / max(1, session.total_questions)) * 100
-        elif stage == 1 and request.user.role not in ['admin', 'root_admin'] and request.user.subscription_plan == 'free':
+        elif stage == 1 and not platform_setting.is_free_mode and request.user.role not in ['admin', 'root_admin'] and request.user.subscription_plan == 'free':
             # Do not complete the session and do not increment current_stage.
             # This allows the user to resume and submit this stage again after upgrading.
             requires_upgrade = True

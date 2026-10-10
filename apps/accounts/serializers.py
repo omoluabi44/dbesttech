@@ -276,3 +276,10 @@ class SubscriptionPlanAdminSerializer(serializers.ModelSerializer):
     class Meta:
         model = SubscriptionPlan
         fields = '__all__'
+
+from .models import PlatformSetting
+
+class PlatformSettingSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = PlatformSetting
+        fields = ['is_free_mode']

@@ -167,3 +167,27 @@ class SubscriptionPlanAdminViewSet(viewsets.ModelViewSet):
     permission_classes = [permissions.IsAuthenticated, IsAdminUser]
     serializer_class = SubscriptionPlanAdminSerializer
     queryset = SubscriptionPlan.objects.all().order_by('order')
+
+from .models import PlatformSetting
+from .serializers import PlatformSettingSerializer
+from rest_framework import views
+
+class PlatformSettingView(views.APIView):
+    """
+    API View to retrieve and update the global platform setting.
+    Only Root Admin can modify this.
+    """
+    permission_classes = [permissions.IsAuthenticated, IsRootAdmin]
+
+    def get(self, request):
+        setting = PlatformSetting.get_setting()
+        serializer = PlatformSettingSerializer(setting)
+        return Response(serializer.data)
+
+    def patch(self, request):
+        setting = PlatformSetting.get_setting()
+        serializer = PlatformSettingSerializer(setting, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

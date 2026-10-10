@@ -175,3 +175,19 @@ class WebhookLog(models.Model):
     
     def __str__(self):
         return f"{self.event} - {self.tx_ref} - {self.created_at}"
+
+class PlatformSetting(models.Model):
+    is_free_mode = models.BooleanField(default=True, help_text="If True, the platform is free for all users, overriding subscription constraints.")
+
+    class Meta:
+        verbose_name = 'Platform Setting'
+        verbose_name_plural = 'Platform Settings'
+
+    def save(self, *args, **kwargs):
+        self.pk = 1
+        super(PlatformSetting, self).save(*args, **kwargs)
+
+    @classmethod
+    def get_setting(cls):
+        obj, _ = cls.objects.get_or_create(pk=1)
+        return obj
