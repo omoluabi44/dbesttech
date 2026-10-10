@@ -24,6 +24,8 @@ interface SubscriptionPlan {
 export default function SubscriptionsAdminPage() {
   const [plans, setPlans] = useState<SubscriptionPlan[]>([]);
   const [loading, setLoading] = useState(true);
+  const [isFreeMode, setIsFreeMode] = useState(false);
+  const [isSettingMode, setIsSettingMode] = useState(false);
 
   // Modals state
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -63,9 +65,19 @@ export default function SubscriptionsAdminPage() {
     }
   }, []);
 
+  const fetchPlatformSetting = useCallback(async () => {
+    try {
+      const res = await api.get('/auth/admin-settings/platform/');
+      setIsFreeMode(res.data.is_free_mode);
+    } catch (err) {
+      console.error('Failed to load platform setting', err);
+    }
+  }, []);
+
   useEffect(() => {
     fetchPlans();
-  }, [fetchPlans]);
+    fetchPlatformSetting();
+  }, [fetchPlans, fetchPlatformSetting]);
 
   // Add Modal removed as requested
 
@@ -114,10 +126,40 @@ export default function SubscriptionsAdminPage() {
 
   // Delete function removed as requested
 
+  const toggleFreeMode = async () => {
+    try {
+      setIsSettingMode(true);
+      const newStatus = !isFreeMode;
+      await api.patch('/auth/admin-settings/platform/', { is_free_mode: newStatus });
+      setIsFreeMode(newStatus);
+      toast.success(newStatus ? 'Platform is now free for all users' : 'Platform is back to paid mode');
+    } catch (error) {
+      toast.error('Failed to update platform setting');
+    } finally {
+      setIsSettingMode(false);
+    }
+  };
+
   return (
     <div className="space-y-6 relative" role="main" aria-label="Manage Subscriptions">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <h1 className="text-3xl font-bold">Manage Subscriptions</h1>
+        
+        <div className="flex items-center gap-3 bg-[var(--surface-light)] p-3 rounded-lg border border-[var(--surface-dark)]">
+          <div className="flex flex-col">
+            <span className="text-sm font-medium text-foreground">Platform Access Mode</span>
+            <span className="text-xs text-slate-500">
+              {isFreeMode ? 'Currently Free for Everyone' : 'Subscriptions Required'}
+            </span>
+          </div>
+          <button 
+            onClick={toggleFreeMode} 
+            disabled={isSettingMode}
+            className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none ${isFreeMode ? 'bg-primary-500' : 'bg-gray-600'}`}
+          >
+            <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${isFreeMode ? 'translate-x-6' : 'translate-x-1'}`} />
+          </button>
+        </div>
       </div>
 
       <div className="glass-card rounded-xl overflow-hidden shadow-lg">
