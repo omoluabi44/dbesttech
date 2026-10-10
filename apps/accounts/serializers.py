@@ -49,11 +49,21 @@ class UserSerializer(serializers.ModelSerializer):
     def get_subscription_plan(self, obj):
         if obj.role in ['admin', 'root_admin']:
             return 'admin_plan'
+        
+        from .models import PlatformSetting
+        if PlatformSetting.get_setting().is_free_mode:
+            return 'premium'
+            
         return obj.subscription_plan
 
     def get_subscription_status(self, obj):
         if obj.role in ['admin', 'root_admin']:
             return 'active'
+            
+        from .models import PlatformSetting
+        if PlatformSetting.get_setting().is_free_mode:
+            return 'active'
+            
         return obj.subscription_status
 
 
