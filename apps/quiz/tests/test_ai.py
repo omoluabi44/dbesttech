@@ -258,28 +258,28 @@ class TestQuizGeneratorServiceAIFallback(TestCase):
         mock_generate.assert_not_called()
 
     @patch('apps.quiz.services.QuizGeneratorService._generate_and_save_questions')
-    def test_ai_not_called_for_graduating_level(self, mock_generate):
-        """AI should NEVER be called for graduating levels (past questions only)."""
+    def test_ai_called_for_primary_6(self, mock_generate):
+        """AI should be called for Primary 6 graduating level when DB has deficit."""
+        mock_generate.return_value = Quiz.objects.none()
         QuizGeneratorService.select_questions(
             subject=self.subject,
-            level='primary_6',  # Graduating level
+            level='primary_6',
             difficulty='medium',
             num_questions=10,
         )
-
-        mock_generate.assert_not_called()
+        mock_generate.assert_called_once()
 
     @patch('apps.quiz.services.QuizGeneratorService._generate_and_save_questions')
-    def test_ai_not_called_for_jss3(self, mock_generate):
-        """AI should NOT be called for JSS 3 (graduating level)."""
+    def test_ai_called_for_jss3(self, mock_generate):
+        """AI should be called for JSS 3 graduating level when DB has deficit."""
+        mock_generate.return_value = Quiz.objects.none()
         QuizGeneratorService.select_questions(
             subject=self.subject,
             level='jss_3',
             difficulty='hard',
             num_questions=10,
         )
-
-        mock_generate.assert_not_called()
+        mock_generate.assert_called_once()
 
 
 class TestAIQuestionPersistence(TestCase):

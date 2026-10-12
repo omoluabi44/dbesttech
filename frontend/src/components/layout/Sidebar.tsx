@@ -46,22 +46,17 @@ export const Sidebar: React.FC<{
 
   const navItems = [
     { label: 'Dashboard', href: '/dashboard', icon: <LayoutDashboard size={20} /> },
+    { label: 'Subjects', href: '/subjects', icon: <BookOpen size={20} /> },
     { label: 'Leaderboard', href: '/leaderboard', icon: <Trophy size={20} /> },
     { label: 'My Performance', href: '/performance', icon: <BarChart3 size={20} /> },
     { label: 'Quiz History', href: '/quiz/history', icon: <History size={20} /> },
   ];
 
   if (isGraduating) {
-    navItems.splice(1, 0, { 
+    navItems.splice(2, 0, { 
       label: 'Past Questions', 
       href: '/past-questions', 
       icon: <BrainCircuit size={20} />
-    });
-  } else {
-    navItems.splice(1, 0, { 
-      label: 'Subjects', 
-      href: '/subjects', 
-      icon: <BookOpen size={20} />
     });
   }
 
@@ -149,20 +144,37 @@ export const Sidebar: React.FC<{
           })}
 
           {/* Quick Play Button */}
-          <Link
-            href={isGraduating ? "/past-questions" : "/quiz/setup"}
-            onClick={() => isMobile && setIsOpen(false)}
-            className="mt-4 mx-1"
-          >
-            <motion.div 
-              whileHover={{ scale: 1.03 }}
-              whileTap={{ scale: 0.97 }}
-              className="bg-primary text-white px-4 py-3 rounded-2xl font-extrabold text-center border-b-4 border-primary-dark transition-shadow flex justify-center items-center gap-2"
+          <div className="mt-4 mx-1 flex flex-col gap-2">
+            <Link
+              href="/quiz/setup"
+              onClick={() => isMobile && setIsOpen(false)}
             >
-              {isGraduating ? <BrainCircuit size={20} /> : <Gamepad2 size={20} />}
-              {isGraduating ? 'Past Questions' : 'Start Quiz!'}
-            </motion.div>
-          </Link>
+              <motion.div 
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                className="bg-primary text-white px-4 py-2.5 rounded-2xl font-extrabold text-center border-b-4 border-primary-dark transition-shadow flex justify-center items-center gap-2 text-sm shadow-sm"
+              >
+                <Gamepad2 size={18} />
+                Start Quiz!
+              </motion.div>
+            </Link>
+
+            {isGraduating && (
+              <Link
+                href="/past-questions"
+                onClick={() => isMobile && setIsOpen(false)}
+              >
+                <motion.div 
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  className="bg-purple-600 text-white px-4 py-2.5 rounded-2xl font-extrabold text-center border-b-4 border-purple-800 transition-shadow flex justify-center items-center gap-2 text-sm shadow-sm"
+                >
+                  <BrainCircuit size={18} />
+                  Past Questions
+                </motion.div>
+              </Link>
+            )}
+          </div>
         </div>
 
         {/* Bottom Section */}

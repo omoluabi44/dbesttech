@@ -15,9 +15,10 @@ class QuizGeneratorService:
     
     @staticmethod
     def get_quiz_type(level):
-        """Determine quiz type based on student's level."""
-        if level in GRADUATING_LEVELS:
-            return 'past_question'
+        """
+        Determine default practice quiz type.
+        All levels (including graduating levels: primary_6, jss_3, ss_3) can practice auto-generated AI quizzes.
+        """
         return 'auto_generated'
     
     @staticmethod

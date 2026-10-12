@@ -57,11 +57,21 @@ export default function DashboardPage() {
           </p>
         </div>
         
-        <Link href={isGraduating ? "/past-questions" : "/subjects"} className="w-full sm:w-auto">
-          <Button size="lg" className="w-full sm:w-auto rounded-full shadow-lg shadow-primary/20">
-            {isGraduating ? "Start Past Question" : "Start New Quiz"}
-          </Button>
-        </Link>
+        <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
+          <Link href="/quiz/setup" className="w-full sm:w-auto">
+            <Button size="lg" className="w-full sm:w-auto rounded-full shadow-lg shadow-primary/20">
+              Start Practice Quiz
+            </Button>
+          </Link>
+          {isGraduating && (
+            <Link href="/past-questions" className="w-full sm:w-auto">
+              <Button size="lg" variant="outline" className="w-full sm:w-auto rounded-full border-purple-500 text-purple-600 hover:bg-purple-50 shadow-md">
+                <BrainCircuit size={18} className="mr-2" />
+                Past Questions
+              </Button>
+            </Link>
+          )}
+        </div>
       </div>
 
       {/* Stats row */}
@@ -183,7 +193,7 @@ export default function DashboardPage() {
                   {subjectsData.results.slice(0, 4).map((subject: any) => (
                     <Link 
                       key={subject.id} 
-                      href={isGraduating ? `/past-questions` : `/quiz/setup?subject=${subject.id}`}
+                      href={`/quiz/setup?subject=${subject.id}`}
                       className="flex items-center justify-between p-3 rounded-xl border border-slate-100 hover:border-primary hover:bg-primary/5 transition-all group"
                     >
                       <div className="flex items-center gap-3">
@@ -202,8 +212,8 @@ export default function DashboardPage() {
                 </div>
               )}
               
-              <Link href={isGraduating ? "/past-questions" : "/subjects"} className="block text-center text-sm font-semibold text-primary hover:text-primary-dark mt-6">
-                {isGraduating ? "View past questions" : "View all subjects"}
+              <Link href="/subjects" className="block text-center text-sm font-semibold text-primary hover:text-primary-dark mt-6">
+                View all subjects
               </Link>
             </div>
           </Card>
