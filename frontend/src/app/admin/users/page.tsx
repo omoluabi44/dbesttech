@@ -2,7 +2,8 @@
 
 import React, { useEffect, useState, useCallback } from 'react';
 import { toast } from 'sonner';
-import { UserPlus, MoreVertical, CheckCircle, Trash2, Eye, X, Mail, ChevronLeft, ChevronRight, ShieldAlert } from 'lucide-react';
+import { UserPlus, MoreVertical, CheckCircle, Trash2, Eye, X, Mail, ChevronLeft, ChevronRight, ShieldAlert, BarChart2 } from 'lucide-react';
+import Link from 'next/link';
 import api from '@/lib/api/client';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
@@ -235,6 +236,15 @@ export default function UsersPage() {
                         <button onClick={() => setViewUser(user)} className="p-2 text-black hover:text-gray-900 dark:hover:text-white transition-colors focus:outline-none focus:ring-2 focus:ring-primary-500 rounded" aria-label={`View details for ${user.username}`} title="View Details">
                           <Eye size={18} aria-hidden="true" />
                         </button>
+                        {user.role === 'student' && (
+                          <Link
+                            href={`/admin/student-results?student_id=${user.id}`}
+                            className="p-2 text-black hover:text-primary-500 dark:hover:text-primary-400 transition-colors focus:outline-none focus:ring-2 focus:ring-primary-500 rounded"
+                            title="View Quiz Results & Performance"
+                          >
+                            <BarChart2 size={18} aria-hidden="true" />
+                          </Link>
+                        )}
                         {!user.email_verified && (
                           <button onClick={() => handleVerify(user.id)} className="p-2 text-black hover:text-green-400 transition-colors focus:outline-none focus:ring-2 focus:ring-green-500 rounded" aria-label={`Verify email for ${user.username}`} title="Verify Email">
                             <CheckCircle size={18} aria-hidden="true" />
