@@ -4,6 +4,7 @@ import {
   WeeklyProgress,
   StrengthWeakness,
   OverallPerformance,
+  LeaderboardResponse,
 } from '../types/performance';
 import { PaginatedResponse } from '../types/quiz';
 
@@ -31,3 +32,14 @@ export const getStrengths = async (status?: string, subjectId?: string): Promise
   const res = await client.get(url);
   return res.data;
 };
+
+export const getLeaderboard = async (level?: string, subjectId?: string | number): Promise<LeaderboardResponse> => {
+  const params = new URLSearchParams();
+  if (level) params.append('level', level);
+  if (subjectId && subjectId !== 'all') params.append('subject_id', subjectId.toString());
+  
+  const url = `/performance/leaderboard/?${params.toString()}`;
+  const res = await client.get(url);
+  return res.data;
+};
+

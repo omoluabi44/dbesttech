@@ -13,7 +13,8 @@ import {
   Gamepad2,
   Star,
   Crown,
-  Shield
+  Shield,
+  Trophy
 } from 'lucide-react';
 import { useAuthStore } from '@/lib/stores/authStore';
 import { useSchoolCategory } from '@/lib/hooks/useSchoolCategory';
@@ -45,6 +46,7 @@ export const Sidebar: React.FC<{
 
   const navItems = [
     { label: 'Dashboard', href: '/dashboard', icon: <LayoutDashboard size={20} /> },
+    { label: 'Leaderboard', href: '/leaderboard', icon: <Trophy size={20} /> },
     { label: 'My Performance', href: '/performance', icon: <BarChart3 size={20} /> },
     { label: 'Quiz History', href: '/quiz/history', icon: <History size={20} /> },
   ];

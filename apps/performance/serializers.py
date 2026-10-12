@@ -74,3 +74,23 @@ class OverallPerformanceSerializer(serializers.Serializer):
     subjects_count = serializers.IntegerField()
     strongest_subject = serializers.CharField(allow_null=True)
     weakest_subject = serializers.CharField(allow_null=True)
+
+
+class LeaderboardEntrySerializer(serializers.Serializer):
+    """Serializer for individual leaderboard ranking entry."""
+    rank = serializers.IntegerField()
+    student_id = serializers.IntegerField()
+    student_name = serializers.CharField()
+    avatar_url = serializers.CharField(allow_null=True)
+    level = serializers.CharField()
+    level_display = serializers.CharField()
+    subject_id = serializers.IntegerField(allow_null=True, required=False)
+    subject_name = serializers.CharField(allow_null=True, required=False)
+    total_correct_answers = serializers.IntegerField()
+    total_questions_attempted = serializers.IntegerField()
+    total_quizzes_taken = serializers.IntegerField()
+    average_score = serializers.FloatField()
+    accuracy_rate = serializers.FloatField()
+    total_time_spent_seconds = serializers.IntegerField()
+    is_current_user = serializers.BooleanField()
+

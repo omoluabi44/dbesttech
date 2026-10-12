@@ -45,3 +45,44 @@ export interface OverallPerformance {
   strongest_subject: string | null;
   weakest_subject: string | null;
 }
+
+export interface LeaderboardEntry {
+  rank: number;
+  student_id: number;
+  student_name: string;
+  avatar_url: string | null;
+  level: string;
+  level_display: string;
+  subject_id?: number | null;
+  subject_name?: string | null;
+  total_correct_answers: number;
+  total_questions_attempted: number;
+  total_quizzes_taken: number;
+  average_score: number;
+  accuracy_rate: number;
+  total_time_spent_seconds: number;
+  is_current_user: boolean;
+}
+
+export interface AvailableLevel {
+  code: string;
+  label: string;
+}
+
+export interface AvailableSubject {
+  id: number;
+  name: string;
+}
+
+export interface LeaderboardResponse {
+  level: string;
+  level_display: string;
+  subject_id: number | null;
+  subject_name: string;
+  leaderboard: LeaderboardEntry[];
+  current_user_rank: LeaderboardEntry | null;
+  total_participants: number;
+  available_levels: AvailableLevel[];
+  available_subjects: AvailableSubject[];
+}
+

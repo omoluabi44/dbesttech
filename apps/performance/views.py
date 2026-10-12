@@ -10,7 +10,11 @@ from .serializers import (
     WeeklyProgressSerializer,
     StrengthWeaknessSerializer,
     OverallPerformanceSerializer,
+    LeaderboardEntrySerializer,
 )
+from utils.constants import SCHOOL_LEVELS
+from apps.quiz.models import Subject
+
 
 
 class OverallPerformanceView(APIView):
@@ -121,3 +125,154 @@ class StrengthWeaknessView(generics.ListAPIView):
             queryset = queryset.filter(topic__subject_id=subject_id)
         
         return queryset
+
+
+class LeaderboardView(APIView):
+    """
+    Leaderboard rankings based on class level and subject.
+    Query params:
+    - level: e.g. 'primary_1', 'primary_2', etc. (Defaults to student's level or 'primary_1')
+    - subject_id: optional integer. If provided, filters to that subject. If omitted or 'all', aggregates across all subjects.
+    - limit: optional integer. Max students returned (default 50).
+    """
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        level = request.query_params.get('level')
+        if not level:
+            student_profile = getattr(request.user, 'student_profile', None)
+            level = getattr(student_profile, 'level', 'primary_1') if student_profile else 'primary_1'
+
+        level_dict = dict(SCHOOL_LEVELS)
+        level_display = level_dict.get(level, level.replace('_', ' ').title())
+
+        subject_id_raw = request.query_params.get('subject_id')
+        subject_id = None
+        subject_name = None
+        if subject_id_raw and str(subject_id_raw).lower() not in ('all', '', 'null', 'undefined'):
+            try:
+                subject_id = int(subject_id_raw)
+                subject_obj = Subject.objects.filter(id=subject_id).first()
+                if subject_obj:
+                    subject_name = subject_obj.name
+                else:
+                    subject_id = None
+            except (ValueError, TypeError):
+                subject_id = None
+
+        limit = 50
+        try:
+            limit = min(int(request.query_params.get('limit', 50)), 100)
+        except (ValueError, TypeError):
+            pass
+
+        base_qs = PerformanceSummary.objects.filter(
+            level=level,
+            total_quizzes_taken__gt=0
+        )
+
+        entries = []
+        if subject_id:
+            qs = base_qs.filter(subject_id=subject_id).select_related(
+                'student', 'student__student_profile', 'subject'
+            ).order_by(
+                '-total_correct_answers', '-average_score', 'total_time_spent_seconds'
+            )
+            for item in qs:
+                user = item.student
+                profile = getattr(user, 'student_profile', None)
+                student_name = f"{user.first_name} {user.last_name}".strip() or user.username or f"Student #{user.id}"
+                avatar_url = profile.avatar.url if (profile and profile.avatar) else None
+                acc_rate = round((item.total_correct_answers / item.total_questions_attempted * 100), 1) if item.total_questions_attempted > 0 else 0.0
+
+                entries.append({
+                    'student_id': user.id,
+                    'student_name': student_name,
+                    'avatar_url': avatar_url,
+                    'level': level,
+                    'level_display': level_display,
+                    'subject_id': subject_id,
+                    'subject_name': item.subject.name,
+                    'total_correct_answers': item.total_correct_answers,
+                    'total_questions_attempted': item.total_questions_attempted,
+                    'total_quizzes_taken': item.total_quizzes_taken,
+                    'average_score': float(item.average_score),
+                    'accuracy_rate': acc_rate,
+                    'total_time_spent_seconds': item.total_time_spent_seconds,
+                    'is_current_user': (user.id == request.user.id),
+                })
+        else:
+            aggregated = base_qs.values(
+                'student_id',
+                'student__username',
+                'student__first_name',
+                'student__last_name',
+                'student__student_profile__avatar'
+            ).annotate(
+                total_correct=Sum('total_correct_answers'),
+                total_attempted=Sum('total_questions_attempted'),
+                total_quizzes=Sum('total_quizzes_taken'),
+                avg_score=Avg('average_score'),
+                total_time=Sum('total_time_spent_seconds')
+            ).order_by(
+                '-total_correct', '-avg_score', 'total_time'
+            )
+
+            for item in aggregated:
+                first = item['student__first_name'] or ''
+                last = item['student__last_name'] or ''
+                name = f"{first} {last}".strip() or item['student__username'] or f"Student #{item['student_id']}"
+                avatar_url = f"/media/{item['student__student_profile__avatar']}" if item['student__student_profile__avatar'] else None
+                tot_c = item['total_correct'] or 0
+                tot_a = item['total_attempted'] or 0
+                acc_rate = round((tot_c / tot_a * 100), 1) if tot_a > 0 else 0.0
+
+                entries.append({
+                    'student_id': item['student_id'],
+                    'student_name': name,
+                    'avatar_url': avatar_url,
+                    'level': level,
+                    'level_display': level_display,
+                    'subject_id': None,
+                    'subject_name': 'All Subjects',
+                    'total_correct_answers': tot_c,
+                    'total_questions_attempted': tot_a,
+                    'total_quizzes_taken': item['total_quizzes'] or 0,
+                    'average_score': round(float(item['avg_score'] or 0), 1),
+                    'accuracy_rate': acc_rate,
+                    'total_time_spent_seconds': item['total_time'] or 0,
+                    'is_current_user': (item['student_id'] == request.user.id),
+                })
+
+        # Assign ranks
+        current_user_entry = None
+        for idx, entry in enumerate(entries, start=1):
+            entry['rank'] = idx
+            if entry['is_current_user']:
+                current_user_entry = entry
+
+        total_participants = len(entries)
+        top_entries = entries[:limit]
+
+        # Available levels and subjects for filter dropdowns
+        available_levels = [{'code': code, 'label': label} for code, label in SCHOOL_LEVELS]
+        
+        # Available subjects for this level
+        subjects_qs = Subject.objects.filter(is_active=True).order_by('name')
+        available_subjects = []
+        for s in subjects_qs:
+            if not s.applicable_levels or level in s.applicable_levels:
+                available_subjects.append({'id': s.id, 'name': s.name})
+
+        return Response({
+            'level': level,
+            'level_display': level_display,
+            'subject_id': subject_id,
+            'subject_name': subject_name or 'All Subjects',
+            'leaderboard': LeaderboardEntrySerializer(top_entries, many=True).data,
+            'current_user_rank': LeaderboardEntrySerializer(current_user_entry).data if current_user_entry else None,
+            'total_participants': total_participants,
+            'available_levels': available_levels,
+            'available_subjects': available_subjects,
+        })
+

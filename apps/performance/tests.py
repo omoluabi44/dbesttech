@@ -156,3 +156,67 @@ class TestStrengthWeaknessAPI(PerformanceTestBase):
         response = self.client.get(f"{url}?status=strong")
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(response.data['results']), 0)
+
+
+class TestLeaderboardAPI(PerformanceTestBase):
+    def setUp(self):
+        super().setUp()
+        self.user2 = User.objects.create_user(
+            email='student2@test.com',
+            username='student2',
+            password='password123',
+            role='student'
+        )
+        self.user2.student_profile.level = 'jss_1'
+        self.user2.student_profile.save()
+
+    def test_leaderboard_all_subjects(self):
+        PerformanceSummary.objects.create(
+            student=self.user,
+            subject=self.subject,
+            level='jss_1',
+            total_quizzes_taken=2,
+            total_questions_attempted=20,
+            total_correct_answers=15,
+            average_score=75.0
+        )
+        PerformanceSummary.objects.create(
+            student=self.user2,
+            subject=self.subject,
+            level='jss_1',
+            total_quizzes_taken=3,
+            total_questions_attempted=30,
+            total_correct_answers=25,
+            average_score=83.3
+        )
+        url = reverse('performance:leaderboard')
+        response = self.client.get(f"{url}?level=jss_1")
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.data['total_participants'], 2)
+        # user2 should be rank 1 because of higher total_correct_answers (25 vs 15)
+        self.assertEqual(response.data['leaderboard'][0]['student_id'], self.user2.id)
+        self.assertEqual(response.data['leaderboard'][0]['rank'], 1)
+        self.assertEqual(response.data['leaderboard'][1]['student_id'], self.user.id)
+        self.assertEqual(response.data['leaderboard'][1]['rank'], 2)
+        # current_user_rank check
+        self.assertIsNotNone(response.data['current_user_rank'])
+        self.assertEqual(response.data['current_user_rank']['rank'], 2)
+
+    def test_leaderboard_by_subject(self):
+        PerformanceSummary.objects.create(
+            student=self.user,
+            subject=self.subject,
+            level='jss_1',
+            total_quizzes_taken=1,
+            total_questions_attempted=10,
+            total_correct_answers=8,
+            average_score=80.0
+        )
+        url = reverse('performance:leaderboard')
+        response = self.client.get(f"{url}?level=jss_1&subject_id={self.subject.id}")
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.data['subject_id'], self.subject.id)
+        self.assertEqual(response.data['subject_name'], 'Mathematics')
+        self.assertEqual(len(response.data['leaderboard']), 1)
+        self.assertEqual(response.data['leaderboard'][0]['student_id'], self.user.id)
+

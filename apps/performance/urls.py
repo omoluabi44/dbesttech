@@ -8,4 +8,5 @@ urlpatterns = [
     path('by-subject/', views.SubjectPerformanceView.as_view(), name='by_subject'),
     path('weekly/', views.WeeklyProgressView.as_view(), name='weekly'),
     path('strengths/', views.StrengthWeaknessView.as_view(), name='strengths'),
+    path('leaderboard/', views.LeaderboardView.as_view(), name='leaderboard'),
 ]
