@@ -277,7 +277,27 @@ function StudentResultsContent() {
     router.replace(url);
   };
 
-  const filteredStudents = students.filter(s => {
+  const handleLevelChange = (newLevel: string) => {
+    setSelectedLevel(newLevel);
+    // If a student was selected, check if they belong to newLevel
+    if (selectedStudentId && newLevel !== 'all') {
+      const curr = students.find(s => s.id.toString() === selectedStudentId);
+      if (curr && curr.student_profile?.level !== newLevel) {
+        handleSelectStudent('');
+      }
+    }
+  };
+
+  // Only include students belonging to the selected class level
+  const studentsInLevel = students.filter(s => {
+    if (selectedLevel && selectedLevel !== 'all') {
+      return s.student_profile?.level === selectedLevel;
+    }
+    return true;
+  });
+
+  const filteredStudents = studentsInLevel.filter(s => {
+    if (!searchQuery) return true;
     const fullName = `${s.first_name || ''} ${s.last_name || ''}`.toLowerCase();
     const email = (s.email || '').toLowerCase();
     const username = (s.username || '').toLowerCase();
@@ -315,41 +335,83 @@ function StudentResultsContent() {
       </div>
 
       {/* Filter and Selection Card */}
-      <div className="glass-card p-6 rounded-2xl shadow-md border border-[var(--surface-dark)] space-y-4">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-          {/* Student Selector */}
-          <div>
-            <label className="block text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-2 flex items-center gap-1.5">
-              <Users size={14} className="text-primary-500" />
-              Student Filter
-            </label>
-            <select
-              value={selectedStudentId}
-              onChange={(e) => handleSelectStudent(e.target.value)}
-              disabled={loadingStudents}
-              className="w-full px-4 py-2.5 rounded-xl bg-[var(--surface-light)] border border-[var(--surface-dark)] text-sm font-semibold text-foreground focus:outline-none focus:ring-2 focus:ring-primary-500 cursor-pointer"
-            >
-              <option value="">🌐 All Students (Global Platform Feed)</option>
-              {filteredStudents.map((s) => (
-                <option key={s.id} value={s.id.toString()}>
-                  {s.first_name} {s.last_name} ({s.email}) - {s.student_profile?.level_display || 'Student'}
-                </option>
-              ))}
-            </select>
+      <div className="glass-card p-6 rounded-2xl shadow-md border border-[var(--surface-dark)] space-y-5">
+        {/* Top: Full-Width Search Bar */}
+        <div className="w-full">
+          <label className="block text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-2 flex items-center justify-between">
+            <span className="flex items-center gap-1.5">
+              <Search size={14} className="text-primary-500" />
+              Search Student by Name or Email
+            </span>
+            {searchQuery && (
+              <button
+                onClick={() => setSearchQuery('')}
+                className="text-[11px] font-bold text-primary-500 hover:underline flex items-center gap-1"
+              >
+                <X size={12} /> Clear search
+              </button>
+            )}
+          </label>
+          <div className="relative w-full">
+            <input
+              type="text"
+              placeholder="Search student by name (e.g. John Doe, David), username, or email..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full pl-11 pr-10 py-3 rounded-xl bg-[var(--surface-light)] border border-[var(--surface-dark)] text-sm font-medium text-foreground focus:outline-none focus:ring-2 focus:ring-primary-500 shadow-sm"
+            />
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5" />
+            {searchQuery && (
+              <button
+                onClick={() => setSearchQuery('')}
+                className="absolute right-3.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-foreground p-1 rounded-full hover:bg-[var(--surface-dark)]"
+                title="Clear search"
+              >
+                <X size={16} />
+              </button>
+            )}
           </div>
 
-          {/* Class Level Selector */}
+          {/* Quick matching student pills */}
+          {searchQuery && filteredStudents.length > 0 && !selectedStudentId && (
+            <div className="flex flex-wrap items-center gap-2 mt-2.5 pt-1 text-xs">
+              <span className="text-gray-400 font-semibold">Matching students:</span>
+              {filteredStudents.slice(0, 6).map(s => (
+                <button
+                  key={s.id}
+                  onClick={() => {
+                    handleSelectStudent(s.id.toString());
+                    setSearchQuery('');
+                  }}
+                  className="px-2.5 py-1 rounded-lg bg-primary-500/10 text-primary-600 dark:text-primary-400 hover:bg-primary-500 hover:text-white font-bold transition-all flex items-center gap-1.5 border border-primary-500/20"
+                  title={`Select ${s.first_name} ${s.last_name}`}
+                >
+                  <Users size={12} />
+                  <span>{s.first_name} {s.last_name}</span>
+                  <span className="text-[10px] opacity-75 font-normal">({s.student_profile?.level_display || 'Student'})</span>
+                </button>
+              ))}
+              {filteredStudents.length > 6 && (
+                <span className="text-gray-400 text-xs">+{filteredStudents.length - 6} more in list</span>
+              )}
+            </div>
+          )}
+        </div>
+
+        {/* Filters in requested order: 1. Class Level -> 2. Subject -> 3. Student Filter */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-1">
+          {/* 1. Class Level Selector */}
           <div>
             <label className="block text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-2 flex items-center gap-1.5">
               <GraduationCap size={14} className="text-primary-500" />
-              Class Level
+              1. Class Level
             </label>
             <select
               value={selectedLevel}
-              onChange={(e) => setSelectedLevel(e.target.value)}
+              onChange={(e) => handleLevelChange(e.target.value)}
               className="w-full px-4 py-2.5 rounded-xl bg-[var(--surface-light)] border border-[var(--surface-dark)] text-sm font-semibold text-foreground focus:outline-none focus:ring-2 focus:ring-primary-500 cursor-pointer"
             >
-              <option value="all">All Class Levels</option>
+              <option value="all">🌐 All Class Levels</option>
               {availableLevels.filter(l => l.code !== 'all').map((lvl) => (
                 <option key={lvl.code} value={lvl.code}>
                   {lvl.label}
@@ -358,57 +420,88 @@ function StudentResultsContent() {
             </select>
           </div>
 
-          {/* Subject Selector */}
+          {/* 2. Subject Selector (Fixed since only 1 subject) */}
           <div>
             <label className="block text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-2 flex items-center gap-1.5">
               <BookOpen size={14} className="text-primary-500" />
-              Subject
+              2. Subject
             </label>
             <select
-              value={selectedSubject}
+              value={availableSubjects.length === 1 ? availableSubjects[0].id.toString() : selectedSubject}
               onChange={(e) => setSelectedSubject(e.target.value)}
-              className="w-full px-4 py-2.5 rounded-xl bg-[var(--surface-light)] border border-[var(--surface-dark)] text-sm font-semibold text-foreground focus:outline-none focus:ring-2 focus:ring-primary-500 cursor-pointer"
+              disabled={availableSubjects.length <= 1}
+              className="w-full px-4 py-2.5 rounded-xl bg-[var(--surface-light)] border border-[var(--surface-dark)] text-sm font-semibold text-foreground focus:outline-none focus:ring-2 focus:ring-primary-500 cursor-pointer disabled:opacity-85 disabled:cursor-not-allowed"
             >
-              <option value="all">All Subjects</option>
-              {availableSubjects.map((sub) => (
-                <option key={sub.id} value={sub.id.toString()}>
-                  {sub.name}
-                </option>
-              ))}
+              {availableSubjects.length <= 1 ? (
+                availableSubjects.length === 1 ? (
+                  <option value={availableSubjects[0].id.toString()}>
+                    {availableSubjects[0].name} (Fixed)
+                  </option>
+                ) : (
+                  <option value="all">Mathematics (Fixed)</option>
+                )
+              ) : (
+                <>
+                  <option value="all">All Subjects</option>
+                  {availableSubjects.map((sub) => (
+                    <option key={sub.id} value={sub.id.toString()}>
+                      {sub.name}
+                    </option>
+                  ))}
+                </>
+              )}
             </select>
           </div>
 
-          {/* Search Box */}
+          {/* 3. Student Filter (Only students from the selected class level) */}
           <div>
             <label className="block text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-2 flex items-center gap-1.5">
-              <Search size={14} className="text-primary-500" />
-              Search
+              <Users size={14} className="text-primary-500" />
+              3. Student Filter {selectedLevel !== 'all' ? `(${studentsInLevel.length} in class)` : `(${students.length})`}
             </label>
-            <div className="relative">
-              <input
-                type="text"
-                placeholder="Search student, email, subject..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-9 pr-4 py-2.5 rounded-xl bg-[var(--surface-light)] border border-[var(--surface-dark)] text-sm font-medium text-foreground focus:outline-none focus:ring-2 focus:ring-primary-500"
-              />
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-4 h-4" />
-            </div>
+            <select
+              value={selectedStudentId}
+              onChange={(e) => handleSelectStudent(e.target.value)}
+              disabled={loadingStudents}
+              className="w-full px-4 py-2.5 rounded-xl bg-[var(--surface-light)] border border-[var(--surface-dark)] text-sm font-semibold text-foreground focus:outline-none focus:ring-2 focus:ring-primary-500 cursor-pointer"
+            >
+              <option value="">
+                {selectedLevel !== 'all'
+                  ? `🌐 All Students in ${availableLevels.find(l => l.code === selectedLevel)?.label || 'this Class'} (${studentsInLevel.length})`
+                  : '🌐 All Students (Global Platform Feed)'}
+              </option>
+              {filteredStudents.map((s) => (
+                <option key={s.id} value={s.id.toString()}>
+                  {s.first_name} {s.last_name} ({s.email})
+                </option>
+              ))}
+            </select>
           </div>
         </div>
 
         {/* Filter Badges Strip */}
         <div className="flex flex-wrap items-center justify-between border-t border-[var(--surface-dark)] pt-3 gap-3 text-xs font-medium text-gray-500">
           <div className="flex items-center gap-2">
-            <span className="font-bold text-foreground">Showing:</span>
-            <span>{selectedStudentId ? (student?.name || 'Selected Student') : 'All Platform Students'} &bull; {results.length} total attempts listed</span>
+            <span className="font-bold text-foreground">Active Filter:</span>
+            <span>
+              {selectedStudentId
+                ? `Student: ${student?.name || 'Selected Student'}`
+                : selectedLevel !== 'all'
+                  ? `Class: ${availableLevels.find(l => l.code === selectedLevel)?.label || selectedLevel}`
+                  : 'All Platform Students'}
+              {' '}&bull; {results.length} total attempts listed
+            </span>
           </div>
-          {selectedStudentId && (
+          {(selectedStudentId || selectedLevel !== 'all' || searchQuery) && (
             <button
-              onClick={() => handleSelectStudent('')}
+              onClick={() => {
+                handleSelectStudent('');
+                setSelectedLevel('all');
+                setSearchQuery('');
+              }}
               className="text-xs font-bold text-primary-500 hover:underline flex items-center gap-1"
             >
-              <span>Switch to All Students View</span>
+              <X size={12} /> Reset all filters
             </button>
           )}
         </div>
