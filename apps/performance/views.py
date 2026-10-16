@@ -309,6 +309,9 @@ class AdminStudentResultsView(APIView):
         subject_id = request.query_params.get('subject_id')
         quiz_type = request.query_params.get('type', 'all')
         session_status = request.query_params.get('status')
+        start_date_str = request.query_params.get('start_date')
+        end_date_str = request.query_params.get('end_date')
+        single_date_str = request.query_params.get('date')
         search_query = request.query_params.get('search', '').strip()
         
         limit = 100
@@ -355,6 +358,32 @@ class AdminStudentResultsView(APIView):
         if session_status and session_status != 'all':
             practice_qs = practice_qs.filter(status=session_status)
             pq_qs = pq_qs.filter(status=session_status)
+
+        from datetime import datetime
+
+        if single_date_str and single_date_str.strip() not in ['all', '', 'null', 'undefined']:
+            try:
+                s_dt = datetime.strptime(single_date_str.strip(), '%Y-%m-%d').date()
+                practice_qs = practice_qs.filter(started_at__date=s_dt)
+                pq_qs = pq_qs.filter(started_at__date=s_dt)
+            except (ValueError, TypeError):
+                pass
+
+        if start_date_str and start_date_str.strip() not in ['all', '', 'null', 'undefined']:
+            try:
+                st_dt = datetime.strptime(start_date_str.strip(), '%Y-%m-%d').date()
+                practice_qs = practice_qs.filter(started_at__date__gte=st_dt)
+                pq_qs = pq_qs.filter(started_at__date__gte=st_dt)
+            except (ValueError, TypeError):
+                pass
+
+        if end_date_str and end_date_str.strip() not in ['all', '', 'null', 'undefined']:
+            try:
+                en_dt = datetime.strptime(end_date_str.strip(), '%Y-%m-%d').date()
+                practice_qs = practice_qs.filter(started_at__date__lte=en_dt)
+                pq_qs = pq_qs.filter(started_at__date__lte=en_dt)
+            except (ValueError, TypeError):
+                pass
 
         if search_query:
             p_q = Q(student__first_name__icontains=search_query) | \
@@ -468,6 +497,8 @@ class AdminStudentResultsView(APIView):
             'students': student_list,
             'student_count_for_level': level_student_total,
             'total_platform_students': total_students_count,
+            'start_date': start_date_str,
+            'end_date': end_date_str,
         })
 
 

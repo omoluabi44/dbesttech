@@ -173,6 +173,9 @@ function StudentResultsContent() {
   const [availableLevels, setAvailableLevels] = useState<LevelOption[]>([]);
   const [levelStudentCount, setLevelStudentCount] = useState<number>(0);
   const [totalPlatformStudents, setTotalPlatformStudents] = useState<number>(0);
+  const [startDate, setStartDate] = useState<string>('');
+  const [endDate, setEndDate] = useState<string>('');
+  const [datePreset, setDatePreset] = useState<string>('all');
 
   const [resultsData, setResultsData] = useState<{ student: StudentInfo | null; results: QuizResultItem[] } | null>(null);
   const [perfData, setPerfData] = useState<PerformanceData | null>(null);
@@ -185,6 +188,53 @@ function StudentResultsContent() {
   const [reviewModalOpen, setReviewModalOpen] = useState(false);
   const [reviewLoading, setReviewLoading] = useState(false);
   const [reviewData, setReviewData] = useState<SessionReviewData | null>(null);
+
+  // Date helper
+  const formatDateToYMD = (d: Date): string => {
+    const year = d.getFullYear();
+    const month = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  };
+
+  const handleDatePresetChange = (preset: string) => {
+    setDatePreset(preset);
+    const now = new Date();
+    if (preset === 'all') {
+      setStartDate('');
+      setEndDate('');
+    } else if (preset === 'today') {
+      const todayStr = formatDateToYMD(now);
+      setStartDate(todayStr);
+      setEndDate(todayStr);
+    } else if (preset === 'yesterday') {
+      const yest = new Date(now);
+      yest.setDate(yest.getDate() - 1);
+      const yestStr = formatDateToYMD(yest);
+      setStartDate(yestStr);
+      setEndDate(yestStr);
+    } else if (preset === 'last_7_days') {
+      const past = new Date(now);
+      past.setDate(past.getDate() - 6);
+      setStartDate(formatDateToYMD(past));
+      setEndDate(formatDateToYMD(now));
+    } else if (preset === 'last_30_days') {
+      const past = new Date(now);
+      past.setDate(past.getDate() - 29);
+      setStartDate(formatDateToYMD(past));
+      setEndDate(formatDateToYMD(now));
+    } else if (preset === 'custom') {
+      if (!startDate) {
+        setStartDate(formatDateToYMD(now));
+      }
+    }
+  };
+
+  const handleClearDate = () => {
+    setDatePreset('all');
+    setStartDate('');
+    setEndDate('');
+  };
 
   // Load students for selector (supports level filtering and up to 1000 items)
   const fetchStudents = useCallback(async () => {
@@ -230,6 +280,12 @@ function StudentResultsContent() {
       if (filterType && filterType !== 'all') {
         params.append('type', filterType);
       }
+      if (startDate) {
+        params.append('start_date', startDate);
+      }
+      if (endDate) {
+        params.append('end_date', endDate);
+      }
       params.append('limit', '150');
 
       const perfParams = new URLSearchParams();
@@ -267,7 +323,7 @@ function StudentResultsContent() {
     } finally {
       setLoadingData(false);
     }
-  }, [selectedStudentId, selectedLevel, selectedSubject, filterType]);
+  }, [selectedStudentId, selectedLevel, selectedSubject, filterType, startDate, endDate]);
 
   useEffect(() => {
     fetchResultsAndPerf();
@@ -430,8 +486,8 @@ function StudentResultsContent() {
           )}
         </div>
 
-        {/* Filters in requested order: 1. Class Level -> 2. Subject -> 3. Student Filter */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-1">
+        {/* Filters in requested order: 1. Class Level -> 2. Subject -> 3. Student Filter -> 4. Date Filter */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 pt-1">
           {/* 1. Class Level Selector */}
           <div>
             <label className="block text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-2 flex items-center gap-1.5">
@@ -514,11 +570,82 @@ function StudentResultsContent() {
               })}
             </select>
           </div>
+
+          {/* 4. Date Filter */}
+          <div className="space-y-1.5">
+            <div className="flex items-center justify-between">
+              <label className="block text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400 flex items-center gap-1.5">
+                <Calendar size={14} className="text-primary-500" />
+                4. Date Filter
+              </label>
+              {(startDate || endDate || datePreset !== 'all') && (
+                <button
+                  type="button"
+                  onClick={handleClearDate}
+                  className="text-[11px] font-bold text-primary-500 hover:underline flex items-center gap-0.5"
+                  title="Clear date filter"
+                >
+                  <X size={11} /> Clear
+                </button>
+              )}
+            </div>
+
+            <select
+              value={datePreset}
+              onChange={(e) => handleDatePresetChange(e.target.value)}
+              className="w-full px-4 py-2.5 rounded-xl bg-[var(--surface-light)] border border-[var(--surface-dark)] text-sm font-semibold text-foreground focus:outline-none focus:ring-2 focus:ring-primary-500 cursor-pointer"
+            >
+              <option value="all">📅 All Dates (Any Time)</option>
+              <option value="today">📅 Today</option>
+              <option value="yesterday">📅 Yesterday</option>
+              <option value="last_7_days">📅 Last 7 Days</option>
+              <option value="last_30_days">📅 Last 30 Days</option>
+              <option value="custom">✏️ Custom Range / Edit Date</option>
+            </select>
+
+            {/* Editable Date Inputs */}
+            {(datePreset !== 'all' || startDate || endDate) ? (
+              <div className="grid grid-cols-2 gap-2 pt-1">
+                <div>
+                  <span className="text-[10px] uppercase font-bold text-gray-400 block mb-0.5">From</span>
+                  <input
+                    type="date"
+                    value={startDate}
+                    onChange={(e) => {
+                      setStartDate(e.target.value);
+                      setDatePreset('custom');
+                    }}
+                    className="w-full px-2.5 py-1.5 rounded-lg bg-[var(--surface-light)] border border-[var(--surface-dark)] text-xs font-semibold text-foreground focus:outline-none focus:ring-2 focus:ring-primary-500"
+                  />
+                </div>
+                <div>
+                  <span className="text-[10px] uppercase font-bold text-gray-400 block mb-0.5">To</span>
+                  <input
+                    type="date"
+                    value={endDate}
+                    onChange={(e) => {
+                      setEndDate(e.target.value);
+                      setDatePreset('custom');
+                    }}
+                    className="w-full px-2.5 py-1.5 rounded-lg bg-[var(--surface-light)] border border-[var(--surface-dark)] text-xs font-semibold text-foreground focus:outline-none focus:ring-2 focus:ring-primary-500"
+                  />
+                </div>
+              </div>
+            ) : (
+              <button
+                type="button"
+                onClick={() => handleDatePresetChange('today')}
+                className="text-[11px] font-semibold text-primary-500 hover:underline flex items-center gap-1 pt-0.5"
+              >
+                <span>+ Pick or edit specific dates</span>
+              </button>
+            )}
+          </div>
         </div>
 
         {/* Filter Badges Strip */}
         <div className="flex flex-wrap items-center justify-between border-t border-[var(--surface-dark)] pt-3 gap-3 text-xs font-medium text-gray-500">
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
             <span className="font-bold text-foreground">Active Filter:</span>
             <span>
               {selectedStudentId
@@ -526,15 +653,21 @@ function StudentResultsContent() {
                 : selectedLevel !== 'all'
                   ? `Class: ${availableLevels.find(l => l.code === selectedLevel)?.label || selectedLevel}`
                   : 'All Platform Students'}
+              {startDate && (
+                <span>
+                  {' '}&bull; Date: {startDate}{endDate && endDate !== startDate ? ` to ${endDate}` : ''}
+                </span>
+              )}
               {' '}&bull; {results.length} total attempts listed
             </span>
           </div>
-          {(selectedStudentId || selectedLevel !== 'all' || searchQuery) && (
+          {(selectedStudentId || selectedLevel !== 'all' || searchQuery || startDate || endDate || datePreset !== 'all') && (
             <button
               onClick={() => {
                 handleSelectStudent('');
                 setSelectedLevel('all');
                 setSearchQuery('');
+                handleClearDate();
               }}
               className="text-xs font-bold text-primary-500 hover:underline flex items-center gap-1"
             >
