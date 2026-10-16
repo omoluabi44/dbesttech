@@ -28,16 +28,93 @@ class SchoolViewSet(viewsets.ModelViewSet):
 
     @action(detail=False, methods=['get'], permission_classes=[permissions.IsAuthenticated, IsAdminUser])
     def stats(self, request):
-        """Root Admin stats: total schools, total students"""
+        """Root Admin stats: total schools, total students, quiz metrics, and recent sessions"""
         total_schools = School.objects.count()
         total_students = StudentProfile.objects.count()
         total_users = User.objects.count()
         from allauth.account.models import EmailAddress
+        from apps.quiz.models import PracticeSession, PastQuestionSession
+        from django.db.models import Avg, Sum
+        from django.utils import timezone
+
         total_confirmed = EmailAddress.objects.filter(verified=True).count()
+
+        practice_completed = PracticeSession.objects.filter(status='completed')
+        pq_completed = PastQuestionSession.objects.filter(status='completed')
+
+        practice_count = practice_completed.count()
+        pq_count = pq_completed.count()
+        total_quizzes = practice_count + pq_count
+
+        prac_avg = practice_completed.aggregate(avg=Avg('score_percentage'))['avg'] or 0
+        pq_avg = pq_completed.aggregate(avg=Avg('score_percentage'))['avg'] or 0
+        
+        if practice_count > 0 and pq_count > 0:
+            avg_score = round(float((prac_avg * practice_count + pq_avg * pq_count) / total_quizzes), 1)
+        elif practice_count > 0:
+            avg_score = round(float(prac_avg), 1)
+        elif pq_count > 0:
+            avg_score = round(float(pq_avg), 1)
+        else:
+            avg_score = 0.0
+
+        prac_q = practice_completed.aggregate(sum=Sum('total_questions'))['sum'] or 0
+        pq_q = pq_completed.aggregate(sum=Sum('total_questions'))['sum'] or 0
+        total_questions = prac_q + pq_q
+
+        # Recent 8 sessions across both practice and past questions
+        recent_practice = PracticeSession.objects.select_related('student', 'subject').order_by('-started_at')[:8]
+        recent_pq = PastQuestionSession.objects.select_related('student', 'subject').order_by('-started_at')[:8]
+
+        recent_list = []
+        for s in recent_practice:
+            student_name = f"{s.student.first_name} {s.student.last_name}".strip() or s.student.username
+            recent_list.append({
+                'id': f"prac_{s.id}",
+                'session_id': s.id,
+                'type': 'practice',
+                'student_id': s.student.id,
+                'student_name': student_name,
+                'student_email': s.student.email,
+                'subject_name': s.subject.name,
+                'level': s.get_level_display() if hasattr(s, 'get_level_display') else s.level,
+                'difficulty': s.difficulty,
+                'score_percentage': float(s.score_percentage),
+                'correct_answers': s.correct_answers,
+                'total_questions': s.total_questions,
+                'status': s.status,
+                'completed_at': s.completed_at or s.started_at,
+            })
+        for s in recent_pq:
+            student_name = f"{s.student.first_name} {s.student.last_name}".strip() or s.student.username
+            recent_list.append({
+                'id': f"pq_{s.id}",
+                'session_id': s.id,
+                'type': 'past_question',
+                'student_id': s.student.id,
+                'student_name': student_name,
+                'student_email': s.student.email,
+                'subject_name': s.subject.name,
+                'level': s.get_level_display() if hasattr(s, 'get_level_display') else s.level,
+                'exam_body': s.get_exam_body_display(),
+                'year': s.year,
+                'score_percentage': float(s.score_percentage),
+                'correct_answers': s.correct_answers,
+                'total_questions': s.total_questions,
+                'status': s.status,
+                'completed_at': s.completed_at or s.started_at,
+            })
+
+        recent_list.sort(key=lambda x: x.get('completed_at') or timezone.now(), reverse=True)
+
         return Response({
             'total_schools': total_schools,
-            'total_students': total_users,  # Returning all users for admin
-            'total_confirmed_users': total_confirmed
+            'total_students': total_users,
+            'total_confirmed_users': total_confirmed,
+            'total_quizzes': total_quizzes,
+            'average_score': avg_score,
+            'total_questions_attempted': total_questions,
+            'recent_sessions': recent_list[:8],
         })
 
 class SchoolAdminDashboardViewSet(viewsets.ViewSet):

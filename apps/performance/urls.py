@@ -11,5 +11,6 @@ urlpatterns = [
     path('leaderboard/', views.LeaderboardView.as_view(), name='leaderboard'),
     path('admin/student-results/', views.AdminStudentResultsView.as_view(), name='admin-student-results'),
     path('admin/student-performance/', views.AdminStudentPerformanceView.as_view(), name='admin-student-performance'),
+    path('admin/session-review/', views.AdminSessionReviewView.as_view(), name='admin-session-review'),
     path('admin/leaderboard/', views.AdminLeaderboardView.as_view(), name='admin-leaderboard'),
 ]

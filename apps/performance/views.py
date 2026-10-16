@@ -280,93 +280,159 @@ class LeaderboardView(APIView):
 
 class AdminStudentResultsView(APIView):
     """
-    Admin view to see any student's quiz result history.
+    Admin view to see student quiz result history.
     Query params:
-    - student_id: required integer
+    - student_id: optional integer (if omitted, returns results across all students)
+    - level: optional school level code
+    - subject_id: optional subject ID
+    - type: optional ('practice', 'past_question', 'all')
+    - status: optional ('completed', 'all')
+    - search: optional search query
+    - limit: optional integer (default 100)
     """
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
-        from utils.permissions import IsAdminUser
         if request.user.role not in ['admin', 'root_admin']:
             return Response({'error': 'Admin access required.'}, status=403)
 
-        student_id = request.query_params.get('student_id')
-        if not student_id:
-            return Response({'error': 'student_id is required.'}, status=400)
-
-        from apps.quiz.models import PracticeSession, PastQuestionSession
+        from apps.quiz.models import PracticeSession, PastQuestionSession, Subject
         from django.contrib.auth import get_user_model
+        from utils.constants import SCHOOL_LEVELS
+        from django.db.models import Q
+        from django.utils import timezone
         User = get_user_model()
 
+        student_id = request.query_params.get('student_id')
+        level = request.query_params.get('level')
+        subject_id = request.query_params.get('subject_id')
+        quiz_type = request.query_params.get('type', 'all')
+        session_status = request.query_params.get('status')
+        search_query = request.query_params.get('search', '').strip()
+        
+        limit = 100
         try:
-            student = User.objects.get(id=student_id)
-        except User.DoesNotExist:
-            return Response({'error': 'Student not found.'}, status=404)
+            limit = min(int(request.query_params.get('limit', 100)), 300)
+        except (ValueError, TypeError):
+            pass
 
-        # Practice sessions
-        practice_sessions = PracticeSession.objects.filter(
-            student=student, status='completed'
-        ).select_related('subject').order_by('-completed_at')[:100]
+        student = None
+        student_info = None
+        if student_id and str(student_id).lower() not in ['all', '', 'null', 'undefined']:
+            try:
+                student = User.objects.get(id=student_id)
+                profile = getattr(student, 'student_profile', None)
+                student_info = {
+                    'id': student.id,
+                    'email': student.email,
+                    'name': f"{student.first_name} {student.last_name}".strip() or student.username,
+                    'level': profile.get_level_display() if profile else '',
+                    'level_code': profile.level if profile else '',
+                }
+            except User.DoesNotExist:
+                return Response({'error': 'Student not found.'}, status=404)
 
-        # Past question sessions
-        pq_sessions = PastQuestionSession.objects.filter(
-            student=student, status='completed'
-        ).select_related('subject').order_by('-completed_at')[:100]
+        practice_qs = PracticeSession.objects.select_related('student', 'subject', 'student__student_profile')
+        pq_qs = PastQuestionSession.objects.select_related('student', 'subject', 'student__student_profile')
+
+        if student:
+            practice_qs = practice_qs.filter(student=student)
+            pq_qs = pq_qs.filter(student=student)
+
+        if level and level != 'all':
+            practice_qs = practice_qs.filter(level=level)
+            pq_qs = pq_qs.filter(level=level)
+
+        if subject_id and str(subject_id).lower() not in ['all', '', 'null']:
+            try:
+                sub_id_int = int(subject_id)
+                practice_qs = practice_qs.filter(subject_id=sub_id_int)
+                pq_qs = pq_qs.filter(subject_id=sub_id_int)
+            except (ValueError, TypeError):
+                pass
+
+        if session_status and session_status != 'all':
+            practice_qs = practice_qs.filter(status=session_status)
+            pq_qs = pq_qs.filter(status=session_status)
+
+        if search_query:
+            p_q = Q(student__first_name__icontains=search_query) | \
+                  Q(student__last_name__icontains=search_query) | \
+                  Q(student__username__icontains=search_query) | \
+                  Q(student__email__icontains=search_query) | \
+                  Q(subject__name__icontains=search_query)
+            practice_qs = practice_qs.filter(p_q)
+            pq_qs = pq_qs.filter(p_q)
 
         history = []
-        for s in practice_sessions:
-            history.append({
-                'id': f"prac_{s.id}",
-                'type': 'practice',
-                'subject_name': s.subject.name,
-                'level': s.get_level_display() if hasattr(s, 'get_level_display') else s.level,
-                'difficulty': s.difficulty,
-                'score_percentage': float(s.score_percentage),
-                'correct_answers': s.correct_answers,
-                'total_questions': s.total_questions,
-                'started_at': s.started_at,
-                'completed_at': s.completed_at,
-            })
-        for s in pq_sessions:
-            history.append({
-                'id': f"pq_{s.id}",
-                'type': 'past_question',
-                'subject_name': s.subject.name,
-                'level': s.get_level_display() if hasattr(s, 'get_level_display') else s.level,
-                'exam_body': s.get_exam_body_display(),
-                'year': s.year,
-                'score_percentage': float(s.score_percentage),
-                'correct_answers': s.correct_answers,
-                'total_questions': s.total_questions,
-                'started_at': s.started_at,
-                'completed_at': s.completed_at,
-            })
+        if quiz_type in ['all', 'practice']:
+            for s in practice_qs.order_by('-started_at')[:limit]:
+                student_name = f"{s.student.first_name} {s.student.last_name}".strip() or s.student.username
+                history.append({
+                    'id': f"prac_{s.id}",
+                    'session_id': s.id,
+                    'type': 'practice',
+                    'student_id': s.student.id,
+                    'student_name': student_name,
+                    'student_email': s.student.email,
+                    'subject_id': s.subject.id,
+                    'subject_name': s.subject.name,
+                    'level': s.get_level_display() if hasattr(s, 'get_level_display') else s.level,
+                    'level_code': s.level,
+                    'difficulty': s.difficulty,
+                    'current_stage': s.current_stage,
+                    'score_percentage': float(s.score_percentage),
+                    'correct_answers': s.correct_answers,
+                    'total_questions': s.total_questions,
+                    'status': s.status,
+                    'started_at': s.started_at,
+                    'completed_at': s.completed_at,
+                })
 
-        from django.utils import timezone
-        history.sort(key=lambda x: x.get('completed_at') or timezone.now(), reverse=True)
+        if quiz_type in ['all', 'past_question']:
+            for s in pq_qs.order_by('-started_at')[:limit]:
+                student_name = f"{s.student.first_name} {s.student.last_name}".strip() or s.student.username
+                history.append({
+                    'id': f"pq_{s.id}",
+                    'session_id': s.id,
+                    'type': 'past_question',
+                    'student_id': s.student.id,
+                    'student_name': student_name,
+                    'student_email': s.student.email,
+                    'subject_id': s.subject.id,
+                    'subject_name': s.subject.name,
+                    'level': s.get_level_display() if hasattr(s, 'get_level_display') else s.level,
+                    'level_code': s.level,
+                    'exam_body': s.get_exam_body_display() if hasattr(s, 'get_exam_body_display') else s.exam_body,
+                    'year': s.year,
+                    'score_percentage': float(s.score_percentage),
+                    'correct_answers': s.correct_answers,
+                    'total_questions': s.total_questions,
+                    'status': s.status,
+                    'started_at': s.started_at,
+                    'completed_at': s.completed_at,
+                })
 
-        # Student info
-        profile = getattr(student, 'student_profile', None)
-        student_info = {
-            'id': student.id,
-            'email': student.email,
-            'name': f"{student.first_name} {student.last_name}".strip() or student.username,
-            'level': profile.get_level_display() if profile else '',
-            'level_code': profile.level if profile else '',
-        }
+        history.sort(key=lambda x: x.get('completed_at') or x.get('started_at') or timezone.now(), reverse=True)
+
+        subjects_qs = Subject.objects.filter(is_active=True).order_by('name')
+        available_subjects = [{'id': s.id, 'name': s.name} for s in subjects_qs]
+        available_levels = [{'code': 'all', 'label': 'All Levels'}] + [{'code': code, 'label': label} for code, label in SCHOOL_LEVELS]
 
         return Response({
             'student': student_info,
-            'results': history[:100],
+            'results': history[:limit],
+            'total_count': len(history),
+            'available_subjects': available_subjects,
+            'available_levels': available_levels,
         })
 
 
 class AdminStudentPerformanceView(APIView):
     """
-    Admin view to see any student's performance summary.
+    Admin view to see any student's performance summary OR platform-wide subject performance.
     Query params:
-    - student_id: required integer
+    - student_id: optional integer (if omitted, aggregates across all students)
     """
     permission_classes = [IsAuthenticated]
 
@@ -375,27 +441,29 @@ class AdminStudentPerformanceView(APIView):
             return Response({'error': 'Admin access required.'}, status=403)
 
         student_id = request.query_params.get('student_id')
-        if not student_id:
-            return Response({'error': 'student_id is required.'}, status=400)
-
         from django.contrib.auth import get_user_model
         User = get_user_model()
 
-        try:
-            student = User.objects.get(id=student_id)
-        except User.DoesNotExist:
-            return Response({'error': 'Student not found.'}, status=404)
+        student = None
+        student_info = None
+        if student_id and str(student_id).lower() not in ['all', '', 'null', 'undefined']:
+            try:
+                student = User.objects.get(id=student_id)
+                profile = getattr(student, 'student_profile', None)
+                student_info = {
+                    'id': student.id,
+                    'email': student.email,
+                    'name': f"{student.first_name} {student.last_name}".strip() or student.username,
+                    'level': profile.get_level_display() if profile else '',
+                    'level_code': profile.level if profile else '',
+                }
+            except User.DoesNotExist:
+                return Response({'error': 'Student not found.'}, status=404)
 
-        summaries = PerformanceSummary.objects.filter(student=student).select_related('subject')
-
-        profile = getattr(student, 'student_profile', None)
-        student_info = {
-            'id': student.id,
-            'email': student.email,
-            'name': f"{student.first_name} {student.last_name}".strip() or student.username,
-            'level': profile.get_level_display() if profile else '',
-            'level_code': profile.level if profile else '',
-        }
+        if student:
+            summaries = PerformanceSummary.objects.filter(student=student).select_related('subject')
+        else:
+            summaries = PerformanceSummary.objects.all().select_related('subject')
 
         if not summaries.exists():
             return Response({
@@ -420,19 +488,44 @@ class AdminStudentPerformanceView(APIView):
         total_q = aggregates['total_questions'] or 0
         total_c = aggregates['total_correct'] or 0
 
-        by_subject = []
-        for s in summaries.order_by('-average_score'):
-            acc = round(s.total_correct_answers / s.total_questions_attempted * 100, 1) if s.total_questions_attempted > 0 else 0
-            by_subject.append({
-                'subject_name': s.subject.name,
-                'level': s.level,
-                'total_quizzes_taken': s.total_quizzes_taken,
-                'total_questions_attempted': s.total_questions_attempted,
-                'total_correct_answers': s.total_correct_answers,
-                'average_score': float(s.average_score),
-                'best_score': float(s.best_score),
-                'accuracy_rate': acc,
-            })
+        if not student:
+            by_subject_qs = summaries.values('subject__name', 'subject_id', 'level').annotate(
+                total_quizzes_taken=Sum('total_quizzes_taken'),
+                total_questions_attempted=Sum('total_questions_attempted'),
+                total_correct_answers=Sum('total_correct_answers'),
+                average_score=Avg('average_score'),
+                best_score=Max('best_score'),
+            ).order_by('-total_quizzes_taken')
+
+            by_subject = []
+            for s in by_subject_qs:
+                t_att = s['total_questions_attempted'] or 0
+                t_cor = s['total_correct_answers'] or 0
+                acc = round(t_cor / t_att * 100, 1) if t_att > 0 else 0
+                by_subject.append({
+                    'subject_name': s['subject__name'],
+                    'level': s['level'],
+                    'total_quizzes_taken': s['total_quizzes_taken'] or 0,
+                    'total_questions_attempted': t_att,
+                    'total_correct_answers': t_cor,
+                    'average_score': round(float(s['average_score'] or 0), 1),
+                    'best_score': round(float(s['best_score'] or 0), 1),
+                    'accuracy_rate': acc,
+                })
+        else:
+            by_subject = []
+            for s in summaries.order_by('-average_score'):
+                acc = round(s.total_correct_answers / s.total_questions_attempted * 100, 1) if s.total_questions_attempted > 0 else 0
+                by_subject.append({
+                    'subject_name': s.subject.name,
+                    'level': s.level,
+                    'total_quizzes_taken': s.total_quizzes_taken,
+                    'total_questions_attempted': s.total_questions_attempted,
+                    'total_correct_answers': s.total_correct_answers,
+                    'average_score': float(s.average_score),
+                    'best_score': float(s.best_score),
+                    'accuracy_rate': acc,
+                })
 
         return Response({
             'student': student_info,
@@ -445,6 +538,198 @@ class AdminStudentPerformanceView(APIView):
             },
             'by_subject': by_subject,
         })
+
+
+class AdminSessionReviewView(APIView):
+    """
+    Admin view to inspect the detailed questions and answers for any quiz session.
+    Query params:
+    - session_id: required (int or 'prac_X' / 'pq_X')
+    - type: required ('practice' or 'past_question')
+    """
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        if request.user.role not in ['admin', 'root_admin']:
+            return Response({'error': 'Admin access required.'}, status=403)
+
+        raw_session_id = request.query_params.get('session_id')
+        session_type = request.query_params.get('type')
+
+        if not raw_session_id:
+            return Response({'error': 'session_id is required.'}, status=400)
+
+        str_id = str(raw_session_id).strip()
+        if str_id.startswith('prac_'):
+            session_type = 'practice'
+            clean_id = str_id.replace('prac_', '')
+        elif str_id.startswith('pq_'):
+            session_type = 'past_question'
+            clean_id = str_id.replace('pq_', '')
+        else:
+            clean_id = str_id
+
+        if not session_type:
+            session_type = 'practice'
+
+        from apps.quiz.models import PracticeSession, PastQuestionSession
+
+        if session_type == 'practice':
+            try:
+                session = PracticeSession.objects.select_related('student', 'subject', 'topic').get(id=clean_id)
+            except PracticeSession.DoesNotExist:
+                return Response({'error': 'Practice session not found.'}, status=404)
+
+            answers = session.answers.select_related('question').order_by('id')
+
+            questions_data = []
+            for idx, ans in enumerate(answers):
+                q = ans.question
+                inc = q.incorrect_answers
+                options = []
+                correct_answer_text = q.correct_answer or ''
+
+                if isinstance(inc, dict):
+                    for label, text in sorted(inc.items()):
+                        is_c = (label.strip().upper() == str(q.correct_answer or '').strip().upper())
+                        if is_c:
+                            correct_answer_text = text
+                        options.append({
+                            'label': label,
+                            'text': text,
+                            'is_correct': is_c
+                        })
+                elif isinstance(inc, list):
+                    all_opts = [q.correct_answer] + list(inc)
+                    labels = ['A', 'B', 'C', 'D', 'E']
+                    for o_idx, opt_text in enumerate(all_opts):
+                        lbl = labels[o_idx] if o_idx < len(labels) else str(o_idx + 1)
+                        is_c = (opt_text == q.correct_answer)
+                        options.append({
+                            'label': lbl,
+                            'text': str(opt_text),
+                            'is_correct': is_c
+                        })
+
+                student_answer_text = ans.selected_answer or ''
+                if isinstance(inc, dict) and student_answer_text in inc:
+                    student_answer_text = inc[student_answer_text]
+
+                questions_data.append({
+                    'id': q.id,
+                    'question_number': idx + 1,
+                    'stage': ans.stage_submitted,
+                    'question_text': q.questionText,
+                    'question_type': q.questionType,
+                    'options': options,
+                    'selected_answer': ans.selected_answer,
+                    'selected_answer_text': student_answer_text,
+                    'correct_answer': q.correct_answer,
+                    'correct_answer_text': correct_answer_text,
+                    'is_correct': ans.is_correct,
+                    'explanation': q.explanation or '',
+                })
+
+            student_name = f"{session.student.first_name} {session.student.last_name}".strip() or session.student.username
+            return Response({
+                'session': {
+                    'id': session.id,
+                    'type': 'practice',
+                    'student_id': session.student.id,
+                    'student_name': student_name,
+                    'student_email': session.student.email,
+                    'subject_name': session.subject.name,
+                    'topic_name': session.topic.name if session.topic else None,
+                    'level': session.get_level_display() if hasattr(session, 'get_level_display') else session.level,
+                    'difficulty': session.difficulty,
+                    'score_percentage': float(session.score_percentage),
+                    'correct_answers': session.correct_answers,
+                    'total_questions': session.total_questions,
+                    'status': session.status,
+                    'started_at': session.started_at,
+                    'completed_at': session.completed_at,
+                },
+                'questions': questions_data
+            })
+
+        else: # past_question
+            try:
+                session = PastQuestionSession.objects.select_related('student', 'subject').get(id=clean_id)
+            except PastQuestionSession.DoesNotExist:
+                return Response({'error': 'Past question session not found.'}, status=404)
+
+            answers = session.answers.select_related('question').order_by('id')
+
+            questions_data = []
+            for idx, ans in enumerate(answers):
+                q = ans.question
+                inc = q.incorrect_answers
+                options = []
+                correct_answer_text = q.correct_answer or ''
+
+                if isinstance(inc, dict):
+                    for label, text in sorted(inc.items()):
+                        is_c = (label.strip().upper() == str(q.correct_answer or '').strip().upper())
+                        if is_c:
+                            correct_answer_text = text
+                        options.append({
+                            'label': label,
+                            'text': text,
+                            'is_correct': is_c
+                        })
+                elif isinstance(inc, list):
+                    all_opts = [q.correct_answer] + list(inc)
+                    labels = ['A', 'B', 'C', 'D', 'E']
+                    for o_idx, opt_text in enumerate(all_opts):
+                        lbl = labels[o_idx] if o_idx < len(labels) else str(o_idx + 1)
+                        is_c = (opt_text == q.correct_answer)
+                        options.append({
+                            'label': lbl,
+                            'text': str(opt_text),
+                            'is_correct': is_c
+                        })
+
+                student_answer_text = ans.selected_answer or ''
+                if isinstance(inc, dict) and student_answer_text in inc:
+                    student_answer_text = inc[student_answer_text]
+
+                questions_data.append({
+                    'id': q.id,
+                    'question_number': idx + 1,
+                    'question_text': q.questionText,
+                    'question_type': q.questionType,
+                    'image_url': getattr(q, 'image_url', None),
+                    'options': options,
+                    'selected_answer': ans.selected_answer,
+                    'selected_answer_text': student_answer_text,
+                    'correct_answer': q.correct_answer,
+                    'correct_answer_text': correct_answer_text,
+                    'is_correct': ans.is_correct,
+                    'time_spent_seconds': ans.time_spent_seconds,
+                    'explanation': q.explanation or '',
+                })
+
+            student_name = f"{session.student.first_name} {session.student.last_name}".strip() or session.student.username
+            return Response({
+                'session': {
+                    'id': session.id,
+                    'type': 'past_question',
+                    'student_id': session.student.id,
+                    'student_name': student_name,
+                    'student_email': session.student.email,
+                    'subject_name': session.subject.name,
+                    'level': session.get_level_display() if hasattr(session, 'get_level_display') else session.level,
+                    'exam_body': session.get_exam_body_display(),
+                    'year': session.year,
+                    'score_percentage': float(session.score_percentage),
+                    'correct_answers': session.correct_answers,
+                    'total_questions': session.total_questions,
+                    'status': session.status,
+                    'started_at': session.started_at,
+                    'completed_at': session.completed_at,
+                },
+                'questions': questions_data
+            })
 
 
 class AdminLeaderboardView(APIView):
