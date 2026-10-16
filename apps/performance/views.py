@@ -297,9 +297,10 @@ class AdminStudentResultsView(APIView):
             return Response({'error': 'Admin access required.'}, status=403)
 
         from apps.quiz.models import PracticeSession, PastQuestionSession, Subject
+        from apps.accounts.models import StudentProfile
         from django.contrib.auth import get_user_model
         from utils.constants import SCHOOL_LEVELS
-        from django.db.models import Q
+        from django.db.models import Q, Count
         from django.utils import timezone
         User = get_user_model()
 
@@ -417,7 +418,46 @@ class AdminStudentResultsView(APIView):
 
         subjects_qs = Subject.objects.filter(is_active=True).order_by('name')
         available_subjects = [{'id': s.id, 'name': s.name} for s in subjects_qs]
-        available_levels = [{'code': 'all', 'label': 'All Levels'}] + [{'code': code, 'label': label} for code, label in SCHOOL_LEVELS]
+
+        # Calculate exact student counts from database per level
+        level_counts_raw = StudentProfile.objects.values('level').annotate(count=Count('id'))
+        level_counts_map = {item['level']: item['count'] for item in level_counts_raw}
+        total_students_count = StudentProfile.objects.count()
+
+        available_levels = [
+            {'code': 'all', 'label': f'All Levels ({total_students_count})', 'count': total_students_count}
+        ]
+        for code, label in SCHOOL_LEVELS:
+            c = level_counts_map.get(code, 0)
+            available_levels.append({
+                'code': code,
+                'label': f'{label} ({c})',
+                'count': c
+            })
+
+        # Fetch actual students matching the class level (or all students)
+        students_base_qs = User.objects.filter(role='student')
+        if level and level != 'all':
+            students_base_qs = students_base_qs.filter(student_profile__level=level)
+
+        level_student_total = students_base_qs.count()
+
+        student_list = []
+        for u in students_base_qs.select_related('student_profile').order_by('first_name', 'last_name', 'username')[:500]:
+            u_name = f"{u.first_name} {u.last_name}".strip() or u.username
+            u_prof = getattr(u, 'student_profile', None)
+            u_lvl = getattr(u_prof, 'level', '') if u_prof else ''
+            u_lvl_disp = u_prof.get_level_display() if u_prof and hasattr(u_prof, 'get_level_display') else u_lvl
+            student_list.append({
+                'id': u.id,
+                'name': u_name,
+                'first_name': u.first_name,
+                'last_name': u.last_name,
+                'username': u.username,
+                'email': u.email,
+                'level': u_lvl,
+                'level_display': u_lvl_disp,
+            })
 
         return Response({
             'student': student_info,
@@ -425,6 +465,9 @@ class AdminStudentResultsView(APIView):
             'total_count': len(history),
             'available_subjects': available_subjects,
             'available_levels': available_levels,
+            'students': student_list,
+            'student_count_for_level': level_student_total,
+            'total_platform_students': total_students_count,
         })
 
 

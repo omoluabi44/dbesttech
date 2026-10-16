@@ -38,13 +38,22 @@ import { formatTime } from '@/lib/utils/formatters';
 interface StudentOption {
   id: number;
   email: string;
-  username: string;
-  first_name: string;
-  last_name: string;
+  username?: string;
+  name?: string;
+  first_name?: string;
+  last_name?: string;
+  level?: string;
+  level_display?: string;
   student_profile?: {
     level_display?: string;
     level?: string;
   };
+}
+
+interface LevelOption {
+  code: string;
+  label: string;
+  count?: number;
 }
 
 interface StudentInfo {
@@ -161,7 +170,9 @@ function StudentResultsContent() {
   const [selectedSubject, setSelectedSubject] = useState<string>('all');
   const [filterType, setFilterType] = useState<'all' | 'practice' | 'past_question'>('all');
   const [availableSubjects, setAvailableSubjects] = useState<{ id: number; name: string }[]>([]);
-  const [availableLevels, setAvailableLevels] = useState<{ code: string; label: string }[]>([]);
+  const [availableLevels, setAvailableLevels] = useState<LevelOption[]>([]);
+  const [levelStudentCount, setLevelStudentCount] = useState<number>(0);
+  const [totalPlatformStudents, setTotalPlatformStudents] = useState<number>(0);
 
   const [resultsData, setResultsData] = useState<{ student: StudentInfo | null; results: QuizResultItem[] } | null>(null);
   const [perfData, setPerfData] = useState<PerformanceData | null>(null);
@@ -175,11 +186,17 @@ function StudentResultsContent() {
   const [reviewLoading, setReviewLoading] = useState(false);
   const [reviewData, setReviewData] = useState<SessionReviewData | null>(null);
 
-  // Load students for selector
+  // Load students for selector (supports level filtering and up to 1000 items)
   const fetchStudents = useCallback(async () => {
     try {
       setLoadingStudents(true);
-      const res = await api.get('/auth/admin-students/?role=student&page_size=200');
+      const params = new URLSearchParams();
+      params.append('role', 'student');
+      params.append('page_size', '1000');
+      if (selectedLevel && selectedLevel !== 'all') {
+        params.append('level', selectedLevel);
+      }
+      const res = await api.get(`/auth/admin-students/?${params.toString()}`);
       if (res.data && Array.isArray(res.data.results)) {
         setStudents(res.data.results);
       } else if (Array.isArray(res.data)) {
@@ -187,11 +204,10 @@ function StudentResultsContent() {
       }
     } catch (err) {
       console.error('Failed to load students list', err);
-      toast.error('Failed to load students list.');
     } finally {
       setLoadingStudents(false);
     }
-  }, []);
+  }, [selectedLevel]);
 
   useEffect(() => {
     fetchStudents();
@@ -234,6 +250,16 @@ function StudentResultsContent() {
       }
       if (resResults.data.available_levels) {
         setAvailableLevels(resResults.data.available_levels);
+      }
+      if (resResults.data.students && Array.isArray(resResults.data.students)) {
+        setStudents(resResults.data.students);
+        setLoadingStudents(false);
+      }
+      if (typeof resResults.data.student_count_for_level === 'number') {
+        setLevelStudentCount(resResults.data.student_count_for_level);
+      }
+      if (typeof resResults.data.total_platform_students === 'number') {
+        setTotalPlatformStudents(resResults.data.total_platform_students);
       }
     } catch (err) {
       console.error('Failed to load student results', err);
@@ -282,7 +308,8 @@ function StudentResultsContent() {
     // If a student was selected, check if they belong to newLevel
     if (selectedStudentId && newLevel !== 'all') {
       const curr = students.find(s => s.id.toString() === selectedStudentId);
-      if (curr && curr.student_profile?.level !== newLevel) {
+      const sLevel = curr?.level || curr?.student_profile?.level;
+      if (curr && sLevel && sLevel !== newLevel) {
         handleSelectStudent('');
       }
     }
@@ -291,14 +318,15 @@ function StudentResultsContent() {
   // Only include students belonging to the selected class level
   const studentsInLevel = students.filter(s => {
     if (selectedLevel && selectedLevel !== 'all') {
-      return s.student_profile?.level === selectedLevel;
+      const sLevel = s.level || s.student_profile?.level;
+      return sLevel === selectedLevel;
     }
     return true;
   });
 
   const filteredStudents = studentsInLevel.filter(s => {
     if (!searchQuery) return true;
-    const fullName = `${s.first_name || ''} ${s.last_name || ''}`.toLowerCase();
+    const fullName = (s.name || `${s.first_name || ''} ${s.last_name || ''}`).toLowerCase();
     const email = (s.email || '').toLowerCase();
     const username = (s.username || '').toLowerCase();
     const query = searchQuery.toLowerCase();
@@ -376,21 +404,25 @@ function StudentResultsContent() {
           {searchQuery && filteredStudents.length > 0 && !selectedStudentId && (
             <div className="flex flex-wrap items-center gap-2 mt-2.5 pt-1 text-xs">
               <span className="text-gray-400 font-semibold">Matching students:</span>
-              {filteredStudents.slice(0, 6).map(s => (
-                <button
-                  key={s.id}
-                  onClick={() => {
-                    handleSelectStudent(s.id.toString());
-                    setSearchQuery('');
-                  }}
-                  className="px-2.5 py-1 rounded-lg bg-primary-500/10 text-primary-600 dark:text-primary-400 hover:bg-primary-500 hover:text-white font-bold transition-all flex items-center gap-1.5 border border-primary-500/20"
-                  title={`Select ${s.first_name} ${s.last_name}`}
-                >
-                  <Users size={12} />
-                  <span>{s.first_name} {s.last_name}</span>
-                  <span className="text-[10px] opacity-75 font-normal">({s.student_profile?.level_display || 'Student'})</span>
-                </button>
-              ))}
+              {filteredStudents.slice(0, 6).map(s => {
+                const displayName = s.name || `${s.first_name || ''} ${s.last_name || ''}`.trim() || s.username || 'Student';
+                const displayLevel = s.level_display || s.student_profile?.level_display || 'Student';
+                return (
+                  <button
+                    key={s.id}
+                    onClick={() => {
+                      handleSelectStudent(s.id.toString());
+                      setSearchQuery('');
+                    }}
+                    className="px-2.5 py-1 rounded-lg bg-primary-500/10 text-primary-600 dark:text-primary-400 hover:bg-primary-500 hover:text-white font-bold transition-all flex items-center gap-1.5 border border-primary-500/20"
+                    title={`Select ${displayName}`}
+                  >
+                    <Users size={12} />
+                    <span>{displayName}</span>
+                    <span className="text-[10px] opacity-75 font-normal">({displayLevel})</span>
+                  </button>
+                );
+              })}
               {filteredStudents.length > 6 && (
                 <span className="text-gray-400 text-xs">+{filteredStudents.length - 6} more in list</span>
               )}
@@ -411,7 +443,9 @@ function StudentResultsContent() {
               onChange={(e) => handleLevelChange(e.target.value)}
               className="w-full px-4 py-2.5 rounded-xl bg-[var(--surface-light)] border border-[var(--surface-dark)] text-sm font-semibold text-foreground focus:outline-none focus:ring-2 focus:ring-primary-500 cursor-pointer"
             >
-              <option value="all">🌐 All Class Levels</option>
+              <option value="all">
+                🌐 All Class Levels {totalPlatformStudents ? `(${totalPlatformStudents})` : ''}
+              </option>
               {availableLevels.filter(l => l.code !== 'all').map((lvl) => (
                 <option key={lvl.code} value={lvl.code}>
                   {lvl.label}
@@ -457,7 +491,7 @@ function StudentResultsContent() {
           <div>
             <label className="block text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-2 flex items-center gap-1.5">
               <Users size={14} className="text-primary-500" />
-              3. Student Filter {selectedLevel !== 'all' ? `(${studentsInLevel.length} in class)` : `(${students.length})`}
+              3. Student Filter {selectedLevel !== 'all' ? `(${levelStudentCount || studentsInLevel.length} in class)` : `(${totalPlatformStudents || students.length})`}
             </label>
             <select
               value={selectedStudentId}
@@ -467,14 +501,17 @@ function StudentResultsContent() {
             >
               <option value="">
                 {selectedLevel !== 'all'
-                  ? `🌐 All Students in ${availableLevels.find(l => l.code === selectedLevel)?.label || 'this Class'} (${studentsInLevel.length})`
-                  : '🌐 All Students (Global Platform Feed)'}
+                  ? `🌐 All Students in ${availableLevels.find(l => l.code === selectedLevel)?.label || 'this Class'}`
+                  : `🌐 All Students (Global Platform Feed - ${totalPlatformStudents || students.length})`}
               </option>
-              {filteredStudents.map((s) => (
-                <option key={s.id} value={s.id.toString()}>
-                  {s.first_name} {s.last_name} ({s.email})
-                </option>
-              ))}
+              {filteredStudents.map((s) => {
+                const displayName = s.name || `${s.first_name || ''} ${s.last_name || ''}`.trim() || s.username || s.email;
+                return (
+                  <option key={s.id} value={s.id.toString()}>
+                    {displayName} ({s.email})
+                  </option>
+                );
+              })}
             </select>
           </div>
         </div>
