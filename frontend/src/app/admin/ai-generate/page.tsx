@@ -45,12 +45,16 @@ export default function AIGeneratePage() {
   const selectedLevel = watch('level');
 
   useEffect(() => {
-    getSubjects().then(res => setSubjects(res.results)).catch(console.error);
+    getSubjects()
+      .then(res => setSubjects(Array.isArray(res) ? res : res.results || []))
+      .catch(console.error);
   }, []);
 
   useEffect(() => {
     if (selectedSubjectId) {
-      getTopics(selectedSubjectId).then(res => setTopics(res.results)).catch(console.error);
+      getTopics(selectedSubjectId)
+        .then(res => setTopics(Array.isArray(res) ? res : res.results || []))
+        .catch(console.error);
     } else {
       setTopics([]);
     }
@@ -173,9 +177,9 @@ export default function AIGeneratePage() {
                   className="w-full bg-[var(--background)] border border-[var(--surface-dark)] rounded-lg px-4 py-2.5 text-foreground focus:outline-none focus:border-primary-500"
                 >
                   <option value="">Select Subject...</option>
-                  {subjects
-                    .filter(s => !selectedLevel || s.applicable_levels.includes(selectedLevel))
-                    .map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
+                  {subjects.map(s => (
+                    <option key={s.id} value={s.id}>{s.name}</option>
+                  ))}
                 </select>
               </div>
 
@@ -200,7 +204,7 @@ export default function AIGeneratePage() {
                 >
                   <option value="">Any Topic (Mixed)</option>
                   {topics
-                    .filter(t => !selectedLevel || t.level === selectedLevel)
+                    .filter(t => !selectedLevel || !t.level || t.level === selectedLevel)
                     .map(t => <option key={t.id} value={t.id}>{t.name}</option>)}
                 </select>
               </div>
