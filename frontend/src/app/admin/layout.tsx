@@ -4,7 +4,7 @@ import { useAuthStore } from '@/lib/stores/authStore';
 import { useRouter, usePathname } from 'next/navigation';
 import { useEffect } from 'react';
 import Link from 'next/link';
-import { LayoutDashboard, Users, LogOut, FileText, BarChart, GraduationCap, BrainCircuit, UploadCloud, ArrowLeft, CreditCard, Wallet, Trophy, History } from 'lucide-react';
+import { LayoutDashboard, Users, LogOut, FileText, BarChart, GraduationCap, BrainCircuit, UploadCloud, ArrowLeft, CreditCard, Wallet, Trophy, History, BookOpen } from 'lucide-react';
 import { Footer } from '@/components/layout/Footer';
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
@@ -41,8 +41,9 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           { name: 'Leaderboard', href: '/admin/leaderboard', icon: Trophy },
         ]
       : []),
-    { name: 'Question Bank', href: '/admin/questions', icon: FileText },
+    { name: 'Subjects', href: '/admin/subjects', icon: BookOpen },
     { name: 'Topics', href: '/admin/topics', icon: GraduationCap },
+    { name: 'Question Bank', href: '/admin/questions', icon: FileText },
   ];
 
   return (

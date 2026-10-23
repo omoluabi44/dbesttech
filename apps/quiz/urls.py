@@ -42,6 +42,10 @@ urlpatterns = [
     path('admin/questions/', admin_views.QuizListAdminView.as_view(), name='admin-quiz-list'),
     path('admin/questions/<str:pk>/', admin_views.QuizDetailAdminView.as_view(), name='admin-quiz-detail'),
     
+    # Admin Subjects
+    path('admin/subjects/', admin_views.SubjectListAdminView.as_view(), name='admin-subject-list'),
+    path('admin/subjects/<int:pk>/', admin_views.SubjectDetailAdminView.as_view(), name='admin-subject-detail'),
+
     # Admin Topics
     path('admin/topics/', admin_views.TopicListAdminView.as_view(), name='admin-topic-list'),
     path('admin/topics/<int:pk>/', admin_views.TopicDetailAdminView.as_view(), name='admin-topic-detail'),

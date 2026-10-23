@@ -11,7 +11,7 @@ import uuid as uuid_lib
 from .models import PastQuestionUpload, PastQuestion, Subject, Topic, Quiz
 from .serializers import (
     PastQuestionUploadSerializer, QuizSerializer, PastQuestionAdminSerializer, 
-    AdminTopicSerializer
+    AdminTopicSerializer, AdminSubjectSerializer
 )
 from .tasks import extract_past_questions_task, generate_questions_task
 from .ai.gemini_client import GeminiQuizClient
@@ -273,6 +273,38 @@ class QuizBulkDeleteAdminView(views.APIView):
             return Response({'message': f'Successfully deleted {len(ids)} questions.'}, status=status.HTTP_200_OK)
         except Exception as e:
             return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+class SubjectListAdminView(generics.ListCreateAPIView):
+    """
+    List and create Subjects for the Admin UI.
+    """
+    serializer_class = AdminSubjectSerializer
+    permission_classes = [IsAdminUser]
+
+    def get_queryset(self):
+        queryset = Subject.objects.all().order_by('name')
+        search = self.request.query_params.get('search', '').strip()
+        level = self.request.query_params.get('level')
+        is_active = self.request.query_params.get('is_active')
+
+        if search:
+            queryset = queryset.filter(Q(name__icontains=search) | Q(description__icontains=search))
+        if level:
+            queryset = queryset.filter(Q(applicable_levels__contains=level) | Q(applicable_levels=[]))
+        if is_active is not None and is_active != '':
+            queryset = queryset.filter(is_active=(is_active.lower() == 'true'))
+
+        return queryset
+
+
+class SubjectDetailAdminView(generics.RetrieveUpdateDestroyAPIView):
+    """
+    Retrieve, update, or delete a specific Subject.
+    """
+    queryset = Subject.objects.all()
+    serializer_class = AdminSubjectSerializer
+    permission_classes = [IsAdminUser]
 
 
 class TopicListAdminView(generics.ListCreateAPIView):

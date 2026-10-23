@@ -5,6 +5,39 @@ from .models import (
     PastQuestionUpload
 )
 
+class AdminSubjectSerializer(serializers.ModelSerializer):
+    topics_count = serializers.SerializerMethodField()
+    quizzes_count = serializers.SerializerMethodField()
+    slug = serializers.SlugField(required=False, allow_blank=True)
+
+    class Meta:
+        model = Subject
+        fields = [
+            'id', 'name', 'slug', 'description', 'icon',
+            'applicable_levels', 'is_active', 'topics_count',
+            'quizzes_count', 'created_at'
+        ]
+        read_only_fields = ['id', 'created_at', 'topics_count', 'quizzes_count']
+
+    def get_topics_count(self, obj):
+        return obj.topics.count()
+
+    def get_quizzes_count(self, obj):
+        return obj.quizzes.count()
+
+    def create(self, validated_data):
+        if not validated_data.get('slug') and validated_data.get('name'):
+            from django.utils.text import slugify
+            base_slug = slugify(validated_data['name']) or 'subject'
+            slug = base_slug
+            num = 1
+            while Subject.objects.filter(slug=slug).exists():
+                slug = f'{base_slug}-{num}'
+                num += 1
+            validated_data['slug'] = slug
+        return super().create(validated_data)
+
+
 class SubjectSerializer(serializers.ModelSerializer):
     unlocked_difficulties = serializers.SerializerMethodField()
 

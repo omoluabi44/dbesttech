@@ -5,6 +5,10 @@ export interface Subject {
   description: string;
   icon: string | null;
   applicable_levels: string[];
+  is_active?: boolean;
+  topics_count?: number;
+  quizzes_count?: number;
+  created_at?: string;
   unlocked_difficulties?: string[];
 }
 

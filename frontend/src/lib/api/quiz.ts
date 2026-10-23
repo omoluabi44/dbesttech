@@ -169,6 +169,27 @@ export const bulkDeleteQuestions = async (ids: string[], type: 'practice' | 'pas
   return res.data;
 };
 
+// Admin Subjects CRUD
+export const getAdminSubjects = async (params?: any) => {
+  const res = await client.get('/quiz/admin/subjects/', { params });
+  return res.data;
+};
+
+export const createSubject = async (data: any) => {
+  const res = await client.post('/quiz/admin/subjects/', data);
+  return res.data;
+};
+
+export const updateSubject = async (id: number, data: any) => {
+  const res = await client.patch(`/quiz/admin/subjects/${id}/`, data);
+  return res.data;
+};
+
+export const deleteSubject = async (id: number) => {
+  const res = await client.delete(`/quiz/admin/subjects/${id}/`);
+  return res.data;
+};
+
 // Admin Topics CRUD
 export const getAdminTopics = async (params: any) => {
   const res = await client.get('/quiz/admin/topics/', { params });

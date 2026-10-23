@@ -21,6 +21,18 @@ class Subject(models.Model):
     class Meta:
         ordering = ['name']
     
+    def save(self, *args, **kwargs):
+        if not self.slug and self.name:
+            from django.utils.text import slugify
+            base_slug = slugify(self.name) or 'subject'
+            slug = base_slug
+            num = 1
+            while Subject.objects.filter(slug=slug).exclude(pk=self.pk).exists():
+                slug = f'{base_slug}-{num}'
+                num += 1
+            self.slug = slug
+        super().save(*args, **kwargs)
+
     def __str__(self):
         return self.name
 
