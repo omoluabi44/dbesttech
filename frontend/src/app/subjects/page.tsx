@@ -18,10 +18,12 @@ export default function SubjectsPage() {
     queryFn: getSubjects,
   });
 
-  const filteredSubjects = data?.results?.filter(subject => 
+  const subjectsList = Array.isArray(data) ? data : (data?.results || []);
+
+  const filteredSubjects = subjectsList.filter((subject: any) => 
     subject.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    subject.description.toLowerCase().includes(searchQuery.toLowerCase())
-  ) || [];
+    (subject.description && subject.description.toLowerCase().includes(searchQuery.toLowerCase()))
+  );
 
   return (
     <DashboardLayout>

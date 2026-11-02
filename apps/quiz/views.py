@@ -1,4 +1,8 @@
+import logging
 from rest_framework import generics, status, views
+from django.db.models import Q
+
+logger = logging.getLogger(__name__)
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from django.shortcuts import get_object_or_404
@@ -59,8 +63,47 @@ class QuizHistoryView(views.APIView):
         return Response(history[:100])
 
 class SubjectListView(generics.ListAPIView):
-    queryset = Subject.objects.filter(is_active=True)
     serializer_class = SubjectSerializer
+
+    def get_queryset(self):
+        try:
+            math = Subject.objects.filter(Q(name__iexact='Mathematics') | Q(name__iexact='Math')).first()
+            if not math:
+                Subject.objects.create(
+                    name='Mathematics',
+                    slug='mathematics',
+                    description='Master numbers, arithmetic, algebra, geometry, and problem solving across all levels.',
+                    applicable_levels=[],
+                    is_active=True
+                )
+            elif not math.is_active:
+                math.is_active = True
+                math.save(update_fields=['is_active'])
+
+            english = Subject.objects.filter(Q(name__iexact='English') | Q(name__iexact='English Language')).first()
+            if not english:
+                Subject.objects.create(
+                    name='English Language',
+                    slug='english-language',
+                    description='Grammar, vocabulary, reading comprehension, and communication skills.',
+                    applicable_levels=[],
+                    is_active=True
+                )
+            elif not english.is_active:
+                english.is_active = True
+                english.save(update_fields=['is_active'])
+        except Exception as e:
+            logger.warning(f"Error ensuring core subjects in SubjectListView: {e}")
+
+        queryset = Subject.objects.filter(is_active=True).order_by('name')
+        level = self.request.query_params.get('level')
+        if level:
+            queryset = queryset.filter(
+                Q(applicable_levels=[]) |
+                Q(applicable_levels__isnull=True) |
+                Q(applicable_levels__contains=level)
+            )
+        return queryset
 
 class TopicListView(generics.ListAPIView):
     serializer_class = TopicSerializer
@@ -95,17 +138,21 @@ class PracticeStartView(views.APIView):
                 return Response({'error': 'Free plan users can only access easy questions. Upgrade for medium and hard difficulty.'}, status=status.HTTP_403_FORBIDDEN)
             difficulty = 'easy'
         
-        # Get up to 50 questions, with AI fallback if needed
+        # Get up to 20 questions, with AI fallback if needed
         questions = QuizGeneratorService.select_questions(
             subject=subject,
             level=level,
             difficulty=difficulty,
-            num_questions=50,
+            num_questions=20,
             topic=topic
         )
         
         if not questions:
-            return Response({'error': f'Could not retrieve or generate {difficulty} questions for this topic.'}, status=status.HTTP_400_BAD_REQUEST)
+            fallback_qs = Quiz.objects.filter(subject=subject, level=level, is_active=True)[:20]
+            if fallback_qs.exists():
+                questions = list(fallback_qs)
+            else:
+                return Response({'error': f'Could not retrieve or generate {difficulty} questions for this topic.'}, status=status.HTTP_400_BAD_REQUEST)
         
         session = PracticeSession.objects.create(
             student=request.user,

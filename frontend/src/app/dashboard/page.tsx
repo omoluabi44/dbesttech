@@ -4,7 +4,7 @@ import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { useQuery } from '@tanstack/react-query';
-import { Target, Trophy, Clock, BrainCircuit, Activity, BookOpen, Star, AlertCircle, ArrowRight } from 'lucide-react';
+import { Target, Trophy, Clock, BrainCircuit, Activity, BookOpen, Star, AlertCircle, ArrowRight, ChevronDown } from 'lucide-react';
 import { useAuthStore } from '@/lib/stores/authStore';
 import { useSchoolCategory } from '@/lib/hooks/useSchoolCategory';
 import { getOverallSummary, getWeeklyProgress } from '@/lib/api/performance';
@@ -43,6 +43,21 @@ export default function DashboardPage() {
     queryKey: ['subjects'],
     queryFn: getSubjects,
   });
+
+  const [selectedSubjectId, setSelectedSubjectId] = useState<string>('');
+
+  const subjectsList = Array.isArray(subjectsData)
+    ? subjectsData
+    : (subjectsData?.results || []);
+
+  const selectedSubject = subjectsList.find((s: any) => String(s.id) === String(selectedSubjectId));
+
+  useEffect(() => {
+    if (subjectsList.length > 0 && !selectedSubjectId) {
+      const math = subjectsList.find((s: any) => s.name?.toLowerCase().includes('math'));
+      setSelectedSubjectId(String(math ? math.id : subjectsList[0].id));
+    }
+  }, [subjectsList, selectedSubjectId]);
 
   return (
     <div className="space-y-8">
@@ -177,42 +192,83 @@ export default function DashboardPage() {
         {/* Right column - sidebar content */}
         <div className="space-y-8">
           
-          {/* Quick Start Subjects */}
+          {/* Quick Subject Practice with Dropdown */}
           <Card className="border-slate-100 shadow-sm">
             <div className="p-6">
-              <h3 className="text-lg font-bold text-slate-900 mb-4">Jump Back In</h3>
-              
+              <div className="flex items-center justify-between mb-2">
+                <h3 className="text-lg font-bold text-slate-900 flex items-center gap-2">
+                  <BookOpen className="text-primary w-5 h-5" />
+                  Jump Back In
+                </h3>
+                <span className="text-xs bg-primary/10 text-primary font-bold px-2.5 py-0.5 rounded-full">
+                  Practice
+                </span>
+              </div>
+              <p className="text-sm text-slate-600 mb-4">
+                Select a subject from the dropdown to start your practice session:
+              </p>
+
               {isLoadingSubjects ? (
                 <div className="space-y-3">
-                  <Skeleton className="h-16 w-full" />
-                  <Skeleton className="h-16 w-full" />
-                  <Skeleton className="h-16 w-full" />
+                  <Skeleton className="h-12 w-full rounded-xl" />
+                  <Skeleton className="h-24 w-full rounded-xl" />
                 </div>
-              ) : subjectsData?.results?.length ? (
-                <div className="space-y-3">
-                  {subjectsData.results.slice(0, 4).map((subject: any) => (
-                    <Link 
-                      key={subject.id} 
-                      href={`/quiz/setup?subject=${subject.id}`}
-                      className="flex items-center justify-between p-3 rounded-xl border border-slate-100 hover:border-primary hover:bg-primary/5 transition-all group"
+              ) : subjectsList.length > 0 ? (
+                <div className="space-y-4">
+                  {/* Dropdown Selector */}
+                  <div className="relative">
+                    <select
+                      value={selectedSubjectId}
+                      onChange={(e) => setSelectedSubjectId(e.target.value)}
+                      className="w-full appearance-none bg-slate-50 border-2 border-slate-200 hover:border-primary/50 focus:border-primary focus:ring-2 focus:ring-primary/20 rounded-xl px-4 py-3 text-slate-900 font-bold transition-all cursor-pointer text-base pr-10"
                     >
-                      <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-lg bg-slate-100 flex items-center justify-center text-slate-500 group-hover:bg-white group-hover:text-primary transition-colors">
-                          <BookOpen size={18} />
-                        </div>
-                        <span className="font-medium text-slate-800">{subject.name}</span>
+                      <option value="">-- Choose a Subject --</option>
+                      {subjectsList.map((subject: any) => (
+                        <option key={subject.id} value={subject.id}>
+                          {subject.name}
+                        </option>
+                      ))}
+                    </select>
+                    <div className="absolute right-3.5 top-1/2 -translate-y-1/2 pointer-events-none text-slate-500">
+                      <ChevronDown size={20} />
+                    </div>
+                  </div>
+
+                  {/* Selected Subject Preview & Action */}
+                  {selectedSubject ? (
+                    <div className="p-4 rounded-xl bg-gradient-to-br from-primary/5 to-indigo-50/50 border border-primary/20 space-y-3">
+                      <div>
+                        <h4 className="font-bold text-slate-900 text-base flex items-center gap-2">
+                          <span className="w-2.5 h-2.5 rounded-full bg-emerald-500" />
+                          {selectedSubject.name}
+                        </h4>
+                        {selectedSubject.description && (
+                          <p className="text-xs text-slate-600 mt-1 line-clamp-2">
+                            {selectedSubject.description}
+                          </p>
+                        )}
                       </div>
-                      <ArrowRight size={16} className="text-slate-400 group-hover:text-primary transition-colors" />
-                    </Link>
-                  ))}
+
+                      <Link href={`/quiz/setup?subject=${selectedSubject.id}`} className="block">
+                        <Button className="w-full justify-center rounded-xl shadow-md gap-2 font-bold py-2.5">
+                          <span>Start Quiz</span>
+                          <ArrowRight size={16} />
+                        </Button>
+                      </Link>
+                    </div>
+                  ) : (
+                    <div className="text-center py-4 px-3 bg-slate-50 rounded-xl border border-dashed border-slate-200 text-slate-500 text-xs">
+                      Choose a subject from the dropdown above to begin practice
+                    </div>
+                  )}
                 </div>
               ) : (
                 <div className="text-center py-6 text-slate-500 text-sm">
                   No subjects available for your level.
                 </div>
               )}
-              
-              <Link href="/subjects" className="block text-center text-sm font-semibold text-primary hover:text-primary-dark mt-6">
+
+              <Link href="/subjects" className="block text-center text-sm font-semibold text-primary hover:text-primary-dark mt-5">
                 View all subjects
               </Link>
             </div>

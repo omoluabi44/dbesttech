@@ -1,7 +1,7 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useState, useEffect, Suspense } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
@@ -26,8 +26,11 @@ const DIFFICULTIES = [
   { id: 'hard', label: 'Champion', stars: 3, color: 'text-red-600', bg: 'bg-red-100', border: 'border-red-400' },
 ] as const;
 
-export default function QuizSetupPage() {
+function QuizSetupContent() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const subjectQuery = searchParams.get('subject');
+
   const { user } = useAuthStore();
   const { startPractice: startStorePractice } = useQuizStore();
   const { playPop, playButtonClick, speakEncouragement } = useSoundEffects();
@@ -45,7 +48,15 @@ export default function QuizSetupPage() {
       try {
         const data = await getSubjects();
         if (mounted) {
-          setSubjects(data.results);
+          const list = Array.isArray(data) ? data : (data?.results || []);
+          setSubjects(list);
+          if (subjectQuery) {
+            const found = list.find((s: Subject) => String(s.id) === String(subjectQuery));
+            if (found) {
+              setSelectedSubject(found.id);
+              setFoxMood('happy');
+            }
+          }
           setLoading(false);
         }
       } catch (error) {
@@ -88,10 +99,12 @@ export default function QuizSetupPage() {
   };
 
   const handleStart = async () => {
-    if (!selectedSubject || !user?.student_profile?.level) {
+    if (!selectedSubject) {
       toast.error('Please select a subject first!');
       return;
     }
+
+    const studentLevel = user?.student_profile?.level || 'primary_1';
 
     setStarting(true);
     setFoxMood('celebrating');
@@ -100,7 +113,7 @@ export default function QuizSetupPage() {
     try {
       const res = await startPractice({
         subject_id: selectedSubject,
-        level: user.student_profile.level,
+        level: studentLevel,
         difficulty: selectedDifficulty,
       });
       startStorePractice(res.session, res.questions);
@@ -313,5 +326,21 @@ export default function QuizSetupPage() {
         </div>
       </div>
     </DashboardLayout>
+  );
+}
+
+export default function QuizSetupPage() {
+  return (
+    <Suspense
+      fallback={
+        <DashboardLayout>
+          <div className="flex items-center justify-center min-h-[60vh]">
+            <Loader2 className="w-12 h-12 text-blue-500 animate-spin" />
+          </div>
+        </DashboardLayout>
+      }
+    >
+      <QuizSetupContent />
+    </Suspense>
   );
 }

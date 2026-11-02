@@ -12,14 +12,32 @@ import {
 } from '../types/quiz';
 
 // General
-export const getSubjects = async (): Promise<PaginatedResponse<Subject>> => {
-  const res = await client.get('/quiz/subjects/');
-  return res.data;
+export const getSubjects = async (params?: any): Promise<PaginatedResponse<Subject>> => {
+  const res = await client.get('/quiz/subjects/', { params });
+  const raw = res.data;
+  if (Array.isArray(raw)) {
+    return {
+      count: raw.length,
+      next: null,
+      previous: null,
+      results: raw,
+    };
+  }
+  return raw;
 };
 
 export const getTopics = async (subjectId: number): Promise<PaginatedResponse<Topic>> => {
   const res = await client.get(`/quiz/subjects/${subjectId}/topics/`);
-  return res.data;
+  const raw = res.data;
+  if (Array.isArray(raw)) {
+    return {
+      count: raw.length,
+      next: null,
+      previous: null,
+      results: raw,
+    };
+  }
+  return raw;
 };
 
 // Practice API
