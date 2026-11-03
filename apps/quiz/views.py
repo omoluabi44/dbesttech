@@ -64,6 +64,7 @@ class QuizHistoryView(views.APIView):
 
 class SubjectListView(generics.ListAPIView):
     serializer_class = SubjectSerializer
+    pagination_class = None
 
     def get_queryset(self):
         try:
@@ -118,6 +119,7 @@ class SubjectListView(generics.ListAPIView):
 
 class TopicListView(generics.ListAPIView):
     serializer_class = TopicSerializer
+    pagination_class = None
     
     def get_queryset(self):
         subject_id = self.kwargs.get('subject_id')

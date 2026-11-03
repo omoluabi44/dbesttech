@@ -281,6 +281,7 @@ class SubjectListAdminView(generics.ListCreateAPIView):
     """
     serializer_class = AdminSubjectSerializer
     permission_classes = [IsAdminUser]
+    pagination_class = None
 
     def get_queryset(self):
         try:
@@ -342,6 +343,7 @@ class TopicListAdminView(generics.ListCreateAPIView):
     """
     serializer_class = AdminTopicSerializer
     permission_classes = [IsAdminUser]
+    pagination_class = None
 
     def get_queryset(self):
         queryset = Topic.objects.all()

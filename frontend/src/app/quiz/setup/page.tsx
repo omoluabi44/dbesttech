@@ -127,6 +127,21 @@ function QuizSetupContent() {
 
   const currentSubject = subjects.find(s => s.id === selectedSubject);
 
+  // Prioritize Mathematics and English at the top, then alphabetically
+  const sortedSubjects = [...subjects].sort((a, b) => {
+    const isAMath = a.name.toLowerCase().includes('math');
+    const isBMath = b.name.toLowerCase().includes('math');
+    if (isAMath && !isBMath) return -1;
+    if (!isAMath && isBMath) return 1;
+
+    const isAEng = a.name.toLowerCase().includes('english');
+    const isBEng = b.name.toLowerCase().includes('english');
+    if (isAEng && !isBEng) return -1;
+    if (!isAEng && isBEng) return 1;
+
+    return a.name.localeCompare(b.name);
+  });
+
   if (loading) {
     return (
       <DashboardLayout>
@@ -200,7 +215,7 @@ function QuizSetupContent() {
                       className="w-full appearance-none bg-indigo-50/70 border-3 border-indigo-300 hover:border-indigo-500 focus:border-indigo-600 focus:ring-4 focus:ring-indigo-200 rounded-xl px-5 py-4 text-indigo-950 font-bold transition-all cursor-pointer text-lg pr-12 shadow-inner"
                     >
                       <option value="">-- Click to Select Subject --</option>
-                      {subjects.map((subject) => (
+                      {sortedSubjects.map((subject) => (
                         <option key={subject.id} value={subject.id}>
                           {subject.name}
                         </option>
@@ -213,13 +228,13 @@ function QuizSetupContent() {
                 </div>
 
                 {/* Quick Subject Chips */}
-                {subjects.length > 0 && (
+                {sortedSubjects.length > 0 && (
                   <div className="space-y-2 pt-2 border-t border-indigo-100">
                     <span className="text-xs font-semibold text-indigo-600 uppercase tracking-wider">
                       Or quick select:
                     </span>
-                    <div className="flex flex-wrap gap-2">
-                      {subjects.map((subject) => {
+                    <div className="flex flex-wrap gap-2 max-h-48 overflow-y-auto p-1 pr-2">
+                      {sortedSubjects.map((subject) => {
                         const isSelected = selectedSubject === subject.id;
                         return (
                           <button

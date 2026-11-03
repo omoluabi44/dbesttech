@@ -23,7 +23,34 @@ export const getSubjects = async (params?: any): Promise<PaginatedResponse<Subje
       results: raw,
     };
   }
-  return raw;
+
+  // If backend returns paginated response, fetch all pages so no subjects (e.g. Mathematics) are ever omitted!
+  let allResults: Subject[] = raw.results ? [...raw.results] : [];
+  let nextUrl = raw.next;
+  let page = 2;
+
+  while (nextUrl && page <= 25) {
+    try {
+      const nextRes = await client.get('/quiz/subjects/', {
+        params: { ...params, page },
+      });
+      const nextData = nextRes.data;
+      if (nextData.results && Array.isArray(nextData.results)) {
+        allResults = [...allResults, ...nextData.results];
+      }
+      nextUrl = nextData.next;
+      page++;
+    } catch {
+      break;
+    }
+  }
+
+  return {
+    count: allResults.length,
+    next: null,
+    previous: null,
+    results: allResults,
+  };
 };
 
 export const getTopics = async (subjectId: number): Promise<PaginatedResponse<Topic>> => {
@@ -37,7 +64,33 @@ export const getTopics = async (subjectId: number): Promise<PaginatedResponse<To
       results: raw,
     };
   }
-  return raw;
+
+  let allResults: Topic[] = raw.results ? [...raw.results] : [];
+  let nextUrl = raw.next;
+  let page = 2;
+
+  while (nextUrl && page <= 25) {
+    try {
+      const nextRes = await client.get(`/quiz/subjects/${subjectId}/topics/`, {
+        params: { page },
+      });
+      const nextData = nextRes.data;
+      if (nextData.results && Array.isArray(nextData.results)) {
+        allResults = [...allResults, ...nextData.results];
+      }
+      nextUrl = nextData.next;
+      page++;
+    } catch {
+      break;
+    }
+  }
+
+  return {
+    count: allResults.length,
+    next: null,
+    previous: null,
+    results: allResults,
+  };
 };
 
 // Practice API
