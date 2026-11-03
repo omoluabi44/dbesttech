@@ -10,7 +10,7 @@ import { useQuizStore } from '@/lib/stores/quizStore';
 import { useAuthStore } from '@/lib/stores/authStore';
 import { Subject } from '@/lib/types/quiz';
 import { toast } from 'sonner';
-import { Loader2, Lock, BookOpen } from 'lucide-react';
+import { Loader2, Lock, BookOpen, ChevronDown, CheckCircle2, Sparkles } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 import { CartoonFox } from '@/components/cartoon/CartoonFox';
@@ -167,43 +167,119 @@ function QuizSetupContent() {
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            {/* Subject Selection */}
+            {/* Subject Selection Dropdown */}
             <div className="lg:col-span-2 space-y-6">
-              <h2 className="text-2xl font-bold text-indigo-800 flex items-center gap-2">
-                <span className="bg-yellow-400 text-yellow-900 w-8 h-8 rounded-full flex items-center justify-center shadow-md">1</span>
-                Select a World
-              </h2>
-              
-              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-                {subjects.map((subject) => {
-                  const isSelected = selectedSubject === subject.id;
-                  
-                  return (
-                    <motion.div
-                      key={subject.id}
-                      whileHover={{ scale: 1.05, rotate: [-1, 1, -1, 0] }}
-                      whileTap={{ scale: 0.95 }}
-                      onClick={() => handleSubjectSelect(subject.id)}
-                      className={`cursor-pointer rounded-2xl border-4 p-4 transition-all duration-300 flex flex-col items-center justify-center text-center gap-3 min-h-[160px] ${
-                        isSelected 
-                          ? 'border-primary shadow-sm bg-primary/10 transform scale-105' 
-                          : `bg-surface border-surface-dark shadow-sm hover:shadow-md opacity-90 hover:opacity-100`
-                      }`}
+              <div className="flex items-center justify-between">
+                <h2 className="text-2xl font-bold text-indigo-900 flex items-center gap-2">
+                  <span className="bg-yellow-400 text-yellow-900 w-9 h-9 rounded-full flex items-center justify-center shadow-md text-lg font-black">1</span>
+                  Choose Subject
+                </h2>
+                <span className="text-xs font-bold px-3 py-1 bg-indigo-100 text-indigo-800 rounded-full border border-indigo-200">
+                  Step 1 of 2
+                </span>
+              </div>
+
+              {/* Subject Selection Dropdown Container */}
+              <div className="bg-white/90 backdrop-blur-md rounded-2xl p-6 border-4 border-indigo-200 shadow-lg space-y-5">
+                <div>
+                  <label htmlFor="subject-select" className="block text-sm font-bold text-indigo-900 mb-2">
+                    Select a Quiz Subject:
+                  </label>
+                  <div className="relative">
+                    <select
+                      id="subject-select"
+                      value={selectedSubject ? String(selectedSubject) : ''}
+                      onChange={(e) => {
+                        const val = e.target.value;
+                        if (val) {
+                          handleSubjectSelect(Number(val));
+                        } else {
+                          setSelectedSubject(null);
+                        }
+                      }}
+                      className="w-full appearance-none bg-indigo-50/70 border-3 border-indigo-300 hover:border-indigo-500 focus:border-indigo-600 focus:ring-4 focus:ring-indigo-200 rounded-xl px-5 py-4 text-indigo-950 font-bold transition-all cursor-pointer text-lg pr-12 shadow-inner"
                     >
-                      <div className="text-primary drop-shadow-sm">
-                        <BookOpen size={48} />
+                      <option value="">-- Click to Select Subject --</option>
+                      {subjects.map((subject) => (
+                        <option key={subject.id} value={subject.id}>
+                          {subject.name}
+                        </option>
+                      ))}
+                    </select>
+                    <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-indigo-600">
+                      <ChevronDown size={24} className="stroke-[3]" />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Quick Subject Chips */}
+                {subjects.length > 0 && (
+                  <div className="space-y-2 pt-2 border-t border-indigo-100">
+                    <span className="text-xs font-semibold text-indigo-600 uppercase tracking-wider">
+                      Or quick select:
+                    </span>
+                    <div className="flex flex-wrap gap-2">
+                      {subjects.map((subject) => {
+                        const isSelected = selectedSubject === subject.id;
+                        return (
+                          <button
+                            key={subject.id}
+                            type="button"
+                            onClick={() => handleSubjectSelect(subject.id)}
+                            className={`px-4 py-2 rounded-xl text-sm font-bold transition-all flex items-center gap-1.5 border-2 ${
+                              isSelected
+                                ? 'bg-indigo-600 text-white border-indigo-700 shadow-md scale-105'
+                                : 'bg-white hover:bg-indigo-50 text-indigo-900 border-indigo-200 hover:border-indigo-300 shadow-sm'
+                            }`}
+                          >
+                            <BookOpen size={16} />
+                            <span>{subject.name}</span>
+                            {isSelected && <CheckCircle2 size={16} className="text-yellow-300" />}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+
+                {/* Selected Subject Preview Card */}
+                {currentSubject ? (
+                  <motion.div
+                    initial={{ opacity: 0, scale: 0.95 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    className="p-5 rounded-2xl bg-gradient-to-r from-indigo-50 via-purple-50 to-pink-50 border-3 border-indigo-300 shadow-sm flex flex-col sm:flex-row items-center gap-5 text-center sm:text-left"
+                  >
+                    <div className="w-16 h-16 rounded-2xl bg-indigo-600 text-white flex items-center justify-center shadow-md shrink-0">
+                      <BookOpen size={36} />
+                    </div>
+                    <div className="flex-1">
+                      <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2 mb-1">
+                        <h3 className="text-2xl font-black text-indigo-950">
+                          {currentSubject.name}
+                        </h3>
+                        <span className="px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-xs font-bold border border-emerald-300 flex items-center gap-1">
+                          <CheckCircle2 size={12} />
+                          Ready to Play
+                        </span>
                       </div>
-                      <div>
-                        <h3 className="font-bold text-xl text-gray-800">{subject.name}</h3>
-                        {subject.description && (
-                          <p className="text-sm text-gray-700 font-medium line-clamp-2 mt-1">
-                            {subject.description}
-                          </p>
-                        )}
-                      </div>
-                    </motion.div>
-                  );
-                })}
+                      <p className="text-sm text-indigo-800 font-medium">
+                        {currentSubject.description || 'Practice multiple choice questions and test your skills!'}
+                      </p>
+                    </div>
+                  </motion.div>
+                ) : (
+                  <div className="p-8 rounded-2xl bg-indigo-50/50 border-2 border-dashed border-indigo-200 text-center space-y-2">
+                    <div className="w-12 h-12 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center mx-auto mb-2">
+                      <Sparkles size={24} />
+                    </div>
+                    <h4 className="text-base font-bold text-indigo-900">
+                      Choose a subject from the dropdown above
+                    </h4>
+                    <p className="text-xs text-indigo-600 max-w-sm mx-auto">
+                      Select Mathematics or English to unlock difficulty levels and launch your adventure!
+                    </p>
+                  </div>
+                )}
               </div>
             </div>
 

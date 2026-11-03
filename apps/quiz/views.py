@@ -92,6 +92,17 @@ class SubjectListView(generics.ListAPIView):
             elif not english.is_active:
                 english.is_active = True
                 english.save(update_fields=['is_active'])
+
+            if math:
+                Topic.objects.filter(
+                    Q(name__icontains='math') | 
+                    Q(name__icontains='algebra') | 
+                    Q(name__icontains='fraction') | 
+                    Q(name__icontains='geometry') |
+                    Q(name__icontains='addition') |
+                    Q(name__icontains='arithmetic')
+                ).exclude(subject=math).update(subject=math)
+                Quiz.objects.filter(topic_obj__subject=math).exclude(subject=math).update(subject=math)
         except Exception as e:
             logger.warning(f"Error ensuring core subjects in SubjectListView: {e}")
 
